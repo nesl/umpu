@@ -1,0 +1,103 @@
+# -*-Makefile-*-
+#
+# Makerules for Kernel and Module image for Avr processor
+#
+
+TRG = avr-
+
+DEFS += -DAVR_MCU -DLLITTLE_ENDIAN -DSUPPORTS_PACKED
+
+MCU = atmega103
+
+ifeq ($(CC_DEBUG),)
+  CC_DEBUG=-g
+endif
+ifeq ($(AS_DEBUG),)
+  AS_DEBUG=-Wa,-gstabs
+endif
+
+#CC_DEBUG=-gstabs
+#AS_DEBUG=--gstabs
+#CC_DEBUG = -gstabs+
+#AS_DEBUG = --gstabs+
+#CC_DEBUG = -gdwarf-2 -feliminate-dwarf2-dup
+#AS_DEBUG = --gdwarf2
+
+MCUFLAG += -mmcu=$(MCU)
+
+
+VPATH  += $(ROOTDIR)/drivers/uart
+VPATH += $(ROOTDIR)/drivers/i2c
+VPATH += $(ROOTDIR)/processor/$(PROCESSOR)
+
+INCDIR += -I$(ROOTDIR)/drivers/uart/include
+INCDIR += -I$(ROOTDIR)/drivers/i2c/include
+INCDIR += -I$(ROOTDIR)/processor/$(PROCESSOR)/include
+INCDIR += -I$(ROOTDIR)/drivers/adc/include
+
+################################################################################################
+# KERNEL BUILD OPTIONS
+################################################################################################
+ifeq ($(BUILD),_SOS_KERNEL_)
+BLS_START = -Wl,--section-start=.sos_bls=0x1fc00 
+SRCS += crc.c timer.c flash_api.c
+
+# LOADER OPTIONS
+ifeq ($(LOADER), melf)
+SRCS += avr_melfloader.c
+endif
+
+
+# MEMORY PROTECTION
+ifeq ($(MODE), sfi)
+SRCS += memmap_checker_const.c
+#SRCS += memmap_checker_proc.c 
+ASMSRCS += memmap_checker_proc_asm.S
+#CFLAGS += -ffixed-r2 -ffixed-r3 
+#-fnew-ra
+endif
+
+OBJS += flash.o
+
+CFLAGS += -Os $(CC_DEBUG) -fshort-enums -fpack-struct -Wno-cast-qual -Wall -Wa,-adhlmsn=$(notdir $(<:.c=.lst))
+
+
+# MEMORY PROTECTION
+ifeq ($(MODE),sfi)
+LDFLAGS += -Wl,-Map=$(PROJ).map,--cref $(BLS_START) -Wl,-T $(ROOTDIR)/processor/avr/sos_sfi_avr5.x
+else
+LDFLAGS += -Wl,-Map=$(PROJ).map,--cref $(BLS_START) -Wl,-T $(ROOTDIR)/processor/avr/sos_avr5.x
+endif
+
+
+SFLAGS += -Wa,$(MCUFLAG),$(AS_DEBUG),-ahlms=$(notdir $(<:.S=.lst))
+endif # _SOS_KERNEL_
+
+
+################################################################################################
+# MODULE OPTIONS
+################################################################################################
+ifeq ($(BUILD),_MODULE_)
+
+# MINI-ELF LOADER
+ifeq ($(LOADER), melf)
+CFLAGS += -Os -fno-unit-at-a-time -fshort-enums -fpack-struct -Wall -Wa,-adhlmsn=$(notdir $(<:.c=.lst)) -Wa,-mno-wrap
+LDFLAGS += -r
+else
+CFLAGS += -Os -fno-unit-at-a-time -mno-tablejump -mshort-calls -fshort-enums -fpack-struct -Wall -Wa,-adhlmsn=$(notdir $(<:.c=.lst)) -Wa,-mno-wrap
+endif
+
+#MEMORY PROTECTION OPTIONS
+ifeq ($(MODE),sfi)
+#CFLAGS += -ffixed-r26 -ffixed-r27
+endif
+
+LDFLAGS += -Wl,-T $(ROOTDIR)/processor/avr/mod.x -Wl,-Map=$(PROJ).map,--cref -nostartfiles -nodefaultlibs -nostdlib -lgcc -lc
+
+SFLAGS += $(STACK_START) -Wa,$(MCUFLAG),$(AS_DEBUG),-ahlms=$(notdir $(<:.S=.lst))
+
+endif # _MODULE_
+
+avr: $(PROJ).elf $(PROJ).elf.lst $(PROJ).srec $(PROJ).ihex $(OBJS)
+
+

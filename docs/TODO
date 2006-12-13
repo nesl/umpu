@@ -1,0 +1,4 @@
+1. In order to reduce area, the ram_bus arbiter does not need to latch and put the data on the bus
+2. Need to do the same for rcall and icall like what we did for the regular call
+3. Latch the program_counter on the first clock cycle of cross domain call
+
