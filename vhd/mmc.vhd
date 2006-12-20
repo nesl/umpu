@@ -2,7 +2,6 @@
 -- This is the memory map checker module. This checks the mem map to ensure
 -- that the address been written is under the ownership of the current application.
 --************************************************************************************************
-
 library IEEE;
 use IEEE.std_logic_1164.all;
 use ieee.std_logic_arith.all;
@@ -78,7 +77,7 @@ architecture Beh of mmc is
       mem_prot_bottom  : in  std_logic_vector(15 downto 0);
       mem_prot_top     : in  std_logic_vector(15 downto 0);
       mmc_status_reg   : in  std_logic_vector(7 downto 0);
-      -- addr from fet_dec and mmc
+      -- store addr from fet_dec and mmc
       fet_dec_str_addr : in  std_logic_vector(15 downto 0);
       mmc_rd_addr      : out std_logic_vector(15 downto 0)
       );
@@ -103,7 +102,7 @@ architecture Beh of mmc is
       );
   end component;
 
-  -- Local registers maintained by this module
+  -- Local software registers maintained by this module
   signal mem_map_pointer : std_logic_vector(15 downto 0);
   signal mem_prot_bottom : std_logic_vector(15 downto 0);
   signal mem_prot_top    : std_logic_vector(15 downto 0);
@@ -113,7 +112,7 @@ architecture Beh of mmc is
   signal mmc_panic         : std_logic;
   -- mem_map_error signal
   signal mem_map_error     : std_logic;
-  -- check cycle signal
+  -- check_cycle signal
   signal check_cycle       : std_logic;
   -- Domain id
   signal dom_id            : std_logic_vector(2 downto 0);
@@ -138,10 +137,11 @@ architecture Beh of mmc is
   signal sg_panic_latch : std_logic;
 
 begin
-  -- the debug panic signal
+  -- the debug panic signal is exposed to the uppermost entity
   dbg_mmc_panic <= mmc_panic;
 
-  -- setting the output registers
+  -- setting the output registers, these registers are sent to io_adr_dec so
+  -- that they can be read out in software
   mem_map_pointer_low_out  <= mem_map_pointer(7 downto 0);
   mem_map_pointer_high_out <= mem_map_pointer(15 downto 8);
   mem_prot_bottom_low_out  <= mem_prot_bottom(7 downto 0);
@@ -150,7 +150,10 @@ begin
   mem_prot_top_high_out    <= mem_prot_top(15 downto 8);
   mmc_status_reg_out       <= mmc_status_reg;
 
-  -- receive the stack pointer
+  -- receive the stack pointer from io_reg_file
+  -- The stack pointer is used to check when a store instruction is occuring on
+  -- the stack and if it is, no mmc check is required on it, the only check
+  -- that needs to be performed is if the store in inside the stack bound
   stack_pointer(15 downto 8) <= stack_pointer_high;
   stack_pointer(7 downto 0)  <= stack_pointer_low;
 
@@ -169,6 +172,9 @@ begin
 
 
   -- mmc read cycle latch
+  -- This latch is set whenever the processor is starting to execute a store
+  -- instruction and the mmc is enabled, i.e. we are not operating in the
+  -- trusted domain
   MMC_READ_CYCLE_LATCH : process(ireset, clock)
   begin
     if ireset = '0' then
@@ -177,10 +183,15 @@ begin
       sg_mmc_read_cycle <= fet_dec_run_mmc and sg_mmc_enable;
     end if;
   end process;
-  -- setting the output to the internal signal
+  -- setting the output of the internal signal
   mmc_read_cycle        <= sg_mmc_read_cycle;
 
   -- check cycle latch
+  -- check cycle comes after read cycle, here the check is performed to ensure
+  -- that the specific store address can be written to and if so, the write is
+  -- performed.
+  -- The latch is set in the clock cycle after read cycle is set and if the mmc
+  -- is enabled i.e. we are not operating in the trusted domain
   CHECK_CYCLE_LATCH : process(ireset, clock)
   begin
     if ireset = '0' then
@@ -193,6 +204,9 @@ begin
   mmc_write_cycle <= check_cycle;
 
   -- Latch the data for str instr from pm_fetch_decoder
+  -- This is the data that the processor wanted to write to the store address.
+  -- Presently we have not figured out how to make the processor retain this
+  -- data so we are latching the data for it. This can be a source of optimization
   MMC_DBUSOUT_LATCH : process(ireset, clock)
   begin
     if ireset = '0' then
@@ -205,17 +219,25 @@ begin
   end process;
 
   -- setting mmc write enable
+  -- Sending the signal to the bus arbiter to perform the write. This signal is
+  -- set during the check cycle only if there was no error in verifying that
+  -- the current domain can write to the store address
   mmc_wr_en <= check_cycle and not mem_map_error;
+
   -- setting the mmc read enable
-  -- mmc will perform the read
+  -- During the read cycle, the mmc will read the ownership information for the
+  -- store address pertaining to the current domain
   mmc_rd_en <= sg_mmc_read_cycle;
 
   -- mux to set the mmc_addr on check_cycle
+  -- This mux selects the correct address to be sent to the bus arbiter.
+  -- If this is the read cycle, then the address is set to the calculated read
+  -- address, else it is set to the store address from the processor
   mmc_addr <= mmc_rd_addr when sg_mmc_read_cycle = '1'
               else fet_dec_str_addr;
 
 
-  -- Calculates any errors based on domain ids and the addr of st instr
+  -- Calculates any errors based on domain ids and the addr of str instr
   MMC_ERROR_CALC : component mem_map_error_calc port map(
     mmc_ram_data     => mmc_ram_data,
     dom_id           => dom_id,
@@ -252,6 +274,10 @@ begin
   fet_dec_pc_stop <= sg_mmc_read_cycle and sg_mmc_enable;
 
   -- fet_dec_nop_insert latch
+  -- This signal generates a nop in the processor.
+  -- The signal is generated during the read cycle of the mmc and during the
+  -- panic period of mmc only if the mmc is enabled, i.e. we are not operating
+  -- in the trusted domain
   FET_DEC_NOP_INSERT_DFF : process(ireset, clock)
   begin
     if ireset = '0' then
@@ -262,6 +288,7 @@ begin
   end process;
 
   -- mmc_ram_data latch
+  -- This latches the data read from the ram during the read cycle
   GET_RAM_DATA : process(ireset, clock)
   begin
     if ireset = '0' then
@@ -273,6 +300,54 @@ begin
     end if;
   end process;
 
+  -- update the dom_id when set by the domain_tracker or the ssp module
+  -- This will update the domain id of the currently running domain if the
+  -- domain id or the ssp module indicate that a cross domain call or return
+  -- respectively has taken place
+  UPDATE_DOM_ID : process(ireset, clock)
+  begin
+    if (ireset = '0') then
+      dom_id   <= "111";
+    elsif (clock'event and clock = '1') then
+      if (dt_update_dom_id = '1') then
+        dom_id <= dt_new_dom_id;
+      elsif (ssp_update_dom_id = '1') then
+        dom_id <= ssp_new_dom_id;
+      end if;
+    end if;
+  end process;
+
+  -- will be '1' only when dom_id = "111" i.e. trusted domain
+  in_trusted_domain <= dom_id(0) and dom_id(1) and dom_id(2);
+
+
+
+  -- mmc_status_reg
+  -- |LOG_BLK_SIZE(2:0)|DOMAIN_ID(2:0)|REC_SIZE|MMC_ENABLE|
+  -- REC_SIZE = 1 => 4 records per byte
+  -- REC_SIZE = 0 => 2 records per byte
+  STATUS_REG_DFF : process(clock, ireset)
+  begin
+    if (ireset = '0') then
+      -- Special init value to set dom id to 111 on processor startup
+      mmc_status_reg(7 downto 5)   <= "000";
+      mmc_status_reg(1 downto 0)   <= "00";
+    elsif (clock = '1' and clock'event) then
+      if (adr = MMC_STATUS_REG_Address and iowe = '1' and in_trusted_domain = '1') then
+        mmc_status_reg(7 downto 5) <= reg_bus(7 downto 5);
+        mmc_status_reg(1 downto 0) <= reg_bus(1 downto 0);
+      end if;
+    end if;
+  end process;
+
+  -- Expose the current domain id to the software through the mmc status register
+  mmc_status_reg(4 downto 2) <= dom_id;
+
+  -- Compute mmc_enable if the status reg is set and we are in the trusted domain
+  sg_mmc_enable <= mmc_status_reg(0) and (not in_trusted_domain);
+
+  -- THE FOLLOWING ARE SIMPLE WRITES TO THE REGISTERS MAINTAINED BY THIS MODULE
+  
   -- mem_map_pointer register
   MM_POINTER_HIGH_DFF : process(clock, ireset)
   begin
@@ -294,6 +369,7 @@ begin
       end if;
     end if;
   end process;
+  
   -- mem_prot_bottom register
   MM_BOTTOM_HIGH_DFF  : process(clock, ireset)
   begin
@@ -337,53 +413,6 @@ begin
       end if;
     end if;
   end process;
-
-  -- mmc_status_reg
-  -- |LOG_BLK_SIZE(2:0)|DOMAIN_ID(2:0)|REC_SIZE|MMC_ENABLE|
-  -- REC_SIZE = 1 => 4 records per byte
-  -- REC_SIZE = 0 => 2 records per byte
-  STATUS_REG_DFF : process(clock, ireset)
-  begin
-    if (ireset = '0') then
-      -- Special init value to set dom id to 111 on processor startup
-      mmc_status_reg(7 downto 5)   <= "000";
-      mmc_status_reg(1 downto 0)   <= "00";
-    elsif (clock = '1' and clock'event) then
-      if (adr = MMC_STATUS_REG_Address and iowe = '1' and in_trusted_domain = '1') then
-        mmc_status_reg(7 downto 5) <= reg_bus(7 downto 5);
-        mmc_status_reg(1 downto 0) <= reg_bus(1 downto 0);
-      end if;
-    end if;
-  end process;
-
-  -- putting the dom id on the status reg
-  mmc_status_reg(4 downto 2) <= dom_id;
-
-  -- Setting output of internal mmc_enable
-  sg_mmc_enable <= mmc_status_reg(0) and (not in_trusted_domain);
-
-  -- update the dom_id when set by the domain_tracker
-  UPDATE_DOM_ID : process(ireset, clock)
-  begin
-    if (ireset = '0') then
-      dom_id   <= "111";
-    elsif (clock'event and clock = '1') then
-
-      if (dt_update_dom_id = '1') then
-        dom_id <= dt_new_dom_id;
-      elsif (ssp_update_dom_id = '1') then
-        dom_id <= ssp_new_dom_id;
-      end if;
-
---       dom_id <= dt_new_dom_id when dt_update_dom_id = '1'
---                 else ssp_new_dom_id when ssp_update_dom_id = '1'
---                 else dom_id;
-
-    end if;
-  end process;
-
-  -- will be '1' only when dom_id = "111" i.e. trusted domain
-  in_trusted_domain <= dom_id(0) and dom_id(1) and dom_id(2);
 
 end Beh;
 
