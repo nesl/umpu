@@ -19,11 +19,12 @@ entity safe_stack is
     ram_bus : in std_logic_vector(7 downto 0);
     iowe    : in std_logic;
 
-    -- Output the local register
+    -- Output the safe stack pointer out to io_adr_dec so it is visible to the
+    -- software
     ssph_out : out std_logic_vector(7 downto 0);
     sspl_out : out std_logic_vector(7 downto 0);
 
-    -- Signals from mmc
+    -- Status register from the MMC
     mmc_status_reg : in std_logic_vector(7 downto 0);
 
     -- signals for the ram_busArbiter

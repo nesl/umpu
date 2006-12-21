@@ -14,11 +14,6 @@ Deadline: 12/31/06
 	- The ram_bus arbiter does not need to latch and put the data on the bus
 	- Latch the program_counter on the first clock cycle of cross domain call
 
-Other fixs to be made:
-1. Presently we are in middle of using the mmc_enable bit in the status reg and in_trusted_domain
-   to enable memory protection. I believe that only mmc.vhd is using the mmc_enable signal
-   and other modules are not. We need to get rid of the mmc_enable bit or use it in all the modules
-
 ----------------------------------------
 Deadline: 1/10/07
 7. Run SOS on this
@@ -42,3 +37,6 @@ Read the paper ASAP
 Work Done:
 1. MMC is not actually using the stack bound to check the stores to the stack
 	- Now the safe_stack sends stack_bound to MMC and it checks the writes on stack
+2. Presently we are in middle of using the mmc_enable bit in the status reg and in_trusted_domain
+   to enable memory protection. I believe that only mmc.vhd is using the mmc_enable signal
+   and other modules are not. We need to get rid of the mmc_enable bit or use it in all the modules

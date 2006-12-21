@@ -132,9 +132,6 @@ architecture Beh of mmc is
   -- stack pointer from io_reg_file
   signal stack_pointer : std_logic_vector(15 downto 0);
 
-  -- internal signals for outputs
-  signal sg_mmc_enable : std_logic;
-
   -- internal signals to identify panic
   signal sg_panic_int   : std_logic;
   signal sg_panic_latch : std_logic;
@@ -183,7 +180,7 @@ begin
     if ireset = '0' then
       sg_mmc_read_cycle <= '0';
     elsif (clock = '1' and clock'event) then
-      sg_mmc_read_cycle <= fet_dec_run_mmc and sg_mmc_enable;
+      sg_mmc_read_cycle <= fet_dec_run_mmc;
     end if;
   end process;
   -- setting the output of the internal signal
@@ -200,10 +197,11 @@ begin
     if ireset = '0' then
       check_cycle <= '0';
     elsif (clock = '1' and clock'event) then
-      check_cycle <= sg_mmc_read_cycle and sg_mmc_enable;
+      check_cycle <= sg_mmc_read_cycle;
     end if;
   end process;
   -- setting the output to the internal signal
+  -- The check cycle is also the cycle in which write is performed
   mmc_write_cycle <= check_cycle;
 
   -- Latch the data for str instr from pm_fetch_decoder
@@ -275,7 +273,7 @@ begin
 
   mmc_panic <= (mem_map_error and check_cycle) or sg_panic_latch;
 
-  fet_dec_pc_stop <= sg_mmc_read_cycle and sg_mmc_enable;
+  fet_dec_pc_stop <= sg_mmc_read_cycle;
 
   -- fet_dec_nop_insert latch
   -- This signal generates a nop in the processor.
@@ -287,7 +285,7 @@ begin
     if ireset = '0' then
       fet_dec_nop_insert <= '0';
     elsif (clock = '1' and clock'event) then
-      fet_dec_nop_insert <= (sg_mmc_read_cycle or mmc_panic) and sg_mmc_enable;
+      fet_dec_nop_insert <= sg_mmc_read_cycle or mmc_panic;
     end if;
   end process;
 
@@ -327,9 +325,11 @@ begin
 
 
   -- mmc_status_reg
-  -- |LOG_BLK_SIZE(2:0)|DOMAIN_ID(2:0)|REC_SIZE|MMC_ENABLE|
+  -- |LOG_BLK_SIZE(2:0)|DOMAIN_ID(2:0)|REC_SIZE|UNUSED|
   -- REC_SIZE = 1 => 4 records per byte
   -- REC_SIZE = 0 => 2 records per byte
+  -- The Domain_Id cannot be written to and can only read
+  -- Writing to the unused bit will have no effect and can be used for expansion
   STATUS_REG_DFF : process(clock, ireset)
   begin
     if (ireset = '0') then
@@ -346,9 +346,6 @@ begin
 
   -- Expose the current domain id to the software through the mmc status register
   mmc_status_reg(4 downto 2) <= dom_id;
-
-  -- Compute mmc_enable if the status reg is set and we are in the trusted domain
-  sg_mmc_enable <= mmc_status_reg(0) and (not in_trusted_domain);
 
   -- THE FOLLOWING ARE SIMPLE WRITES TO THE REGISTERS MAINTAINED BY THIS MODULE
 
