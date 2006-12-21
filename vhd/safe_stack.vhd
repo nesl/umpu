@@ -46,9 +46,10 @@ entity safe_stack is
     -- Signals from Domain Tracker
     dt_update_dom_id : in std_logic;
 
-    -- ssp-MMC to update the dom id
+    -- ssp-MMC to update the dom id and send present stack_bound
     ssp_new_dom_id    : out std_logic_vector(2 downto 0);
     ssp_update_dom_id : out std_logic;
+    ssp_stack_bound : out std_logic_vector(15 downto 0);
 
     -- Signal from io_reg_file
     stack_pointer_low : in std_logic_vector(7 downto 0);

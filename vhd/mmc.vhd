@@ -57,9 +57,10 @@ entity mmc is
     ram_bus : in std_logic_vector(7 downto 0);
     iowe    : in std_logic;
 
-    -- MMC-ssp interface to update the dom id on a ret
-    ssp_new_dom_id : in std_logic_vector(2 downto 0);
+    -- MMC-ssp interface to update the dom id on a ret and receive the stack bound
+    ssp_new_dom_id    : in std_logic_vector(2 downto 0);
     ssp_update_dom_id : in std_logic;
+    ssp_stack_bound   : in std_logic_vector(15 downto 0);
 
     -- Debug signals
     dbg_mmc_panic : out std_logic       -- panic signal
@@ -97,6 +98,8 @@ architecture Beh of mmc is
       fet_dec_str_addr : in  std_logic_vector(15 downto 0);
       -- stack pointer from io_reg_file
       stack_pointer    : in  std_logic_vector(15 downto 0);
+      -- stack bound from the ssp module
+      ssp_stack_bound  : in  std_logic_vector(15 downto 0);
       -- error signal based on calculations
       mem_map_error    : out std_logic
       );
@@ -246,6 +249,7 @@ begin
     mem_prot_top     => mem_prot_top,
     fet_dec_str_addr => fet_dec_str_addr,
     stack_pointer    => stack_pointer,
+    ssp_stack_bound  => ssp_stack_bound,
     mem_map_error    => mem_map_error
     );
 
@@ -347,7 +351,7 @@ begin
   sg_mmc_enable <= mmc_status_reg(0) and (not in_trusted_domain);
 
   -- THE FOLLOWING ARE SIMPLE WRITES TO THE REGISTERS MAINTAINED BY THIS MODULE
-  
+
   -- mem_map_pointer register
   MM_POINTER_HIGH_DFF : process(clock, ireset)
   begin
@@ -369,9 +373,9 @@ begin
       end if;
     end if;
   end process;
-  
+
   -- mem_prot_bottom register
-  MM_BOTTOM_HIGH_DFF  : process(clock, ireset)
+  MM_BOTTOM_HIGH_DFF : process(clock, ireset)
   begin
     if (ireset = '0') then
       mem_prot_bottom(15 downto 8)   <= (others => '0');
@@ -381,7 +385,7 @@ begin
       end if;
     end if;
   end process;
-  MM_BOTTOM_LOW_DFF   : process(clock, ireset)
+  MM_BOTTOM_LOW_DFF  : process(clock, ireset)
   begin
     if (ireset = '0') then
       mem_prot_bottom(7 downto 0)    <= (others => '0');

@@ -85,9 +85,10 @@ architecture struct of avr_core is
       -- Signals from Domain Tracker
       dt_update_dom_id : in std_logic;
 
-      -- ssp-MMC to update the dom id
+      -- ssp-MMC to update the dom id and send the stack_bound
       ssp_new_dom_id    : out std_logic_vector(2 downto 0);
       ssp_update_dom_id : out std_logic;
+      ssp_stack_bound : out std_logic_vector(15 downto 0);
 
       -- Signal from io_reg_file
       stack_pointer_low : in std_logic_vector(7 downto 0);
@@ -201,9 +202,11 @@ architecture struct of avr_core is
       ram_bus : in std_logic_vector(7 downto 0);
       iowe    : in std_logic;
 
-      -- MMC-ssp interface to update the dom id on a ret
+      -- MMC-ssp interface to update the dom id on a ret and receive the stack
+      -- bound
       ssp_new_dom_id : in std_logic_vector(2 downto 0);
       ssp_update_dom_id : in std_logic;
+      ssp_stack_bound : in std_logic_vector(15 downto 0);
 
       -- Debug signals
       dbg_mmc_panic : out std_logic     -- panic signal
@@ -721,6 +724,7 @@ architecture struct of avr_core is
   -- signals between safe stack and MMC
   signal sg_ssp_new_dom_id : std_logic_vector(2 downto 0);
   signal sg_ssp_update_dom_id : std_logic;
+  signal sg_ssp_stack_bound : std_logic_vector(15 downto 0);
 
 begin
 
@@ -757,6 +761,7 @@ begin
     
     ssp_new_dom_id => sg_ssp_new_dom_id,
     ssp_update_dom_id => sg_ssp_update_dom_id,
+    ssp_stack_bound => sg_ssp_stack_bound,
 
     stack_pointer_low => sg_spl_out,
     stack_pointer_high => sg_sph_out
@@ -845,6 +850,7 @@ begin
 
     ssp_new_dom_id => sg_ssp_new_dom_id,
     ssp_update_dom_id => sg_ssp_update_dom_id,
+    ssp_stack_bound => sg_ssp_stack_bound,
 
     dbg_mmc_panic => panic
     );

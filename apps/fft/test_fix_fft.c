@@ -112,6 +112,7 @@ int dom0_realmain()
 
   PORTA = (uint8_t)(*diff);
   PORTA = (uint8_t)(*diff >> 8);
+  // The result here is believed to be 0x8EBE
 
   PORTA = 0x05;
 

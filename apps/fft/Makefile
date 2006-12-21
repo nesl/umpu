@@ -57,7 +57,7 @@ LDFLAGS += -Wl,--section-start=.dom0jmptbl=0x2000 -Wl,--section-start=.dom1jmptb
 	$(OBJCOPY) -j .text -j .dom0jmptbl -j .dom1jmptbl -j .domtrustjmptbl -O ihex -R .eeprom $< $@
 
 %.vhd: %.ihex
-	./hex2vhd.exe $<
+	../../swlib/hex2vhd.exe $<
 	mv programToLoad.vhd ../../vhd/
 
 all:	$(PROJ).elf $(PROJ).elf.lst $(PROJ).bin $(PROJ).ihex $(PROJ).vhd $(OBJS)
