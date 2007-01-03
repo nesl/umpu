@@ -1,5 +1,5 @@
 
-PROJ = test_swlib
+PROJ = test_mul_dom
 SRCS += $(PROJ).c
 
 ROOTDIR = ../..
@@ -7,9 +7,7 @@ INCDIR += -I$(ROOTDIR)/swlib -I.
 VPATH  += $(ROOTDIR)/swlib
 
 SRCS += malloc.c memmap.c
-ASMSRCS += dom_trusted_proc.S dom_0_proc.S
-
-
+ASMSRCS += dom_trusted_proc.S dom_0_proc.S dom_1_proc.S
 
 OBJS += $(SRCS:.c=.o) $(ASMSRCS:.S=.o)
 
@@ -34,7 +32,7 @@ CFLAGS += $(COMMONFLAGS) -Wa,-adhlmsn=$(notdir $(<:.c=.lst))
 SFLAGS += $(COMMONFLAGS)
 
 LDFLAGS += $(MCUFLAG) -Wl,-Map=$(PROJ).map,--cref -Wl,-T $(ROOTDIR)/swlib/sos_sfi_avr5.x
-LDFLAGS += -Wl,--section-start=.dom0jmptbl=0x2000 -Wl,--section-start=.domtrustjmptbl=0x2700
+LDFLAGS += -Wl,--section-start=.dom0jmptbl=0x2000 -Wl,--section-start=.dom1jmptbl=0x2100 -Wl,--section-start=.domtrustjmptbl=0x2700
 
 ###################################################
 # PROTOTYPES
@@ -56,8 +54,7 @@ LDFLAGS += -Wl,--section-start=.dom0jmptbl=0x2000 -Wl,--section-start=.domtrustj
 	$(CC) $(INCDIR) $(CFLAGS) -c $< -o $@
 
 %.ihex : %.elf
-	$(OBJCOPY) -j .text -j .dom0jmptbl -j .domtrustjmptbl -O ihex -R .eeprom $< $@
-
+	$(OBJCOPY) -j .text -j .dom0jmptbl -j dom1jmptbl -j .domtrustjmptbl -O ihex -R .eeprom $< $@
 
 %.vhd: %.ihex
 	../../swlib/hex2vhd.exe $<

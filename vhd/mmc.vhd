@@ -180,7 +180,7 @@ begin
     if ireset = '0' then
       sg_mmc_read_cycle <= '0';
     elsif (clock = '1' and clock'event) then
-      sg_mmc_read_cycle <= fet_dec_run_mmc;
+      sg_mmc_read_cycle <= fet_dec_run_mmc and not in_trusted_domain;
     end if;
   end process;
   -- setting the output of the internal signal
@@ -321,8 +321,6 @@ begin
 
   -- will be '1' only when dom_id = "111" i.e. trusted domain
   in_trusted_domain <= dom_id(0) and dom_id(1) and dom_id(2);
-
-
 
   -- mmc_status_reg
   -- |LOG_BLK_SIZE(2:0)|DOMAIN_ID(2:0)|REC_SIZE|UNUSED|

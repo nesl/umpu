@@ -25,7 +25,7 @@ int main(){
 }
 
 // Function to send things over UART
-void send_uart(uint8_t* buffer);
+//void send_uart(uint8_t* buffer);
 
 void dom0_realmain()
 {
@@ -38,7 +38,7 @@ void dom0_realmain()
   DDRA = 0xFF;
   PORTA = *(buffer + 1);
 
-  send_uart(buffer);
+  //send_uart(buffer);
 
   // This will cause a panic
   buffer = buffer + 2*BUFF_SIZE;
@@ -47,7 +47,7 @@ void dom0_realmain()
 
   return;
 }
-
+/*
 void send_uart(uint8_t* buffer) {
   uint8_t index;
   UBRR = 51;
@@ -67,3 +67,4 @@ void send_uart(uint8_t* buffer) {
     }
   } 
 }
+*/

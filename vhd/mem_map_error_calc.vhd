@@ -62,7 +62,10 @@ architecture Beh of mem_map_error_calc is
   signal err_mem_prot_bottom : std_logic;
   signal err_mem_prot_top    : std_logic;
   signal err_dom_id          : std_logic;
-  signal err_stack_bound     : std_logic;
+  signal err_stack_write     : std_logic;
+
+  -- error on writing beyond stack bound
+  signal stack_bound_err : std_logic;
 
   -- checking for writes on stack
   signal stack_write : std_logic;
@@ -82,14 +85,16 @@ begin
   -- if the write is to stack and outside the stack bound
   -- or outside the protected memory
   -- or there is a error in ownership information
-  mem_map_error <= (stack_write and err_stack_bound) and
-                   (err_mem_prot_top or err_mem_prot_bottom or err_dom_id);
+  mem_map_error <= err_stack_write or err_mem_prot_top
+                   or err_mem_prot_bottom or err_dom_id;
 
+  -- error on stack write
+  err_stack_write <= stack_write and stack_bound_err;
   -- Check for stack write
-  stack_write <= '1' when fet_dec_str_addr > stack_pointer
+  stack_write     <= '1' when fet_dec_str_addr > stack_pointer
                  else '0';
   -- Check for stack writes outside the stack bound
-  err_stack_bound <= '1' when fet_dec_str_addr > ssp_stack_bound
+  stack_bound_err <= '1' when fet_dec_str_addr > ssp_stack_bound
                      else '0';
 
   -- prot bottom and top errors
@@ -117,9 +122,9 @@ begin
 
   -- mux for the dom id if we have 4 records
   recs_4_dom_id(0)          <= mmc_ram_data(0) when recs_4_byte_offset = "00" else
-                      mmc_ram_data(2)          when recs_4_byte_offset = "01" else
-                      mmc_ram_data(4)          when recs_4_byte_offset = "10" else
-                      mmc_ram_data(6)          when recs_4_byte_offset = "11";
+                               mmc_ram_data(2) when recs_4_byte_offset = "01" else
+                               mmc_ram_data(4) when recs_4_byte_offset = "10" else
+                               mmc_ram_data(6) when recs_4_byte_offset = "11";
   -- the other bits are just zeros
   recs_4_dom_id(2 downto 1) <= "00";
 

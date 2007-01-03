@@ -30,11 +30,11 @@ entity safe_stack is
     -- signals for the ram_busArbiter
     ss_addr        : out std_logic_vector(15 downto 0);
     ss_addr_sel    : out std_logic;
-    ss_dbusout     : out  std_logic_vector(7 downto 0);
-    ss_dbusout_sel : out  std_logic;
+    ss_dbusout     : out std_logic_vector(7 downto 0);
+    ss_dbusout_sel : out std_logic;
 
     -- Signals from pm_fetch_decoder
-    fet_dec_pc : in std_logic_vector(15 downto 0);
+    fet_dec_pc                : in  std_logic_vector(15 downto 0);
     fet_dec_ssp_retL_wr       : in  std_logic;
     fet_dec_ssp_retH_wr       : in  std_logic;
     fet_dec_ssp_retL_rd       : in  std_logic;
@@ -50,10 +50,10 @@ entity safe_stack is
     -- ssp-MMC to update the dom id and send present stack_bound
     ssp_new_dom_id    : out std_logic_vector(2 downto 0);
     ssp_update_dom_id : out std_logic;
-    ssp_stack_bound : out std_logic_vector(15 downto 0);
+    ssp_stack_bound   : out std_logic_vector(15 downto 0);
 
     -- Signal from io_reg_file
-    stack_pointer_low : in std_logic_vector(7 downto 0);
+    stack_pointer_low  : in std_logic_vector(7 downto 0);
     stack_pointer_high : in std_logic_vector(7 downto 0)
     );
 
@@ -72,7 +72,7 @@ architecture Beh of safe_stack is
   signal sg_ssp_decremented : std_logic_vector(15 downto 0);
   signal sg_ssp             : std_logic_vector(15 downto 0);
 
-  signal stack_bound : std_logic_vector(15 downto 0);
+  signal stack_bound        : std_logic_vector(15 downto 0);
   signal cross_dom_ret_addr : std_logic_vector(15 downto 0);
 
   -- signals in the status register from mmc
@@ -83,48 +83,50 @@ architecture Beh of safe_stack is
   signal sg_fet_dec_ssp_ret_rd : std_logic;
 
   signal call_dom_change : std_logic;
-  signal ret_dom_change : std_logic;
+  signal ret_dom_change  : std_logic;
 
-  signal ret_cmpH : std_logic_vector(7 downto 0);
-  signal ret_cmpL : std_logic_vector(7 downto 0);
-  signal ret_cmp : std_logic_vector(15 downto 0);
+  signal ret_cmpH       : std_logic_vector(7 downto 0);
+  signal ret_cmpL       : std_logic_vector(7 downto 0);
+  signal ret_cmp        : std_logic_vector(15 downto 0);
   signal ret_cmp_result : std_logic;
 
   signal sg_call_addr : std_logic_vector(15 downto 0);
-  
+
   signal cross_dom_call_in_progress : std_logic;
 
 begin
 
-  CROSS_DOMAIN_CALL_PROGRESS_LATCH: process(clock, ireset)
-    begin
-      if (ireset = '0') then
+  CROSS_DOMAIN_CALL_PROGRESS_LATCH : process(clock, ireset)
+  begin
+    if (ireset = '0') then
+      cross_dom_call_in_progress   <= '0';
+    elsif (clock'event and clock = '1') then
+      if (dt_update_dom_id = '1') then
+        cross_dom_call_in_progress <= '1';
+      elsif (fet_dec_ssp_retH_wr = '1') then
         cross_dom_call_in_progress <= '0';
-      elsif (clock'event and clock = '1') then
-        if (dt_update_dom_id = '1') then
-          cross_dom_call_in_progress <= '1';
-        elsif (fet_dec_ssp_retH_wr = '1') then
-          cross_dom_call_in_progress <= '0';
-        end if;
       end if;
-    end process;
+    end if;
+  end process;
 
-  
+  -- send the stack_bound to mmc
+  ssp_stack_bound <= stack_bound;
+
   -- receive the stack pointer from io_adr_dec
   stack_pointer(15 downto 8) <= stack_pointer_high;
-  stack_pointer(7 downto 0) <= stack_pointer_low;
-  
+  stack_pointer(7 downto 0)  <= stack_pointer_low;
+
   -- Call domain change - Writing cross domain stuff to safe stack
   call_dom_change <= fet_dec_call_dom_change(0) or fet_dec_call_dom_change(1) or fet_dec_call_dom_change(2) or fet_dec_call_dom_change(3) or fet_dec_call_dom_change(4);
   -- Ret domain change - Writing cross domain stuff to safe stack
-  ret_dom_change <= fet_dec_ret_dom_change(0) or fet_dec_ret_dom_change(1) or fet_dec_ret_dom_change(2) or fet_dec_ret_dom_change(3) or fet_dec_ret_dom_change(4);
+  ret_dom_change  <= fet_dec_ret_dom_change(0) or fet_dec_ret_dom_change(1) or fet_dec_ret_dom_change(2) or fet_dec_ret_dom_change(3) or fet_dec_ret_dom_change(4);
 
   -- Writing return address to safe stack
   sg_fet_dec_ssp_ret_wr <= fet_dec_ssp_retL_wr or fet_dec_ssp_retH_wr;
   sg_fet_dec_ssp_ret_rd <= fet_dec_ssp_retL_rd or fet_dec_ssp_retH_rd;
 
   -- safe stack controls addr bus on read and write
-  ss_addr_sel <= sg_fet_dec_ssp_ret_rd or sg_fet_dec_ssp_ret_wr or call_dom_change or ret_dom_change;
+  ss_addr_sel <= (sg_fet_dec_ssp_ret_rd or sg_fet_dec_ssp_ret_wr or call_dom_change or ret_dom_change) and not in_trusted_domain;
 
   -- Mux for ss_addr
   ss_addr <= sg_ssp_decremented when sg_fet_dec_ssp_ret_rd = '1' or ret_dom_change = '1'
@@ -172,7 +174,7 @@ begin
   LATCH_CALL_ADDR : process(ireset, clock)
   begin
     if ireset = '0' then
-      sg_call_addr <= (others => '0');
+      sg_call_addr   <= (others => '0');
     elsif (clock = '1' and clock'event) then
       if (dt_update_dom_id = '1') then
         sg_call_addr <= fet_dec_pc;
@@ -185,13 +187,13 @@ begin
   -----------------------------------------------------------------------------
   ss_dbusout_sel <= dt_update_dom_id or fet_dec_call_dom_change(0) or fet_dec_call_dom_change(1) or fet_dec_call_dom_change(2) or fet_dec_call_dom_change(3)
                     or fet_dec_call_dom_change(4) or (fet_dec_ssp_retL_wr and cross_dom_call_in_progress);
-  ss_dbusout     <= "00000"&dom_id                  when (dt_update_dom_id = '1')           else
-                    stack_bound(7 downto 0)         when (fet_dec_call_dom_change(0) = '1') else
-                    stack_bound(15 downto 8)        when (fet_dec_call_dom_change(1) = '1') else
-                    cross_dom_ret_addr(7 downto 0)  when (fet_dec_call_dom_change(2) = '1') else
-                    cross_dom_ret_addr(15 downto 8) when (fet_dec_call_dom_change(3) = '1') else
-                    sg_call_addr(7 downto 0) when fet_dec_call_dom_change(4) = '1' else
-                    sg_call_addr(15 downto 8) when (fet_dec_ssp_retL_wr = '1' and cross_dom_call_in_progress = '1') else
+  ss_dbusout     <= "00000"&dom_id                  when (dt_update_dom_id = '1')                                         else
+                    stack_bound(7 downto 0)         when (fet_dec_call_dom_change(0) = '1')                               else
+                    stack_bound(15 downto 8)        when (fet_dec_call_dom_change(1) = '1')                               else
+                    cross_dom_ret_addr(7 downto 0)  when (fet_dec_call_dom_change(2) = '1')                               else
+                    cross_dom_ret_addr(15 downto 8) when (fet_dec_call_dom_change(3) = '1')                               else
+                    sg_call_addr(7 downto 0)        when fet_dec_call_dom_change(4) = '1'                                 else
+                    sg_call_addr(15 downto 8)       when (fet_dec_ssp_retL_wr = '1' and cross_dom_call_in_progress = '1') else
                     "00000000";
   -------------------------------------------------------------------------------
   -- CROSS DOMAIN CHANGE POP 
@@ -212,9 +214,9 @@ begin
               (others => '0');
 
   ret_cmp(15 downto 8) <= ret_cmpH;
-  ret_cmp(7 downto 0) <= ret_cmpL;
+  ret_cmp(7 downto 0)  <= ret_cmpL;
 
-  ret_cmp_result <= '1' when (ret_cmp = cross_dom_ret_addr) else
+  ret_cmp_result            <= '1' when (ret_cmp = cross_dom_ret_addr) else
                     '0';
   -- Signal is high on return match => Goes high only for one clock cycle
   fet_dec_ssp_ret_dom_start <= ret_cmp_result and fet_dec_ssp_retL_rd;
@@ -230,16 +232,16 @@ begin
     elsif (clock'event and clock = '1') then
 
       if (fet_dec_call_dom_change(3) = '1') then
-        cross_dom_ret_addr(7 downto 0) <= sg_call_addr(7 downto 0);
+        cross_dom_ret_addr(7 downto 0)  <= sg_call_addr(7 downto 0);
       elsif (fet_dec_ret_dom_change(1) = '1') then
-        cross_dom_ret_addr(7 downto 0) <= ram_bus;
+        cross_dom_ret_addr(7 downto 0)  <= ram_bus;
       end if;
       -- Input signal corresponds to retL even though we are reading in retH
       -- This is because data on RamDataBus is put one clock cycle before write
       if (fet_dec_call_dom_change(3) = '1') then
         cross_dom_ret_addr(15 downto 8) <= sg_call_addr(15 downto 8);
       elsif (fet_dec_ret_dom_change(0) = '1') then
-        cross_dom_ret_addr(7 downto 0) <= ram_bus;
+        cross_dom_ret_addr(7 downto 0)  <= ram_bus;
       end if;
     end if;
   end process;
@@ -262,18 +264,18 @@ begin
       elsif (fet_dec_ret_dom_change(3) = '1') then
         stack_bound(7 downto 0) <= ram_bus;
       end if;
-      
---       stack_bound(15 downto 8) <= stack_pointer(15 downto 8) when fet_dec_ssp_retH_wr = '1'
---                                   else ram_bus               when fet_dec_ret_dom_change(2) = '1'
---                                   else stack_bound(15 downto 8);
---       stack_bound(7 downto 0)  <= stack_pointer(7 downto 0)  when fet_dec_ssp_retH_wr = '1'
---                                  else ram_bus                when fet_dec_ret_dom_change(3) = '1'
---                                  else stack_bound(7 downto 0);
+
+-- stack_bound(15 downto 8) <= stack_pointer(15 downto 8) when fet_dec_ssp_retH_wr = '1'
+-- else ram_bus when fet_dec_ret_dom_change(2) = '1'
+-- else stack_bound(15 downto 8);
+-- stack_bound(7 downto 0) <= stack_pointer(7 downto 0) when fet_dec_ssp_retH_wr = '1'
+-- else ram_bus when fet_dec_ret_dom_change(3) = '1'
+-- else stack_bound(7 downto 0);
 
     end if;
   end process;
 
-  ssp_new_dom_id <= ram_bus(2 downto 0);
+  ssp_new_dom_id    <= ram_bus(2 downto 0);
   ssp_update_dom_id <= fet_dec_ret_dom_change(4);
 
 --  -- Latch for prev domain ID
@@ -285,7 +287,5 @@ begin
 --         prev_dom_id <= dom_id;
 --       end if;
 -- end process;
-
-
 
 end Beh;
