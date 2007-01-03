@@ -54,7 +54,7 @@ LDFLAGS += -Wl,--section-start=.dom0jmptbl=0x2000 -Wl,--section-start=.dom1jmptb
 	$(CC) $(INCDIR) $(CFLAGS) -c $< -o $@
 
 %.ihex : %.elf
-	$(OBJCOPY) -j .text -j .dom0jmptbl -j dom1jmptbl -j .domtrustjmptbl -O ihex -R .eeprom $< $@
+	$(OBJCOPY) -j .text -j .dom0jmptbl -j .dom1jmptbl -j .domtrustjmptbl -O ihex -R .eeprom $< $@
 
 %.vhd: %.ihex
 	../../swlib/hex2vhd.exe $<
