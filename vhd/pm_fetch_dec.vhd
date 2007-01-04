@@ -14,61 +14,61 @@ use IEEE.std_logic_unsigned.all;
 
 use WORK.AVRuCPackage.all;
 
-entity pm_fetch_dec
-is port
-     (
-       -- MMC specific signals
-       fet_dec_pc_stop    : in  std_logic;
-       fet_dec_nop_insert : in  std_logic;
-       fet_dec_str_addr   : out std_logic_vector(15 downto 0);
-       fet_dec_run_mmc    : out std_logic;
-       fet_dec_data       : out std_logic_vector(7 downto 0);
+entity pm_fetch_dec is
+  port
+    (
+      -- MMC specific signals
+      fet_dec_pc_stop    : in  std_logic;
+      fet_dec_nop_insert : in  std_logic;
+      fet_dec_str_addr   : out std_logic_vector(15 downto 0);
+      fet_dec_run_mmc    : out std_logic;
+      fet_dec_data       : out std_logic_vector(7 downto 0);
 
-       -- domain_tracker specific signals
-       dt_pc         : out std_logic_vector(15 downto 0);
-       dt_call_instr : out std_logic;
+      -- domain_tracker specific signals
+      dt_pc         : out std_logic_vector(15 downto 0);
+      dt_call_instr : out std_logic;
 
-       -- safe stack specific signals
-       fet_dec_pc : out std_logic_vector(15 downto 0);
-       fet_dec_ssp_retL_wr : out std_logic;
-       fet_dec_ssp_retH_wr : out std_logic;
-       fet_dec_ssp_retH_rd : out std_logic;
-       fet_dec_ssp_retL_rd : out std_logic;
-       fet_dec_ssp_ret_dom_start : in std_logic;
-       fet_dec_call_dom_change : out std_logic_vector(4 downto 0);
-       fet_dec_ret_dom_change : out std_logic_vector(4 downto 0);
+      -- safe stack specific signals
+      fet_dec_pc                : out std_logic_vector(15 downto 0);
+      fet_dec_ssp_retL_wr       : out std_logic;
+      fet_dec_ssp_retH_wr       : out std_logic;
+      fet_dec_ssp_retH_rd       : out std_logic;
+      fet_dec_ssp_retL_rd       : out std_logic;
+      fet_dec_ssp_ret_dom_start : in  std_logic;
+      fet_dec_call_dom_change   : out std_logic_vector(4 downto 0);
+      fet_dec_ret_dom_change    : out std_logic_vector(4 downto 0);
 
-       -- Signal from Domain Tracker (Pause Fet Dec Unit)
-       dt_update_dom_id     : in  std_logic;       
+      -- Signal from Domain Tracker (Pause Fet Dec Unit)
+      dt_update_dom_id : in std_logic;
 
 
 
 -- EXTERNAL INTERFACES OF THE CORE
-       clk     : in std_logic;
-       nrst    : in std_logic;
-       cpuwait : in std_logic;
+      clk     : in std_logic;
+      nrst    : in std_logic;
+      cpuwait : in std_logic;
 
 -- PROGRAM MEMORY PORTS
-       pc   : out std_logic_vector (15 downto 0);  -- CORE OUTPUT         !CHECKED!
-       inst : in  std_logic_vector (15 downto 0);  -- CORE INPUT     !CHECKED!
+      pc   : out std_logic_vector (15 downto 0);  -- CORE OUTPUT         !CHECKED!
+      inst : in  std_logic_vector (15 downto 0);  -- CORE INPUT     !CHECKED!
 
 -- I/O REGISTERS PORTS
-       adr  : out std_logic_vector (5 downto 0);  -- CORE OUTPUT  ????
-       iore : out std_logic;                      -- CORE OUTPUT  !CHECKED!
-       iowe : out std_logic;                      -- CORE OUTPUT  !CHECKED!
+      adr  : out std_logic_vector (5 downto 0);  -- CORE OUTPUT  ????
+      iore : out std_logic;                      -- CORE OUTPUT  !CHECKED!
+      iowe : out std_logic;                      -- CORE OUTPUT  !CHECKED!
 
 -- DATA MEMORY PORTS
-       ramadr : out std_logic_vector (15 downto 0);
-       ramre  : out std_logic;
-       ramwe  : out std_logic;
+      ramadr : out std_logic_vector (15 downto 0);
+      ramre  : out std_logic;
+      ramwe  : out std_logic;
 
-       dbusin  : in  std_logic_vector (7 downto 0);
-       dbusout : out std_logic_vector (7 downto 0);
+      dbusin  : in  std_logic_vector (7 downto 0);
+      dbusout : out std_logic_vector (7 downto 0);
 
 -- INTERRUPTS PORT
-       irqlines : in  std_logic_vector (22 downto 0);
-       irqack   : out std_logic;
-       irqackad : out std_logic_vector(4 downto 0);
+      irqlines : in  std_logic_vector (22 downto 0);
+      irqack   : out std_logic;
+      irqackad : out std_logic_vector(4 downto 0);
 
 -- END OF THE CORE INTERFACES
 
@@ -81,73 +81,73 @@ is port
 -- *********************************************************************************************
 -- ******************** INTERFACES TO THE ALU *************************************************
 -- *********************************************************************************************
-       alu_data_r_in : out std_logic_vector(7 downto 0);
-       alu_data_d_in : out std_logic_vector(7 downto 0);
+      alu_data_r_in : out std_logic_vector(7 downto 0);
+      alu_data_d_in : out std_logic_vector(7 downto 0);
 
 -- OPERATION SIGNALS INPUTS
 
-       idc_add_out  : out std_logic;
-       idc_adc_out  : out std_logic;
-       idc_adiw_out : out std_logic;
-       idc_sub_out  : out std_logic;
-       idc_subi_out : out std_logic;
-       idc_sbc_out  : out std_logic;
-       idc_sbci_out : out std_logic;
-       idc_sbiw_out : out std_logic;
+      idc_add_out  : out std_logic;
+      idc_adc_out  : out std_logic;
+      idc_adiw_out : out std_logic;
+      idc_sub_out  : out std_logic;
+      idc_subi_out : out std_logic;
+      idc_sbc_out  : out std_logic;
+      idc_sbci_out : out std_logic;
+      idc_sbiw_out : out std_logic;
 
-       adiw_st_out : out std_logic;
-       sbiw_st_out : out std_logic;
+      adiw_st_out : out std_logic;
+      sbiw_st_out : out std_logic;
 
-       idc_and_out  : out std_logic;
-       idc_andi_out : out std_logic;
-       idc_or_out   : out std_logic;
-       idc_ori_out  : out std_logic;
-       idc_eor_out  : out std_logic;
-       idc_com_out  : out std_logic;
-       idc_neg_out  : out std_logic;
+      idc_and_out  : out std_logic;
+      idc_andi_out : out std_logic;
+      idc_or_out   : out std_logic;
+      idc_ori_out  : out std_logic;
+      idc_eor_out  : out std_logic;
+      idc_com_out  : out std_logic;
+      idc_neg_out  : out std_logic;
 
-       idc_inc_out : out std_logic;
-       idc_dec_out : out std_logic;
+      idc_inc_out : out std_logic;
+      idc_dec_out : out std_logic;
 
-       idc_cp_out   : out std_logic;
-       idc_cpc_out  : out std_logic;
-       idc_cpi_out  : out std_logic;
-       idc_cpse_out : out std_logic;
+      idc_cp_out   : out std_logic;
+      idc_cpc_out  : out std_logic;
+      idc_cpi_out  : out std_logic;
+      idc_cpse_out : out std_logic;
 
 
-       idc_lsr_out  : out std_logic;
-       idc_ror_out  : out std_logic;
-       idc_asr_out  : out std_logic;
-       idc_swap_out : out std_logic;
+      idc_lsr_out  : out std_logic;
+      idc_ror_out  : out std_logic;
+      idc_asr_out  : out std_logic;
+      idc_swap_out : out std_logic;
 
 
 -- DATA OUTPUT
-       alu_data_out : in std_logic_vector(7 downto 0);
+      alu_data_out : in std_logic_vector(7 downto 0);
 
 -- FLAGS OUTPUT
-       alu_c_flag_out : in std_logic;
-       alu_z_flag_out : in std_logic;
-       alu_n_flag_out : in std_logic;
-       alu_v_flag_out : in std_logic;
-       alu_s_flag_out : in std_logic;
-       alu_h_flag_out : in std_logic;
+      alu_c_flag_out : in std_logic;
+      alu_z_flag_out : in std_logic;
+      alu_n_flag_out : in std_logic;
+      alu_v_flag_out : in std_logic;
+      alu_s_flag_out : in std_logic;
+      alu_h_flag_out : in std_logic;
 
 -- *********************************************************************************************
 -- ******************** INTERFACES TO THE GENERAL PURPOSE REGISTER FILE ************************
 -- *********************************************************************************************
-       reg_rd_in  : out std_logic_vector (7 downto 0);
-       reg_rd_out : in  std_logic_vector (7 downto 0);
-       reg_rd_adr : out std_logic_vector (4 downto 0);
-       reg_rr_out : in  std_logic_vector (7 downto 0);
-       reg_rr_adr : out std_logic_vector (4 downto 0);
-       reg_rd_wr  : out std_logic;
+      reg_rd_in  : out std_logic_vector (7 downto 0);
+      reg_rd_out : in  std_logic_vector (7 downto 0);
+      reg_rd_adr : out std_logic_vector (4 downto 0);
+      reg_rr_out : in  std_logic_vector (7 downto 0);
+      reg_rr_adr : out std_logic_vector (4 downto 0);
+      reg_rd_wr  : out std_logic;
 
-       post_inc  : out std_logic;       -- POST INCREMENT FOR LD/ST INSTRUCTIONS
-       pre_dec   : out std_logic;       -- PRE DECREMENT FOR LD/ST INSTRUCTIONS
-       reg_h_wr  : out std_logic;
-       reg_h_out : in  std_logic_vector (15 downto 0);
-       reg_h_adr : out std_logic_vector (2 downto 0);  -- x,y,z
-       reg_z_out : in  std_logic_vector (15 downto 0);  -- OUTPUT OF R31:R30 FOR LPM/ELPM/IJMP INSTRUCTIONS
+      post_inc  : out std_logic;        -- POST INCREMENT FOR LD/ST INSTRUCTIONS
+      pre_dec   : out std_logic;        -- PRE DECREMENT FOR LD/ST INSTRUCTIONS
+      reg_h_wr  : out std_logic;
+      reg_h_out : in  std_logic_vector (15 downto 0);
+      reg_h_adr : out std_logic_vector (2 downto 0);  -- x,y,z
+      reg_z_out : in  std_logic_vector (15 downto 0);  -- OUTPUT OF R31:R30 FOR LPM/ELPM/IJMP INSTRUCTIONS
 
 -- *********************************************************************************************
 -- ******************** INTERFACES TO THE INPUT/OUTPUT REGISTER FILE ***************************
@@ -157,17 +157,17 @@ is port
 
 -- dbusout : out std_logic_vector(7 downto 0);  -- OUTPUT OF THE CORE
 
-       sreg_fl_in : out std_logic_vector(7 downto 0);  -- ????        
-       sreg_out   : in  std_logic_vector(7 downto 0);  -- ????       
+      sreg_fl_in : out std_logic_vector(7 downto 0);  -- ????        
+      sreg_out   : in  std_logic_vector(7 downto 0);  -- ????       
 
-       sreg_fl_wr_en : out std_logic_vector(7 downto 0);  --FLAGS WRITE ENABLE SIGNALS       
+      sreg_fl_wr_en : out std_logic_vector(7 downto 0);  --FLAGS WRITE ENABLE SIGNALS       
 
-       spl_out     : in  std_logic_vector(7 downto 0);
-       sph_out     : in  std_logic_vector(7 downto 0);
-       sp_ndown_up : out std_logic;     -- DIRECTION OF CHANGING OF STACK POINTER SPH:SPL 0->UP(+) 1->DOWN(-)
-       sp_en       : out std_logic;     -- WRITE ENABLE(COUNT ENABLE) FOR SPH AND SPL REGISTERS
+      spl_out     : in  std_logic_vector(7 downto 0);
+      sph_out     : in  std_logic_vector(7 downto 0);
+      sp_ndown_up : out std_logic;      -- DIRECTION OF CHANGING OF STACK POINTER SPH:SPL 0->UP(+) 1->DOWN(-)
+      sp_en       : out std_logic;      -- WRITE ENABLE(COUNT ENABLE) FOR SPH AND SPL REGISTERS
 
-       rampz_out : in std_logic_vector(7 downto 0);
+      rampz_out : in std_logic_vector(7 downto 0);
 
 -- *********************************************************************************************
 -- ******************** INTERFACES TO THE INPUT/OUTPUT ADDRESS DECODER ************************
@@ -183,52 +183,52 @@ is port
 -- ******************** INTERFACES TO THE BIT PROCESSOR **************************************
 -- *********************************************************************************************
 
-       bit_num_r_io : out std_logic_vector (2 downto 0);  -- BIT NUMBER FOR CBI/SBI/BLD/BST/SBRS/SBRC/SBIC/SBIS INSTRUCTIONS
+      bit_num_r_io : out std_logic_vector (2 downto 0);  -- BIT NUMBER FOR CBI/SBI/BLD/BST/SBRS/SBRC/SBIC/SBIS INSTRUCTIONS
 --              dbusin          : in  std_logic_vector(7 downto 0);  -- SBI/CBI/SBIS/SBIC  IN
-       bitpr_io_out : in  std_logic_vector(7 downto 0);  -- SBI/CBI OUT        
+      bitpr_io_out : in  std_logic_vector(7 downto 0);  -- SBI/CBI OUT        
 
-       branch : out std_logic_vector (2 downto 0);  -- NUMBER (0..7) OF BRANCH CONDITION FOR BRBS/BRBC INSTRUCTION
+      branch : out std_logic_vector (2 downto 0);  -- NUMBER (0..7) OF BRANCH CONDITION FOR BRBS/BRBC INSTRUCTION
 
-       bit_pr_sreg_out : in std_logic_vector(7 downto 0);  -- BCLR/BSET/BST(T-FLAG ONLY)             
+      bit_pr_sreg_out : in std_logic_vector(7 downto 0);  -- BCLR/BSET/BST(T-FLAG ONLY)             
 
-       sreg_bit_num : out std_logic_vector(2 downto 0);  -- BIT NUMBER FOR BCLR/BSET INSTRUCTIONS
+      sreg_bit_num : out std_logic_vector(2 downto 0);  -- BIT NUMBER FOR BCLR/BSET INSTRUCTIONS
 
-       bld_op_out : in std_logic_vector(7 downto 0);  -- BLD OUT (T FLAG)
+      bld_op_out : in std_logic_vector(7 downto 0);  -- BLD OUT (T FLAG)
 
-       bit_test_op_out : in std_logic;  -- OUTPUT OF SBIC/SBIS/SBRS/SBRC
+      bit_test_op_out : in std_logic;   -- OUTPUT OF SBIC/SBIS/SBRS/SBRC
 
 
 -- OPERATION SIGNALS INPUTS
 
-       -- INSTRUCTUIONS AND STATES
+      -- INSTRUCTUIONS AND STATES
 
-       idc_sbi_out : out std_logic;
-       sbi_st_out  : out std_logic;
-       idc_cbi_out : out std_logic;
-       cbi_st_out  : out std_logic;
+      idc_sbi_out : out std_logic;
+      sbi_st_out  : out std_logic;
+      idc_cbi_out : out std_logic;
+      cbi_st_out  : out std_logic;
 
-       idc_bld_out  : out std_logic;
-       idc_bst_out  : out std_logic;
-       idc_bset_out : out std_logic;
-       idc_bclr_out : out std_logic;
+      idc_bld_out  : out std_logic;
+      idc_bst_out  : out std_logic;
+      idc_bset_out : out std_logic;
+      idc_bclr_out : out std_logic;
 
-       idc_sbic_out : out std_logic;
-       idc_sbis_out : out std_logic;
+      idc_sbic_out : out std_logic;
+      idc_sbis_out : out std_logic;
 
-       idc_sbrs_out : out std_logic;
-       idc_sbrc_out : out std_logic;
+      idc_sbrs_out : out std_logic;
+      idc_sbrc_out : out std_logic;
 
-       idc_brbs_out : out std_logic;
-       idc_brbc_out : out std_logic;
+      idc_brbs_out : out std_logic;
+      idc_brbc_out : out std_logic;
 
-       idc_reti_out : out std_logic
+      idc_reti_out : out std_logic
 
 -- *********************************************************************************************
 -- ******************** END OF INTERFACES TO THE OTHER BLOCKS *********************************
 -- *********************************************************************************************
 
 
-       );
+      );
 
 end pm_fetch_dec;
 
@@ -524,19 +524,19 @@ architecture rtl of pm_fetch_dec is
 
 -- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   -- signals to stall the call instr when updating the dom id
-  signal call_dom_change : std_logic;
+  signal call_dom_change   : std_logic;
   signal call_dom_change_0 : std_logic;
   signal call_dom_change_1 : std_logic;
   signal call_dom_change_2 : std_logic;
   signal call_dom_change_3 : std_logic;
   signal call_dom_change_4 : std_logic;
   -- signals to stall the ret instr when updating the dom id
-  signal ret_dom_change : std_logic;
-  signal ret_dom_change_0 : std_logic;
-  signal ret_dom_change_1 : std_logic;
-  signal ret_dom_change_2 : std_logic;
-  signal ret_dom_change_3 : std_logic;
-  signal ret_dom_change_4 : std_logic;
+  signal ret_dom_change    : std_logic;
+  signal ret_dom_change_0  : std_logic;
+  signal ret_dom_change_1  : std_logic;
+  signal ret_dom_change_2  : std_logic;
+  signal ret_dom_change_3  : std_logic;
+  signal ret_dom_change_4  : std_logic;
 
 begin
 
@@ -554,7 +554,7 @@ begin
   -- safe_stack signals
   -- sending the pc for the return addr on call instr
   fet_dec_pc <= program_counter;
- 
+
   -- writing low and then high bytes for return address
   fet_dec_ssp_retL_wr <= call_st2;
   fet_dec_ssp_retH_wr <= call_st3;
@@ -922,15 +922,15 @@ begin
                 dex_adrreg_r;
 
 -- MULTIPLEXER FOR REGISTER FILE Rd INPUT
-  reg_rd_in <= dbusin                                                                                                                              when (idc_in or ((lds_st2 or ld_st)and not reg_file_adr_space) or pop_st) = '1' else  -- FROM INPUT DATA BUS
-               reg_rr_out                                                                                                                          when ((lds_st2 or ld_st) and reg_file_adr_space) = '1'                          else
-               gp_reg_tmp                                                                                                                          when ((st_st or sts_st2) and reg_file_adr_space) = '1'                          else  -- ST/STD/STS &  ADDRESS FROM 0 TO 31 (REGISTER FILE)
-               bld_op_out                                                                                                                          when (idc_bld = '1')else  -- FROM BIT PROCESSOR BLD COMMAND
-               reg_rr_out                                                                                                                          when (idc_mov = '1')else  -- FOR MOV INSTRUCTION 
-                                                                                                                      instruction_reg(15 downto 8) when (lpm_st2 = '1' and reg_z_out(0) = '1')                                     else  -- LPM/ELPM
-                                                                                                                      instruction_reg(7 downto 0)  when (lpm_st2 = '1' and reg_z_out(0) = '0')                                     else  -- LPM/ELPM
-                                                                                                                      dex_dat8_immed               when idc_ldi = '1'                                                              else
-                                                                                                                      alu_data_out;  -- FROM ALU DATA OUT
+  reg_rd_in <= dbusin                                                                                                                                                                   when (idc_in or ((lds_st2 or ld_st)and not reg_file_adr_space) or pop_st) = '1' else  -- FROM INPUT DATA BUS
+               reg_rr_out                                                                                                                                                               when ((lds_st2 or ld_st) and reg_file_adr_space) = '1'                          else
+               gp_reg_tmp                                                                                                                                                               when ((st_st or sts_st2) and reg_file_adr_space) = '1'                          else  -- ST/STD/STS &  ADDRESS FROM 0 TO 31 (REGISTER FILE)
+               bld_op_out                                                                                                                                                               when (idc_bld = '1')else  -- FROM BIT PROCESSOR BLD COMMAND
+               reg_rr_out                                                                                                                                                               when (idc_mov = '1')else  -- FOR MOV INSTRUCTION 
+                                                                                                                                                           instruction_reg(15 downto 8) when (lpm_st2 = '1' and reg_z_out(0) = '1')                                     else  -- LPM/ELPM
+                                                                                                                                                           instruction_reg(7 downto 0)  when (lpm_st2 = '1' and reg_z_out(0) = '0')                                     else  -- LPM/ELPM
+                                                                                                                                                           dex_dat8_immed               when idc_ldi = '1'                                                              else
+                                                                                                                                                           alu_data_out;  -- FROM ALU DATA OUT
 
 -- IORE/IOWE LOGIC (6 BIT ADDRESS adr[5..0] FOR I/O PORTS(64 LOCATIONS))
   iore_int <= idc_in or idc_sbi or idc_cbi or idc_sbic or idc_sbis or ((ld_st or lds_st2) and io_file_adr_space);  -- IN/SBI/CBI 
@@ -1112,8 +1112,8 @@ begin
                     idc_cbi or idc_sbi or
                     rcall_st1 or icall_st1 or call_st2 or irq_st2 or cpuwait or
                     ret_st1 or reti_st1
-                    or ret_dom_change   -- No change while ret dom change
-                    or call_dom_change  -- No change while call dom change
+                    or ret_dom_change     -- No change while ret dom change
+                    or call_dom_change    -- No change while call dom change
                     or fet_dec_pc_stop);  -- Disable the loading of
                                           -- the pc when mmc is running
 
@@ -1126,7 +1126,7 @@ begin
                      idc_cbi or idc_sbi or
                      rcall_st1 or icall_st1 or call_st2 or irq_st2 or cpuwait or
                      ret_st2 or reti_st2
-                     or ret_dom_change   -- No change while ret dom change
+                     or ret_dom_change  -- No change while ret dom change
                      or call_dom_change  -- No change while dom change
                      or fet_dec_pc_stop);  -- Disable the loading of the pc when
                                         -- mmc is running
@@ -1304,7 +1304,7 @@ begin
       call_dom_change_3 <= not call_dom_change_3 and call_dom_change_2;
       call_dom_change_4 <= not call_dom_change_4 and call_dom_change_3;
 
-      call_st2 <= (not call_st2 and ((call_st1 and not dt_update_dom_id) or call_dom_change_4));--
+      call_st2 <= (not call_st2 and ((call_st1 and not dt_update_dom_id) or call_dom_change_4));  --
       --or (call_st2 and cpuwait));
       call_st3 <= (not call_st3 and call_st2 and not cpuwait) or (call_st3 and cpuwait);
     end if;
@@ -1317,32 +1317,32 @@ begin
   fet_dec_call_dom_change(2) <= call_dom_change_2;
   fet_dec_call_dom_change(3) <= call_dom_change_3;
   fet_dec_call_dom_change(4) <= call_dom_change_4;
-  
+
 
   ret_state_machine : process(clk, nrst)
   begin
     if nrst = '0' then                    -- RESET
-      nret_st0 <= '0';
-      ret_st1  <= '0';
-      ret_st2  <= '0';
-      ret_st3  <= '0';
+      nret_st0         <= '0';
+      ret_st1          <= '0';
+      ret_st2          <= '0';
+      ret_st3          <= '0';
       ret_dom_change_0 <= '0';
       ret_dom_change_1 <= '0';
       ret_dom_change_2 <= '0';
       ret_dom_change_3 <= '0';
       ret_dom_change_4 <= '0';
     elsif (clk = '1' and clk'event) then  -- CLOCK
-      nret_st0 <= (not nret_st0 and idc_ret) or (nret_st0 and not ret_st3);
-      ret_st1  <= (not ret_st1 and not nret_st0 and idc_ret) or (ret_st1 and cpuwait);
-      ret_st2  <= (not ret_st2 and ret_st1 and not cpuwait) or (ret_st2 and cpuwait);
+      nret_st0         <= (not nret_st0 and idc_ret) or (nret_st0 and not ret_st3);
+      ret_st1          <= (not ret_st1 and not nret_st0 and idc_ret) or (ret_st1 and cpuwait);
+      ret_st2          <= (not ret_st2 and ret_st1 and not cpuwait) or (ret_st2 and cpuwait);
 
       ret_dom_change_0 <= not ret_dom_change_0 and (ret_st2 and fet_dec_ssp_ret_dom_start);
       ret_dom_change_1 <= not ret_dom_change_1 and ret_dom_change_0;
       ret_dom_change_2 <= not ret_dom_change_2 and ret_dom_change_1;
       ret_dom_change_3 <= not ret_dom_change_3 and ret_dom_change_2;
       ret_dom_change_4 <= not ret_dom_change_4 and ret_dom_change_3;
-      
-      ret_st3  <= not ret_st3 and ((ret_st2 and not fet_dec_ssp_ret_dom_start) or (ret_dom_change_4)) and not cpuwait;
+
+      ret_st3 <= not ret_st3 and ((ret_st2 and not fet_dec_ssp_ret_dom_start) or (ret_dom_change_4)) and not cpuwait;
     end if;
   end process;
 
@@ -1353,7 +1353,7 @@ begin
   fet_dec_ret_dom_change(2) <= ret_dom_change_2;
   fet_dec_ret_dom_change(3) <= ret_dom_change_3;
   fet_dec_ret_dom_change(4) <= ret_dom_change_4;
-  
+
   reti_state_machine : process(clk, nrst)
   begin
     if nrst = '0' then                    -- RESET
@@ -1428,8 +1428,8 @@ begin
               or call_dom_change        -- if changing domain id on a
                                         -- call instr
               or fet_dec_pc_stop;       -- Stall the interrupt for one more clk
-                                     -- cycle on mmc store by using pc stop
-                                       -- signal
+  -- cycle on mmc store by using pc stop
+  -- signal
 
   sreg_adr_eq <= '1' when adr_int = SREG_Address else '0';
   irq_start   <= irq_int and not cpu_busy and sreg_out(7);

@@ -1,3 +1,9 @@
+--************************************************************************************************
+-- This is the safe stack module. This implements all the functionality for the
+-- safe stack. It stores and retrives appropriate information on cross domain
+-- call and returns. It identifies when a particular return is a cross domain
+-- return. It also checks for stack overflow
+--************************************************************************************************
 library IEEE;
 use IEEE.std_logic_1164.all;
 use ieee.std_logic_arith.all;
@@ -51,6 +57,10 @@ entity safe_stack is
     ssp_new_dom_id    : out std_logic_vector(2 downto 0);
     ssp_update_dom_id : out std_logic;
     ssp_stack_bound   : out std_logic_vector(15 downto 0);
+    -- ssp-MMC to send the stack_overflow error
+    ssp_stack_overflow : out std_logic;
+    -- ssp-MMC to receive the protection enable bit
+    mmc_umpu_en : in std_logic;
 
     -- Signal from io_reg_file
     stack_pointer_low  : in std_logic_vector(7 downto 0);
@@ -94,6 +104,8 @@ architecture Beh of safe_stack is
 
   signal cross_dom_call_in_progress : std_logic;
 
+  signal stack_overflow : std_logic;
+
 begin
 
   CROSS_DOMAIN_CALL_PROGRESS_LATCH : process(clock, ireset)
@@ -115,6 +127,13 @@ begin
   -- receive the stack pointer from io_adr_dec
   stack_pointer(15 downto 8) <= stack_pointer_high;
   stack_pointer(7 downto 0)  <= stack_pointer_low;
+
+  -- Detecting the stack overflow error
+  -- Error occurs when the stack pointer is equal to or less than the
+  -- safe stack pointer
+  stack_overflow <= '1' when stack_pointer <= ssp else '0';
+  -- Only checking for overflow if the protection bit is set
+  ssp_stack_overflow <= stack_overflow and mmc_umpu_en;
 
   -- Call domain change - Writing cross domain stuff to safe stack
   call_dom_change <= fet_dec_call_dom_change(0) or fet_dec_call_dom_change(1) or fet_dec_call_dom_change(2) or fet_dec_call_dom_change(3) or fet_dec_call_dom_change(4);
@@ -159,7 +178,7 @@ begin
   SSP_HIGH_DFF : process(clock, ireset)
   begin
     if (ireset = '0') then
-      ssp <= (others => '1');
+      ssp <= (others => '0');
     elsif (clock = '1' and clock'event) then
       ssp <= sg_ssp;
     end if;

@@ -89,6 +89,10 @@ architecture struct of avr_core is
       ssp_new_dom_id    : out std_logic_vector(2 downto 0);
       ssp_update_dom_id : out std_logic;
       ssp_stack_bound : out std_logic_vector(15 downto 0);
+      -- ssp-MMC to send the stack_overflow error
+      ssp_stack_overflow : out std_logic;
+      -- ssp-MMC to receive the protection enable bit
+      mmc_umpu_en : in std_logic;
 
       -- Signal from io_reg_file
       stack_pointer_low : in std_logic_vector(7 downto 0);
@@ -117,6 +121,8 @@ architecture struct of avr_core is
       jmp_table_high_out : out std_logic_vector(7 downto 0);
       jmp_table_low_out  : out std_logic_vector(7 downto 0);
 
+      -- protection enable bit from mmc
+      mmc_umpu_en : in std_logic;
       -- calculated domain id to mmc
       mmc_new_dom_id     : out std_logic_vector(2 downto 0);
       -- signal to update domain id to mmc
@@ -207,6 +213,11 @@ architecture struct of avr_core is
       ssp_new_dom_id : in std_logic_vector(2 downto 0);
       ssp_update_dom_id : in std_logic;
       ssp_stack_bound : in std_logic_vector(15 downto 0);
+      -- MMC-ssp interface to receive a stack_overflow error
+      ssp_stack_overflow : in std_logic;
+
+      -- Expose the protection bit to domain tracker and safe stack
+      mmc_umpu_en : out std_logic;
 
       -- Debug signals
       dbg_mmc_panic : out std_logic     -- panic signal
@@ -725,6 +736,10 @@ architecture struct of avr_core is
   signal sg_ssp_new_dom_id : std_logic_vector(2 downto 0);
   signal sg_ssp_update_dom_id : std_logic;
   signal sg_ssp_stack_bound : std_logic_vector(15 downto 0);
+  signal sg_ssp_stack_overflow : std_logic;
+
+  -- signals between mmc and (domain_tracker and safe stack)
+  signal sg_mmc_umpu_en  : std_logic;
 
 begin
 
@@ -762,6 +777,8 @@ begin
     ssp_new_dom_id => sg_ssp_new_dom_id,
     ssp_update_dom_id => sg_ssp_update_dom_id,
     ssp_stack_bound => sg_ssp_stack_bound,
+    ssp_stack_overflow => sg_ssp_stack_overflow,
+    mmc_umpu_en => sg_mmc_umpu_en,
 
     stack_pointer_low => sg_spl_out,
     stack_pointer_high => sg_sph_out
@@ -784,7 +801,8 @@ begin
 
     mmc_new_dom_id     => sg_new_dom_id,
     mmc_update_dom_id  => sg_update_dom_id,
-    mmc_trusted_domain => sg_trusted_domain
+    mmc_trusted_domain => sg_trusted_domain,
+    mmc_umpu_en => sg_mmc_umpu_en
     );
 
   ARBITER : component ram_busArbiter port map (
@@ -851,6 +869,9 @@ begin
     ssp_new_dom_id => sg_ssp_new_dom_id,
     ssp_update_dom_id => sg_ssp_update_dom_id,
     ssp_stack_bound => sg_ssp_stack_bound,
+    ssp_stack_overflow => sg_ssp_stack_overflow,
+
+    mmc_umpu_en => sg_mmc_umpu_en,
 
     dbg_mmc_panic => panic
     );

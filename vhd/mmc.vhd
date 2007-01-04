@@ -61,6 +61,11 @@ entity mmc is
     ssp_new_dom_id    : in std_logic_vector(2 downto 0);
     ssp_update_dom_id : in std_logic;
     ssp_stack_bound   : in std_logic_vector(15 downto 0);
+    -- MMC-ssp interface to receive a stack_overflow error
+    ssp_stack_overflow : in std_logic;
+
+    -- Expose the protection bit to domain tracker and safe stack
+    mmc_umpu_en : out std_logic;
 
     -- Debug signals
     dbg_mmc_panic : out std_logic       -- panic signal
@@ -121,6 +126,8 @@ architecture Beh of mmc is
   signal dom_id            : std_logic_vector(2 downto 0);
   -- Indicates if processor is executing in trusted domain
   signal in_trusted_domain : std_logic;
+  -- Indicates if the protection is enabled
+  signal umpu_en : std_logic;
 
   -- mmc read cycle
   signal sg_mmc_read_cycle : std_logic;
@@ -160,6 +167,9 @@ begin
   -- send the in_trusted_domain signal to domain_tracker
   dt_trusted_domain <= in_trusted_domain;
 
+  -- sending the protection bit to domain_tracker and safe_stack
+  mmc_umpu_en <= umpu_en;
+
   -- calculate mmc read addr
   MMC_ADDR_CALC : component mem_map_addr_calc port map(
     mem_map_pointer  => mem_map_pointer,
@@ -169,7 +179,6 @@ begin
     fet_dec_str_addr => fet_dec_str_addr,
     mmc_rd_addr      => mmc_rd_addr
     );
-
 
   -- mmc read cycle latch
   -- This latch is set whenever the processor is starting to execute a store
@@ -251,14 +260,17 @@ begin
     mem_map_error    => mem_map_error
     );
 
-
   -- sg_panic_int latch
   SG_PANIC_INT_LATCH : process(ireset, clock)
   begin
     if ireset = '0' then
       sg_panic_int <= '0';
     elsif (clock = '1' and clock'event) then
-      sg_panic_int <= mem_map_error and check_cycle;
+      -- Panic occurs if there is mem_map_error during check_cycle
+      -- or if there is a stack_overflow detected in the safe_stack module
+      -- when the umpu bit is set so protection is desired
+      sg_panic_int <= (mem_map_error and check_cycle) or
+                      (ssp_stack_overflow and umpu_en);
     end if;
   end process;
 
@@ -323,24 +335,39 @@ begin
   in_trusted_domain <= dom_id(0) and dom_id(1) and dom_id(2);
 
   -- mmc_status_reg
-  -- |LOG_BLK_SIZE(2:0)|DOMAIN_ID(2:0)|REC_SIZE|UNUSED|
+  -- |LOG_BLK_SIZE(2:0)|DOMAIN_ID(2:0)|REC_SIZE|uMPU ENABLE BIT|
   -- REC_SIZE = 1 => 4 records per byte
   -- REC_SIZE = 0 => 2 records per byte
-  -- The Domain_Id cannot be written to and can only read
-  -- Writing to the unused bit will have no effect and can be used for expansion
+  -- uMPU ENABLE BIT = 0 => All forms of protection are disabled
+  -- uMPU ENABLE BIT = 1 => Protection is enabled
+  -- If protection is enabled once, it cannot be disabled during the
+  -- lifetime of the software. A power on reset i.e. toggle of ireset is
+  -- required to disable the protection
+  -- The Domain_Id cannot be written to and can only be read
+  -- Writing to that portion of the register has no effect
   STATUS_REG_DFF : process(clock, ireset)
   begin
     if (ireset = '0') then
-      -- Special init value to set dom id to 111 on processor startup
+      -- The entire register is initialized here except for dom id which is set
+      -- separately
       mmc_status_reg(7 downto 5)   <= "000";
       mmc_status_reg(1 downto 0)   <= "00";
     elsif (clock = '1' and clock'event) then
       if (adr = MMC_STATUS_REG_Address and iowe = '1' and in_trusted_domain = '1') then
         mmc_status_reg(7 downto 5) <= reg_bus(7 downto 5);
-        mmc_status_reg(1 downto 0) <= reg_bus(1 downto 0);
+        mmc_status_reg(1) <= reg_bus(1);
+        if (reg_bus(0) = '1') then
+          mmc_status_reg(0) <= '1';
+        end if;
       end if;
     end if;
   end process;
+
+  -- umpu enable bit
+  -- This bit is set when mmc_status_reg is written to
+  -- If the bit is set to one once, it can only be set to
+  -- 0 by doing a ireset toggle
+  umpu_en <= mmc_status_reg(0);
 
   -- Expose the current domain id to the software through the mmc status register
   mmc_status_reg(4 downto 2) <= dom_id;

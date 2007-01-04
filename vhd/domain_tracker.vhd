@@ -31,6 +31,8 @@ port (
   jmp_table_high_out : out std_logic_vector(7 downto 0);
   jmp_table_low_out : out std_logic_vector(7 downto 0);
 
+  -- protection enable bit from mmc
+  mmc_umpu_en : in std_logic;
   -- calculated domain id to mmc
   mmc_new_dom_id : out std_logic_vector(2 downto 0);
   -- signal to update domain id to mmc
@@ -63,9 +65,10 @@ begin
 
   -- Decide if we have a new domain id
   mmc_new_dom_id <= difference(9 downto 7);
-  mmc_update_dom_id <= is_positive and fet_dec_call_instr and not_bit_ten;
+  -- A cross domain call is only permitted if protection is enabled
+  mmc_update_dom_id <= is_positive and fet_dec_call_instr and not_bit_ten and mmc_umpu_en;
 
-  --Register high byte update process
+  --Register for high byte of jump table
   DT_JUMP_TABLE_HIGH_DFF : process(clock, ireset)
   begin
     if ireset = '0' then
@@ -77,7 +80,7 @@ begin
     end if;
   end process;
 
-  --Register low byte update process
+  --Register for low byte of jump table
   DT_JUMP_TABLE_LOW_DFF : process(clock, ireset)
   begin
     if ireset = '0' then
