@@ -37,6 +37,8 @@
 #define JTH _SFR_IO8(0x1F)
 #define SSPL _SFR_IO8(0x03)
 #define SSPH _SFR_IO8(0x02)
+#define DBCTL _SFR_IO8(0x15)
+#define DBDATA _SFR_IO8(0x12)
 
 //---------------------------------------------------
 // MEMORY MAP STATUS REGISTER
@@ -51,6 +53,23 @@
 #define MSR_DISABLE() {MSR &= ~0x01;}
 // Get Current Domain ID
 #define GET_MSR_DOM_ID() ((MSR & 0x1E) >> 2)
+
+//---------------------------------------------------
+// DOMAIN BOUND SETUP IN PROM
+// |UNUSED|DOMAIN ID (2:0)|UPPER OR LOWER BOUND|HIGH OR LOW BYTE BIT|UPDATE BIT|
+//---------------------------------------------------
+#define SET_DOM_UPBND(dom_id, addr) { \
+    DBDATA = (uint8_t)addr; \
+    DBCTL = ((dom_id & 0x7) << 3) | (1 << 2) | 1; \
+    DBDATA = (uint8_t)(addr >> 8); \
+    DBCTL = ((dom_id & 0x7) << 3) | (1 << 2) | (1 << 1) | 1; \
+}
+#define SET_DOM_LWBND(dom_id, addr) { \
+    DBDATA = (uint8_t)addr; \
+    DBCTL = ((dom_id & 0x7) << 3) | 1; \
+    DBDATA = (uint8_t)(addr >> 8); \
+    DBCTL = ((dom_id & 0x7) << 3) | (1 << 1) | 1; \
+}
 
 //-----------------------------------------------------------------------
 // FUNCTION PROTOTYPES

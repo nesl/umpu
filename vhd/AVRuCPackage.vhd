@@ -88,10 +88,14 @@ package AVRuCPackage is
   constant MEM_MAP_POINTER_LOW_Address  : std_logic_vector(IOAdrWidth - 1 downto 0) := CONV_STD_LOGIC_VECTOR(16#1D#, IOAdrWidth);
   constant MEM_MAP_POINTER_HIGH_Address : std_logic_vector(IOAdrWidth - 1 downto 0) := CONV_STD_LOGIC_VECTOR(16#1E#, IOAdrWidth);
   constant MMC_STATUS_REG_Address       : std_logic_vector(IOAdrWidth - 1 downto 0) := CONV_STD_LOGIC_VECTOR(16#04#, IOAdrWidth);
-  constant DT_JUMP_TABLE_LOW_Address    : std_logic_vector(IOAdrWidth - 1 downto 0) := CONV_STD_LOGIC_VECTOR(16#1C#, IOAdrWidth);
-  constant DT_JUMP_TABLE_HIGH_Address   : std_logic_vector(IOAdrWidth - 1 downto 0) := CONV_STD_LOGIC_VECTOR(16#1F#, IOAdrWidth);
   constant SSP_LOW_Address              : std_logic_vector(IOAdrWidth - 1 downto 0) := CONV_STD_LOGIC_VECTOR(16#03#, IOAdrWidth);
   constant SSP_HIGH_Address             : std_logic_vector(IOAdrWidth - 1 downto 0) := CONV_STD_LOGIC_VECTOR(16#02#, IOAdrWidth);
+
+-- Domain Tracker
+  constant DT_JUMP_TABLE_LOW_Address  : std_logic_vector(IOAdrWidth - 1 downto 0) := CONV_STD_LOGIC_VECTOR(16#1C#, IOAdrWidth);
+  constant DT_JUMP_TABLE_HIGH_Address : std_logic_vector(IOAdrWidth - 1 downto 0) := CONV_STD_LOGIC_VECTOR(16#1F#, IOAdrWidth);
+  constant DOM_BND_CTL_Address        : std_logic_vector(IOAdrWidth - 1 downto 0) := CONV_STD_LOGIC_VECTOR(16#15#, IOAdrWidth);
+  constant DOM_BND_DATA_Address       : std_logic_vector(IOAdrWidth - 1 downto 0) := CONV_STD_LOGIC_VECTOR(16#12#, IOAdrWidth);
 
 -- Function declaration
   function LOG2(Number : integer) return integer;

@@ -1,27 +1,23 @@
 Journal Paper TODO:
 
 Deadline: 12/31/06
-1. Implementing the domain bounds in program memory
-	- Implement using a buffer in RAM
-	- Add two bound registers for the bounds of the current domain
-2. Fix rcall and icall similar to the regular call
-3. Simplistic exception routine
+1. Fix rcall and icall similar to the regular call
+2. Simplistic exception routine
 	- Raise an interrupt on panic
-4. Optimizations:
+3. Optimizations:
 	- Barrel shifters
 	- The ram_bus arbiter does not need to latch and put the data on the bus
 	- Latch the program_counter on the first clock cycle of cross domain call
-
 ----------------------------------------
 Deadline: 1/10/07
-5. Run SOS on this
+4. Run SOS on this
 	- Timer peripheral
 	- UART: Loading program from serial port
 		- Write a serial port loader
-6. Instantiate and run on the FPGA
+5. Instantiate and run on the FPGA
 ---------------------------------------
 Deadline: 1/31/07
-7. Evaluation/Experience:
+6. Evaluation/Experience:
 	- Run SOS
 	i. Describe how SOS uses these protection features
 	ii. Look for some embedded system beachmarks and use them
@@ -29,7 +25,7 @@ Deadline: 1/31/07
 		- FFTs and other similar programs
 	iv. Modifications of programing practices to be followed for using uMPU
 Read the paper ASAP
-8. Related work
+7. Related work
 	- Compare more closely with Xtensa work
 
 Work Done:
@@ -40,3 +36,6 @@ Work Done:
    and other modules are not. We need to get rid of the mmc_enable bit or use it in all the modules
 3. Within trusted domain, use regular stack for normal call and return instrs
 4. Check for stack overflow
+5. Implementing the domain bounds in program memory
+	- Implement using a buffer in RAM
+	- Add two bound registers for the bounds of the current domain

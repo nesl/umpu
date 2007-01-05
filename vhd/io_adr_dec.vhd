@@ -30,6 +30,8 @@ entity io_adr_dec is port (
   -- registers from the domain tracker
   jmp_table_low_out  : in std_logic_vector(7 downto 0);
   jmp_table_high_out : in std_logic_vector(7 downto 0);
+  dom_bnd_ctl_out    : in std_logic_vector(7 downto 0);
+  dom_bnd_data_out   : in std_logic_vector(7 downto 0);
 
   spl_out   : in std_logic_vector(7 downto 0);
   sph_out   : in std_logic_vector(7 downto 0);
@@ -55,6 +57,8 @@ begin
                 mmc_status_reg_out       when (adr = MMC_STATUS_REG_Address and iore = '1')       else
                 jmp_table_low_out        when (adr = DT_JUMP_TABLE_LOW_Address and iore = '1')    else
                 jmp_table_high_out       when (adr = DT_JUMP_TABLE_HIGH_Address and iore = '1')   else
+                dom_bnd_ctl_out          when (adr = DOM_BND_CTL_Address and iore = '1')          else
+                dom_bnd_data_out         when (adr = DOM_BND_DATA_Address and iore = '1')         else
                 sspl_out                 when (adr = SSP_LOW_Address and iore = '1')              else
                 ssph_out                 when (adr = SSP_HIGH_Address and iore = '1')             else
                 dbusin_ext;

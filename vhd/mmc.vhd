@@ -45,10 +45,15 @@ entity mmc is
     stack_pointer_low  : in std_logic_vector(7 downto 0);
     stack_pointer_high : in std_logic_vector(7 downto 0);
 
-    -- MMC-domain_tracker interface to update the domain id
+    -- MMC-domain_tracker interface
+    -- Status register sent to the dt
+    dt_mmc_status_reg : out std_logic_vector(7 downto 0);
+    -- New domain ID from dt
     dt_new_dom_id     : in  std_logic_vector(2 downto 0);
+    -- Signal to update the domain ID
     dt_update_dom_id  : in  std_logic;
-    dt_trusted_domain : out std_logic;
+    -- Signal to indicate error on a bad address on a call instr
+    dt_err : in std_logic;
 
     -- MMC-avr_core interface to allow local registers to be written in SW and
     -- receive the data when performing a ram read
@@ -164,8 +169,8 @@ begin
   stack_pointer(15 downto 8) <= stack_pointer_high;
   stack_pointer(7 downto 0)  <= stack_pointer_low;
 
-  -- send the in_trusted_domain signal to domain_tracker
-  dt_trusted_domain <= in_trusted_domain;
+  -- send the status register to the domain_tracker
+  dt_mmc_status_reg <= mmc_status_reg;
 
   -- sending the protection bit to domain_tracker and safe_stack
   mmc_umpu_en <= umpu_en;
@@ -268,9 +273,11 @@ begin
     elsif (clock = '1' and clock'event) then
       -- Panic occurs if there is mem_map_error during check_cycle
       -- or if there is a stack_overflow detected in the safe_stack module
+      -- or if the address in a call instruction is bad
       -- when the umpu bit is set so protection is desired
       sg_panic_int <= (mem_map_error and check_cycle) or
-                      (ssp_stack_overflow and umpu_en);
+                      (ssp_stack_overflow and umpu_en) or
+                      (dt_err and umpu_en);
     end if;
   end process;
 

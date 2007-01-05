@@ -66,13 +66,13 @@ architecture struct of avr_core is
       mmc_status_reg : in std_logic_vector(7 downto 0);
 
       -- signals for the ram_busArbiter
-      ss_addr     : out std_logic_vector(15 downto 0);
-      ss_addr_sel : out std_logic;
-      ss_dbusout     : out  std_logic_vector(7 downto 0);
-      ss_dbusout_sel : out  std_logic;
+      ss_addr        : out std_logic_vector(15 downto 0);
+      ss_addr_sel    : out std_logic;
+      ss_dbusout     : out std_logic_vector(7 downto 0);
+      ss_dbusout_sel : out std_logic;
 
       -- Signals from pm_fetch_decoder
-      fet_dec_pc : in std_logic_vector(15 downto 0);
+      fet_dec_pc                : in  std_logic_vector(15 downto 0);
       fet_dec_ssp_retL_wr       : in  std_logic;
       fet_dec_ssp_retH_wr       : in  std_logic;
       fet_dec_ssp_retL_rd       : in  std_logic;
@@ -81,21 +81,21 @@ architecture struct of avr_core is
       fet_dec_ret_dom_change    : in  std_logic_vector(4 downto 0);
       fet_dec_write_ram_data    : in  std_logic_vector(7 downto 0);
       fet_dec_ssp_ret_dom_start : out std_logic;
-
+      
       -- Signals from Domain Tracker
       dt_update_dom_id : in std_logic;
 
       -- ssp-MMC to update the dom id and send the stack_bound
-      ssp_new_dom_id    : out std_logic_vector(2 downto 0);
-      ssp_update_dom_id : out std_logic;
-      ssp_stack_bound : out std_logic_vector(15 downto 0);
+      ssp_new_dom_id     : out std_logic_vector(2 downto 0);
+      ssp_update_dom_id  : out std_logic;
+      ssp_stack_bound    : out std_logic_vector(15 downto 0);
       -- ssp-MMC to send the stack_overflow error
       ssp_stack_overflow : out std_logic;
       -- ssp-MMC to receive the protection enable bit
-      mmc_umpu_en : in std_logic;
+      mmc_umpu_en        : in  std_logic;
 
       -- Signal from io_reg_file
-      stack_pointer_low : in std_logic_vector(7 downto 0);
+      stack_pointer_low  : in std_logic_vector(7 downto 0);
       stack_pointer_high : in std_logic_vector(7 downto 0)
       );
 
@@ -120,15 +120,17 @@ architecture struct of avr_core is
       -- send the local registers to io_adr_dec so SW can read
       jmp_table_high_out : out std_logic_vector(7 downto 0);
       jmp_table_low_out  : out std_logic_vector(7 downto 0);
+      dom_bnd_ctl_out    : out std_logic_vector(7 downto 0);
+      dom_bnd_data_out   : out std_logic_vector(7 downto 0);
 
-      -- protection enable bit from mmc
-      mmc_umpu_en : in std_logic;
+      -- status register from mmc
+      dt_mmc_status_reg : in  std_logic_vector(7 downto 0);
       -- calculated domain id to mmc
-      mmc_new_dom_id     : out std_logic_vector(2 downto 0);
+      dt_new_dom_id     : out std_logic_vector(2 downto 0);
       -- signal to update domain id to mmc
-      mmc_update_dom_id  : out std_logic;
-      --Trusted domain signal from MMC
-      mmc_trusted_domain : in  std_logic
+      dt_update_dom_id  : out std_logic;
+      -- signal to send domain_tracker_err to mmc
+      dt_err            : out std_logic
       );
 
   end component;
@@ -196,10 +198,15 @@ architecture struct of avr_core is
       stack_pointer_low  : in std_logic_vector(7 downto 0);
       stack_pointer_high : in std_logic_vector(7 downto 0);
 
-      -- MMC-domain_tracker interface to update the domain id
+      -- MMC-domain_tracker interface
+      -- Status register sent to the dt
+      dt_mmc_status_reg : out std_logic_vector(7 downto 0);
+      -- New domain ID from dt
       dt_new_dom_id     : in  std_logic_vector(2 downto 0);
+      -- Signal to update the domain ID
       dt_update_dom_id  : in  std_logic;
-      dt_trusted_domain : out std_logic;
+      -- Signal to indicate error on a bad address on a call instr
+      dt_err : in std_logic;
 
       -- MMC-avr_core interface to allow local registers to be written in SW and
       -- receive the data when performing a ram read
@@ -210,9 +217,9 @@ architecture struct of avr_core is
 
       -- MMC-ssp interface to update the dom id on a ret and receive the stack
       -- bound
-      ssp_new_dom_id : in std_logic_vector(2 downto 0);
-      ssp_update_dom_id : in std_logic;
-      ssp_stack_bound : in std_logic_vector(15 downto 0);
+      ssp_new_dom_id     : in std_logic_vector(2 downto 0);
+      ssp_update_dom_id  : in std_logic;
+      ssp_stack_bound    : in std_logic_vector(15 downto 0);
       -- MMC-ssp interface to receive a stack_overflow error
       ssp_stack_overflow : in std_logic;
 
@@ -238,18 +245,18 @@ architecture struct of avr_core is
       dt_pc         : out std_logic_vector(15 downto 0);
       dt_call_instr : out std_logic;
 
-       -- safe stack specific signals
-      fet_dec_pc : out std_logic_vector(15 downto 0);
-      fet_dec_ssp_retL_wr : out std_logic;
-      fet_dec_ssp_retH_wr : out std_logic;
-      fet_dec_ssp_retH_rd : out std_logic;
-      fet_dec_ssp_retL_rd : out std_logic;
-      fet_dec_ssp_ret_dom_start : in std_logic;
-      fet_dec_call_dom_change : out std_logic_vector(4 downto 0);
-      fet_dec_ret_dom_change : out std_logic_vector(4 downto 0);
+      -- safe stack specific signals
+      fet_dec_pc                : out std_logic_vector(15 downto 0);
+      fet_dec_ssp_retL_wr       : out std_logic;
+      fet_dec_ssp_retH_wr       : out std_logic;
+      fet_dec_ssp_retH_rd       : out std_logic;
+      fet_dec_ssp_retL_rd       : out std_logic;
+      fet_dec_ssp_ret_dom_start : in  std_logic;
+      fet_dec_call_dom_change   : out std_logic_vector(4 downto 0);
+      fet_dec_ret_dom_change    : out std_logic_vector(4 downto 0);
 
-       -- Signal from Domain Tracker (Pause Fet Dec Unit)
-       dt_update_dom_id     : in  std_logic;       
+      -- Signal from Domain Tracker (Pause Fet Dec Unit)
+      dt_update_dom_id : in std_logic;
 
 -- EXTERNAL INTERFACES OF THE CORE
       clk     : in std_logic;
@@ -615,8 +622,10 @@ architecture struct of avr_core is
     mmc_status_reg_out       : in std_logic_vector(7 downto 0);
     jmp_table_low_out        : in std_logic_vector(7 downto 0);
     jmp_table_high_out       : in std_logic_vector(7 downto 0);
-    ssph_out : in std_logic_vector(7 downto 0);
-    sspl_out : in std_logic_vector(7 downto 0);
+    dom_bnd_data_out : in std_logic_vector(7 downto 0);
+    dom_bnd_ctl_out : in std_logic_vector(7 downto 0);
+    ssph_out                 : in std_logic_vector(7 downto 0);
+    sspl_out                 : in std_logic_vector(7 downto 0);
     -- End registers from mmc.vhd
 
     spl_out   : in std_logic_vector(7 downto 0);
@@ -704,86 +713,89 @@ architecture struct of avr_core is
   signal sg_dt_call_instr : std_logic;
 
   -- signals between domain_tracker and mmc
-  signal sg_new_dom_id     : std_logic_vector(2 downto 0);
-  signal sg_update_dom_id  : std_logic;
-  signal sg_trusted_domain : std_logic;
+  signal sg_dt_new_dom_id     : std_logic_vector(2 downto 0);
+  signal sg_dt_update_dom_id  : std_logic;
+  signal sg_dt_mmc_status_reg : std_logic_vector(7 downto 0);
+  signal sg_dt_err : std_logic;
 
   -- signals between the domain_tracker and io_adr_dec
   signal sg_jmp_table_high_out : std_logic_vector(7 downto 0);
   signal sg_jmp_table_low_out  : std_logic_vector(7 downto 0);
+  signal sg_dom_bnd_ctl_out : std_logic_vector(7 downto 0);
+  signal sg_dom_bnd_data_out : std_logic_vector(7 downto 0);
 
   -- signals between safe_stack and ram_busArbiter
-  signal sg_ss_addr : std_logic_vector(15 downto 0);
-  signal sg_ss_addr_sel : std_logic;
-  signal sg_ss_dbusout : std_logic_vector(7 downto 0);
+  signal sg_ss_addr        : std_logic_vector(15 downto 0);
+  signal sg_ss_addr_sel    : std_logic;
+  signal sg_ss_dbusout     : std_logic_vector(7 downto 0);
   signal sg_ss_dbusout_sel : std_logic;
 
   -- signals between safe stack and pm_fetch_dec
-  signal sg_fet_dec_pc : std_logic_vector(15 downto 0);
-  signal sg_fet_dec_ssp_retL_wr : std_logic;
-  signal sg_fet_dec_ssp_retH_wr : std_logic;
-  signal sg_fet_dec_ssp_retL_rd : std_logic;
-  signal sg_fet_dec_ssp_retH_rd : std_logic;
-  signal sg_fet_dec_call_dom_change : std_logic_vector(4 downto 0);
-  signal sg_fet_dec_ret_dom_change : std_logic_vector(4 downto 0);
+  signal sg_fet_dec_pc                : std_logic_vector(15 downto 0);
+  signal sg_fet_dec_ssp_retL_wr       : std_logic;
+  signal sg_fet_dec_ssp_retH_wr       : std_logic;
+  signal sg_fet_dec_ssp_retL_rd       : std_logic;
+  signal sg_fet_dec_ssp_retH_rd       : std_logic;
+  signal sg_fet_dec_call_dom_change   : std_logic_vector(4 downto 0);
+  signal sg_fet_dec_ret_dom_change    : std_logic_vector(4 downto 0);
   signal sg_fet_dec_ssp_ret_dom_start : std_logic;
-  
+
   -- signals between safe stack and io_adr_dec
   signal sg_sspl_out : std_logic_vector(7 downto 0);
   signal sg_ssph_out : std_logic_vector(7 downto 0);
 
   -- signals between safe stack and MMC
-  signal sg_ssp_new_dom_id : std_logic_vector(2 downto 0);
-  signal sg_ssp_update_dom_id : std_logic;
-  signal sg_ssp_stack_bound : std_logic_vector(15 downto 0);
+  signal sg_ssp_new_dom_id     : std_logic_vector(2 downto 0);
+  signal sg_ssp_update_dom_id  : std_logic;
+  signal sg_ssp_stack_bound    : std_logic_vector(15 downto 0);
   signal sg_ssp_stack_overflow : std_logic;
 
   -- signals between mmc and (domain_tracker and safe stack)
-  signal sg_mmc_umpu_en  : std_logic;
+  signal sg_mmc_umpu_en : std_logic;
 
 begin
 
   SAFE_STK : component safe_stack port map(
     ireset => ireset,
-    clock => cp2,
+    clock  => cp2,
 
-    adr => sg_adr,
+    adr     => sg_adr,
     reg_bus => sg_dbusout,
     ram_bus => sg_dbusin,
-    iowe => sg_iowe,
+    iowe    => sg_iowe,
 
     ssph_out => sg_ssph_out,
     sspl_out => sg_sspl_out,
 
     mmc_status_reg => sg_mmc_status_reg_out,
 
-    ss_addr => sg_ss_addr,
-    ss_addr_sel => sg_ss_addr_sel,
-    ss_dbusout => sg_ss_dbusout,
+    ss_addr        => sg_ss_addr,
+    ss_addr_sel    => sg_ss_addr_sel,
+    ss_dbusout     => sg_ss_dbusout,
     ss_dbusout_sel => sg_ss_dbusout_sel,
 
-    fet_dec_pc => sg_fet_dec_pc,
-    fet_dec_ssp_retL_wr => sg_fet_dec_ssp_retL_wr,
-    fet_dec_ssp_retH_wr =>  sg_fet_dec_ssp_retH_wr,  
-    fet_dec_ssp_retL_rd   => sg_fet_dec_ssp_retL_rd,   
-    fet_dec_ssp_retH_rd     => sg_fet_dec_ssp_retH_rd,  
+    fet_dec_pc                => sg_fet_dec_pc,
+    fet_dec_ssp_retL_wr       => sg_fet_dec_ssp_retL_wr,
+    fet_dec_ssp_retH_wr       => sg_fet_dec_ssp_retH_wr,
+    fet_dec_ssp_retL_rd       => sg_fet_dec_ssp_retL_rd,
+    fet_dec_ssp_retH_rd       => sg_fet_dec_ssp_retH_rd,
     fet_dec_call_dom_change   => sg_fet_dec_call_dom_change,
     fet_dec_ret_dom_change    => sg_fet_dec_ret_dom_change,
     fet_dec_write_ram_data    => sg_fet_dec_data,
     fet_dec_ssp_ret_dom_start => sg_fet_dec_ssp_ret_dom_start,
 
-    dt_update_dom_id => sg_update_dom_id,
-    
-    ssp_new_dom_id => sg_ssp_new_dom_id,
-    ssp_update_dom_id => sg_ssp_update_dom_id,
-    ssp_stack_bound => sg_ssp_stack_bound,
-    ssp_stack_overflow => sg_ssp_stack_overflow,
-    mmc_umpu_en => sg_mmc_umpu_en,
+    dt_update_dom_id => sg_dt_update_dom_id,
 
-    stack_pointer_low => sg_spl_out,
+    ssp_new_dom_id     => sg_ssp_new_dom_id,
+    ssp_update_dom_id  => sg_ssp_update_dom_id,
+    ssp_stack_bound    => sg_ssp_stack_bound,
+    ssp_stack_overflow => sg_ssp_stack_overflow,
+    mmc_umpu_en        => sg_mmc_umpu_en,
+
+    stack_pointer_low  => sg_spl_out,
     stack_pointer_high => sg_sph_out
     );
-    
+
 
   DOMAIN_UPDATE : component domain_tracker port map(
     ireset => ireset,
@@ -799,10 +811,10 @@ begin
     jmp_table_low_out  => sg_jmp_table_low_out,
     jmp_table_high_out => sg_jmp_table_high_out,
 
-    mmc_new_dom_id     => sg_new_dom_id,
-    mmc_update_dom_id  => sg_update_dom_id,
-    mmc_trusted_domain => sg_trusted_domain,
-    mmc_umpu_en => sg_mmc_umpu_en
+    dt_mmc_status_reg => sg_dt_mmc_status_reg,
+    dt_new_dom_id => sg_dt_new_dom_id,
+    dt_update_dom_id => sg_dt_update_dom_id,
+    dt_err => sg_dt_err
     );
 
   ARBITER : component ram_busArbiter port map (
@@ -823,9 +835,9 @@ begin
     mmc_write_cycle => sg_mmc_write_cycle,
     mmc_read_cycle  => sg_mmc_read_cycle,
 
-    ss_addr => sg_ss_addr,
-    ss_addr_sel => sg_ss_addr_sel,
-    ss_dbusout => sg_ss_dbusout,
+    ss_addr        => sg_ss_addr,
+    ss_addr_sel    => sg_ss_addr_sel,
+    ss_dbusout     => sg_ss_dbusout,
     ss_dbusout_sel => sg_ss_dbusout_sel
     );
 
@@ -857,18 +869,19 @@ begin
     stack_pointer_low  => sg_spl_out,
     stack_pointer_high => sg_sph_out,
 
-    dt_new_dom_id     => sg_new_dom_id,
-    dt_update_dom_id  => sg_update_dom_id,
-    dt_trusted_domain => sg_trusted_domain,
+    dt_mmc_status_reg => sg_dt_mmc_status_reg,
+    dt_new_dom_id => sg_dt_new_dom_id,
+    dt_update_dom_id => sg_dt_update_dom_id,
+    dt_err => sg_dt_err,
 
     adr     => sg_adr,
     reg_bus => sg_dbusout,
     ram_bus => sg_dbusin,
     iowe    => sg_iowe,
 
-    ssp_new_dom_id => sg_ssp_new_dom_id,
-    ssp_update_dom_id => sg_ssp_update_dom_id,
-    ssp_stack_bound => sg_ssp_stack_bound,
+    ssp_new_dom_id     => sg_ssp_new_dom_id,
+    ssp_update_dom_id  => sg_ssp_update_dom_id,
+    ssp_stack_bound    => sg_ssp_stack_bound,
     ssp_stack_overflow => sg_ssp_stack_overflow,
 
     mmc_umpu_en => sg_mmc_umpu_en,
@@ -886,19 +899,19 @@ begin
       fet_dec_data       => sg_fet_dec_data,
 
       -- domain_tracker specific signals
-      dt_pc         => sg_dt_pc,
-      dt_call_instr => sg_dt_call_instr,
-      dt_update_dom_id => sg_update_dom_id,
+      dt_pc            => sg_dt_pc,
+      dt_call_instr    => sg_dt_call_instr,
+      dt_update_dom_id => sg_dt_update_dom_id,
 
       -- safe_stack specific signals
-      fet_dec_pc => sg_fet_dec_pc,
-       fet_dec_ssp_retL_wr => sg_fet_dec_ssp_retL_wr,
-       fet_dec_ssp_retH_wr => sg_fet_dec_ssp_retH_wr,
-       fet_dec_ssp_retH_rd => sg_fet_dec_ssp_retH_rd,
-       fet_dec_ssp_retL_rd => sg_fet_dec_ssp_retL_rd,
-       fet_dec_ssp_ret_dom_start => sg_fet_dec_ssp_ret_dom_start,
-       fet_dec_call_dom_change => sg_fet_dec_call_dom_change,
-       fet_dec_ret_dom_change => sg_fet_dec_ret_dom_change,
+      fet_dec_pc                => sg_fet_dec_pc,
+      fet_dec_ssp_retL_wr       => sg_fet_dec_ssp_retL_wr,
+      fet_dec_ssp_retH_wr       => sg_fet_dec_ssp_retH_wr,
+      fet_dec_ssp_retH_rd       => sg_fet_dec_ssp_retH_rd,
+      fet_dec_ssp_retL_rd       => sg_fet_dec_ssp_retL_rd,
+      fet_dec_ssp_ret_dom_start => sg_fet_dec_ssp_ret_dom_start,
+      fet_dec_call_dom_change   => sg_fet_dec_call_dom_change,
+      fet_dec_ret_dom_change    => sg_fet_dec_ret_dom_change,
 
 
 -- EXTERNAL INTERFACES OF THE CORE
@@ -1167,11 +1180,13 @@ begin
     mem_prot_top_low_out     => sg_mem_prot_top_low_out,
     mem_prot_top_high_out    => sg_mem_prot_top_high_out,
     mmc_status_reg_out       => sg_mmc_status_reg_out,
-    ssph_out => sg_ssph_out,
-    sspl_out => sg_sspl_out,
+    ssph_out                 => sg_ssph_out,
+    sspl_out                 => sg_sspl_out,
     -- registers from domain_tracker
     jmp_table_low_out        => sg_jmp_table_low_out,
     jmp_table_high_out       => sg_jmp_table_high_out,
+    dom_bnd_ctl_out => sg_dom_bnd_ctl_out,
+    dom_bnd_data_out => sg_dom_bnd_data_out,
 
     spl_out   => sg_spl_out,
     sph_out   => sg_sph_out,

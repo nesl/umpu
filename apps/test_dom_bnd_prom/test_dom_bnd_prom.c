@@ -17,16 +17,25 @@ int main(){
   SSPH = 0x09;
 
   // The following is a temp addition and should be removed
-  SET_DOM_UPBND(0,0x92);
-  SET_DOM_LWBND(0,0x5F);
-  SET_DOM_UPBND(1,0x9F);
-  SET_DOM_LWBND(1,0x93);
+  SET_DOM_LWBND(0,0x87);
+  SET_DOM_UPBND(0,0xBC);
+  SET_DOM_LWBND(1,0x7A);
+  SET_DOM_UPBND(1,0x86);
 
   // Initialize memory
   mem_init();
   dom0_main();
   while(1);
   return 0;
+}
+
+void dom1_realmain(uint8_t* buffer)
+{
+  uint8_t i;
+  for(i = 0; i < BUFF_SIZE; i++){
+    buffer[i] = buffer[i] * 2;
+    PORTA = buffer[i];
+  }
 }
 
 void dom0_realmain()
@@ -43,10 +52,10 @@ void dom0_realmain()
     PORTA = buffer[i];
   }
 
+  mmc_change_own((void*)buffer, 1);
   dom1_realmain(buffer);
 
-  mmc_change_own((void*)buffer, 1);
-  dom1_main(buffer);
+  PORTA = 0xEE;
 
   // This will cause a panic
   buffer = buffer + 2*BUFF_SIZE;
@@ -54,14 +63,5 @@ void dom0_realmain()
   PORTA = 0xFF;
 
   return;
-}
-
-void dom1_realmain(uint8_t* buffer)
-{
-  uint8_t i;
-  for(i = 0; i < BUFF_SIZE; i++){
-    buffer[i] = buffer[i] * 2;
-    PORTA = buffer[i];
-  }
 }
 

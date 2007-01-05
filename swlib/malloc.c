@@ -314,6 +314,7 @@ void mem_init(void)
   MMPH = (uint8_t)((uint16_t)memmap >> 8);
   JTL = 0x00; // Setup jumptable
   JTH = 0x10; // to start at 0x2000
+  
   MSR_ENABLE();
 }
 
