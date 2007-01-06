@@ -57,8 +57,9 @@ void dom0_realmain()
 
   return;
 }
-
+/*
 SIGNAL(SIG_ADC) {
   PORTA = 0x33;
   while(1);
 }
+*/

@@ -52,6 +52,9 @@ architecture struct of avr_core is
 
   component umpu_panic
     port (
+      -- Debug signals
+      dbg_umpu_panic : out std_logic;       -- panic signal
+
       -- General signals
       clock  : in std_logic;
       ireset : in std_logic;
@@ -113,8 +116,6 @@ architecture struct of avr_core is
       ssp_new_dom_id     : out std_logic_vector(2 downto 0);
       ssp_update_dom_id  : out std_logic;
       ssp_stack_bound    : out std_logic_vector(15 downto 0);
-      -- ssp-MMC to receive the protection enable bit
-      mmc_umpu_en        : in  std_logic;
 
       -- Signal from io_reg_file
       stack_pointer_low  : in std_logic_vector(7 downto 0);
@@ -243,13 +244,7 @@ architecture struct of avr_core is
       -- bound
       ssp_new_dom_id     : in std_logic_vector(2 downto 0);
       ssp_update_dom_id  : in std_logic;
-      ssp_stack_bound    : in std_logic_vector(15 downto 0);
-
-      -- Expose the protection bit to domain tracker and safe stack
-      mmc_umpu_en : out std_logic;
-
-      -- Debug signals
-      dbg_mmc_panic : out std_logic     -- panic signal
+      ssp_stack_bound    : in std_logic_vector(15 downto 0)
       );
   end component;
 
@@ -770,9 +765,6 @@ architecture struct of avr_core is
   signal sg_ssp_update_dom_id  : std_logic;
   signal sg_ssp_stack_bound    : std_logic_vector(15 downto 0);
 
-  -- signals between mmc and (domain_tracker and safe stack)
-  signal sg_mmc_umpu_en : std_logic;
-
   -- signals between umpu_panic and the other modules for errors
   signal sg_mmc_error : std_logic;
   signal sg_dt_error : std_logic;
@@ -781,6 +773,8 @@ architecture struct of avr_core is
 begin
 
   UMPU_PANIC_MODULE : component umpu_panic port map(
+    dbg_umpu_panic => panic,
+    
     clock => cp2,
     ireset => ireset,
 
@@ -829,7 +823,6 @@ begin
     ssp_new_dom_id     => sg_ssp_new_dom_id,
     ssp_update_dom_id  => sg_ssp_update_dom_id,
     ssp_stack_bound    => sg_ssp_stack_bound,
-    mmc_umpu_en        => sg_mmc_umpu_en,
 
     stack_pointer_low  => sg_spl_out,
     stack_pointer_high => sg_sph_out
@@ -921,11 +914,8 @@ begin
 
     ssp_new_dom_id     => sg_ssp_new_dom_id,
     ssp_update_dom_id  => sg_ssp_update_dom_id,
-    ssp_stack_bound    => sg_ssp_stack_bound,
+    ssp_stack_bound    => sg_ssp_stack_bound
 
-    mmc_umpu_en => sg_mmc_umpu_en,
-
-    dbg_mmc_panic => panic
     );
 
   main : component pm_fetch_dec port map

@@ -64,14 +64,7 @@ entity mmc is
     -- MMC-ssp interface to update the dom id on a ret and receive the stack bound
     ssp_new_dom_id     : in std_logic_vector(2 downto 0);
     ssp_update_dom_id  : in std_logic;
-    ssp_stack_bound    : in std_logic_vector(15 downto 0);
-
-    -- Expose the protection bit to domain tracker and safe stack
-    mmc_umpu_en : out std_logic;
-
-    -- Debug signals
-    dbg_mmc_panic : out std_logic       -- panic signal
-
+    ssp_stack_bound    : in std_logic_vector(15 downto 0)
     );
 
 end mmc;
@@ -118,8 +111,6 @@ architecture Beh of mmc is
   signal mem_prot_top    : std_logic_vector(15 downto 0);
   signal mmc_status_reg  : std_logic_vector(7 downto 0);
 
-  -- panic signal
-  signal mmc_panic         : std_logic;
   -- mem_map_error signal
   signal mem_map_error     : std_logic;
   -- check_cycle signal
@@ -141,13 +132,7 @@ architecture Beh of mmc is
   -- stack pointer from io_reg_file
   signal stack_pointer : std_logic_vector(15 downto 0);
 
-  -- internal signals to identify panic
-  signal sg_panic_int   : std_logic;
-  signal sg_panic_latch : std_logic;
-
 begin
-  -- the debug panic signal is exposed to the uppermost entity
-  dbg_mmc_panic <= mmc_panic;
 
   -- setting the output registers, these registers are sent to io_adr_dec so
   -- that they can be read out in software
@@ -165,9 +150,6 @@ begin
   -- that needs to be performed is if the store in inside the stack bound
   stack_pointer(15 downto 8) <= stack_pointer_high;
   stack_pointer(7 downto 0)  <= stack_pointer_low;
-
-  -- sending the protection bit to domain_tracker and safe_stack
-  mmc_umpu_en <= umpu_en;
 
   -- calculate mmc read addr
   MMC_ADDR_CALC : component mem_map_addr_calc port map(
@@ -258,33 +240,6 @@ begin
     ssp_stack_bound  => ssp_stack_bound,
     mem_map_error    => mem_map_error
     );
-
-  -- sg_panic_int latch
-  SG_PANIC_INT_LATCH : process(ireset, clock)
-  begin
-    if ireset = '0' then
-      sg_panic_int <= '0';
-    elsif (clock = '1' and clock'event) then
-      -- Panic occurs if there is mem_map_error during check_cycle
-      -- or if there is a stack_overflow detected in the safe_stack module
-      -- or if the address in a call instruction is bad
-      -- when the umpu bit is set so protection is desired
-      sg_panic_int <= (mem_map_error and check_cycle);
-                      -- or (ssp_stack_overflow and umpu_en)
-                      -- or (dt_err and umpu_en);
-    end if;
-  end process;
-
-  SG_PANIC_LATCH_LATCH : process(ireset, sg_panic_int)
-  begin
-    if ireset = '0' then
-      sg_panic_latch <= '0';
-    elsif (sg_panic_int = '1' and sg_panic_int'event) then
-      sg_panic_latch <= '1';
-    end if;
-  end process;
-
-  mmc_panic <= (mem_map_error and check_cycle) or sg_panic_latch;
 
   -- mmc_error if mem_map_error during a check_cycle
   mmc_error <= mem_map_error and check_cycle;

@@ -60,8 +60,6 @@ entity safe_stack is
     ssp_new_dom_id    : out std_logic_vector(2 downto 0);
     ssp_update_dom_id : out std_logic;
     ssp_stack_bound   : out std_logic_vector(15 downto 0);
-    -- ssp-MMC to receive the protection enable bit
-    mmc_umpu_en : in std_logic;
 
     -- Signal from io_reg_file
     stack_pointer_low  : in std_logic_vector(7 downto 0);
@@ -89,6 +87,7 @@ architecture Beh of safe_stack is
   -- signals in the status register from mmc
   signal in_trusted_domain : std_logic;
   signal dom_id            : std_logic_vector(2 downto 0);
+  signal umpu_en : std_logic;
 
   signal sg_fet_dec_ssp_ret_wr : std_logic;
   signal sg_fet_dec_ssp_ret_rd : std_logic;
@@ -134,7 +133,7 @@ begin
   -- safe stack pointer
   stack_overflow <= '1' when stack_pointer <= ssp else '0';
   -- Only checking for overflow if the protection bit is set
-  ssp_stack_overflow <= stack_overflow and mmc_umpu_en;
+  ssp_stack_overflow <= stack_overflow and umpu_en;
 
   -- Call domain change - Writing cross domain stuff to safe stack
   call_dom_change <= fet_dec_call_dom_change(0) or fet_dec_call_dom_change(1) or fet_dec_call_dom_change(2) or fet_dec_call_dom_change(3) or fet_dec_call_dom_change(4);
@@ -157,6 +156,8 @@ begin
   -----------------------------------------------------------------------------
   -- get the dom id from status reg of mmc
   dom_id            <= mmc_status_reg(4 downto 2);
+  -- get the protection bit from the mmc_status_reg
+  umpu_en <= mmc_status_reg(0);
   -- will be '1' only when dom_id = "111" i.e. trusted domain
   in_trusted_domain <= dom_id(0) and dom_id(1) and dom_id(2);
 
