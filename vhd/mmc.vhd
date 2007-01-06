@@ -17,6 +17,9 @@ entity mmc is
     ireset : in std_logic;
     clock  : in std_logic;
 
+    -- MMC-umpu_panic interface
+    mmc_error : out std_logic;
+ 
     -- MMC-Bus arbiter interface
     mmc_addr        : out std_logic_vector(15 downto 0);  -- R/W addr
     mmc_wr_en       : out std_logic;                      -- Write enable
@@ -46,14 +49,10 @@ entity mmc is
     stack_pointer_high : in std_logic_vector(7 downto 0);
 
     -- MMC-domain_tracker interface
-    -- Status register sent to the dt
-    dt_mmc_status_reg : out std_logic_vector(7 downto 0);
     -- New domain ID from dt
-    dt_new_dom_id     : in  std_logic_vector(2 downto 0);
+    dt_new_dom_id    : in std_logic_vector(2 downto 0);
     -- Signal to update the domain ID
-    dt_update_dom_id  : in  std_logic;
-    -- Signal to indicate error on a bad address on a call instr
-    dt_err : in std_logic;
+    dt_update_dom_id : in std_logic;
 
     -- MMC-avr_core interface to allow local registers to be written in SW and
     -- receive the data when performing a ram read
@@ -63,11 +62,9 @@ entity mmc is
     iowe    : in std_logic;
 
     -- MMC-ssp interface to update the dom id on a ret and receive the stack bound
-    ssp_new_dom_id    : in std_logic_vector(2 downto 0);
-    ssp_update_dom_id : in std_logic;
-    ssp_stack_bound   : in std_logic_vector(15 downto 0);
-    -- MMC-ssp interface to receive a stack_overflow error
-    ssp_stack_overflow : in std_logic;
+    ssp_new_dom_id     : in std_logic_vector(2 downto 0);
+    ssp_update_dom_id  : in std_logic;
+    ssp_stack_bound    : in std_logic_vector(15 downto 0);
 
     -- Expose the protection bit to domain tracker and safe stack
     mmc_umpu_en : out std_logic;
@@ -132,7 +129,7 @@ architecture Beh of mmc is
   -- Indicates if processor is executing in trusted domain
   signal in_trusted_domain : std_logic;
   -- Indicates if the protection is enabled
-  signal umpu_en : std_logic;
+  signal umpu_en           : std_logic;
 
   -- mmc read cycle
   signal sg_mmc_read_cycle : std_logic;
@@ -168,9 +165,6 @@ begin
   -- that needs to be performed is if the store in inside the stack bound
   stack_pointer(15 downto 8) <= stack_pointer_high;
   stack_pointer(7 downto 0)  <= stack_pointer_low;
-
-  -- send the status register to the domain_tracker
-  dt_mmc_status_reg <= mmc_status_reg;
 
   -- sending the protection bit to domain_tracker and safe_stack
   mmc_umpu_en <= umpu_en;
@@ -275,9 +269,9 @@ begin
       -- or if there is a stack_overflow detected in the safe_stack module
       -- or if the address in a call instruction is bad
       -- when the umpu bit is set so protection is desired
-      sg_panic_int <= (mem_map_error and check_cycle) or
-                      (ssp_stack_overflow and umpu_en) or
-                      (dt_err and umpu_en);
+      sg_panic_int <= (mem_map_error and check_cycle);
+                      -- or (ssp_stack_overflow and umpu_en)
+                      -- or (dt_err and umpu_en);
     end if;
   end process;
 
@@ -292,6 +286,9 @@ begin
 
   mmc_panic <= (mem_map_error and check_cycle) or sg_panic_latch;
 
+  -- mmc_error if mem_map_error during a check_cycle
+  mmc_error <= mem_map_error and check_cycle;
+
   fet_dec_pc_stop <= sg_mmc_read_cycle;
 
   -- fet_dec_nop_insert latch
@@ -304,7 +301,7 @@ begin
     if ireset = '0' then
       fet_dec_nop_insert <= '0';
     elsif (clock = '1' and clock'event) then
-      fet_dec_nop_insert <= sg_mmc_read_cycle or mmc_panic;
+      fet_dec_nop_insert <= sg_mmc_read_cycle;-- or mmc_panic;
     end if;
   end process;
 
@@ -362,9 +359,9 @@ begin
     elsif (clock = '1' and clock'event) then
       if (adr = MMC_STATUS_REG_Address and iowe = '1' and in_trusted_domain = '1') then
         mmc_status_reg(7 downto 5) <= reg_bus(7 downto 5);
-        mmc_status_reg(1) <= reg_bus(1);
+        mmc_status_reg(1)          <= reg_bus(1);
         if (reg_bus(0) = '1') then
-          mmc_status_reg(0) <= '1';
+          mmc_status_reg(0)        <= '1';
         end if;
       end if;
     end if;

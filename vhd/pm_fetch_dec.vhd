@@ -1379,6 +1379,11 @@ begin
 -- PRIORITY ENCODER
   irq_vector_adr(5 downto 1)
                               <= "00001" when irqlines(0) = '1'  else  -- 0x0002
+    ---------------------------------------------------------------------------
+    -- Moved the interrupt for ADC up here, this will be used for the umpu
+    -- interrupt and moving it up here gives it a higher priority
+    ---------------------------------------------------------------------------
+    "10101"                              when irqlines(20) = '1' else  -- 0x002A
     "00010"                              when irqlines(1) = '1'  else  -- 0x0004  
     "00011"                              when irqlines(2) = '1'  else  -- 0x0006  
     "00100"                              when irqlines(3) = '1'  else  -- 0x0008  
@@ -1398,9 +1403,8 @@ begin
     "10010"                              when irqlines(17) = '1' else  -- 0x0024
     "10011"                              when irqlines(18) = '1' else  -- 0x0026
     "10100"                              when irqlines(19) = '1' else  -- 0x0028
-    "10101"                              when irqlines(20) = '1' else  -- 0x002A
     "10110"                              when irqlines(21) = '1' else  -- 0x002C
-    "10111"                              when irqlines(22) = '1' else  -- 0x002E                                                              
+    "10111"                              when irqlines(22) = '1' else  -- 0x002E
     "00000";
 
 -- MULTI CYCLE INSTRUCTION FLAG FOR IRQ

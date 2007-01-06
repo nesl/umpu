@@ -295,6 +295,10 @@ architecture Struct of top_avr_core_sim is
       dbusin  : in  std_logic_vector (7 downto 0);
       dbusout : out std_logic_vector (7 downto 0);
 
+      -- interrupt port for umpu_panic
+      umpu_irq : out std_logic;
+      umpu_irqack : in std_logic;
+
 -- INTERRUPTS PORT
       irqlines : in  std_logic_vector (22 downto 0);
       irqack   : out std_logic;
@@ -404,6 +408,10 @@ begin
   tempRamWrEn     <= sg_core_ramwe;
   -- temp signals end
 
+  -- Setting the umpu_panic interrupt ports
+  --sg_core_irqlines(20) <= umpu_irq;
+  --umpu_irqack <= sg_ind_irq_ack(20);
+  
   TESTING_CORE : component avr_core port map
     (
 
@@ -429,6 +437,9 @@ begin
 
       dbusin  => sg_core_dbusin,
       dbusout => sg_core_dbusout,
+
+      umpu_irq => sg_core_irqlines(20),
+      umpu_irqack => sg_ind_irq_ack(20),
 
 -- INTERRUPTS PORT
       irqlines => sg_core_irqlines,
@@ -563,7 +574,11 @@ begin
     timer_irqack => sg_ind_irq_ack(0)
     );
 
-  sg_core_irqlines(22 downto 20) <= (others => '0');
+  -----------------------------------------------------------------------------
+  -- Changed sg_core_irqlines below from 22 downto 20 to 22 downto 21, umpu is
+  -- using the 20th interrupt
+  -----------------------------------------------------------------------------
+  sg_core_irqlines(22 downto 21) <= (others => '0');
   sg_core_irqlines(13 downto 10) <= (others => '0');
 -- ************************
 

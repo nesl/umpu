@@ -35,6 +35,10 @@ is port
        dbusin  : in  std_logic_vector (7 downto 0);
        dbusout : out std_logic_vector (7 downto 0);
 
+       -- interrupt port for umpu_panic
+       umpu_irq : out std_logic;
+       umpu_irqack : in std_logic;
+
 -- INTERRUPTS PORT
        irqlines : in  std_logic_vector (22 downto 0);
        irqack   : out std_logic;
@@ -46,11 +50,31 @@ end avr_core;
 
 architecture struct of avr_core is
 
+  component umpu_panic
+    port (
+      -- General signals
+      clock  : in std_logic;
+      ireset : in std_logic;
+      
+      mmc_status_reg : in std_logic_vector(7 downto 0);    
+      mmc_error          : in std_logic;
+      ssp_stack_overflow : in std_logic;
+      dt_error           : in std_logic;
+
+      -- Interrupt port
+      umpu_irq : out std_logic;
+      umpu_irqack : in std_logic
+      );
+  end component;
+  
   component safe_stack
     port (
       -- General signals
       ireset : in std_logic;
       clock  : in std_logic;
+
+      -- ssp-umpu_panic interface
+      ssp_stack_overflow : out std_logic;
 
       -- Bus signals
       adr     : in std_logic_vector(5 downto 0);
@@ -89,8 +113,6 @@ architecture struct of avr_core is
       ssp_new_dom_id     : out std_logic_vector(2 downto 0);
       ssp_update_dom_id  : out std_logic;
       ssp_stack_bound    : out std_logic_vector(15 downto 0);
-      -- ssp-MMC to send the stack_overflow error
-      ssp_stack_overflow : out std_logic;
       -- ssp-MMC to receive the protection enable bit
       mmc_umpu_en        : in  std_logic;
 
@@ -106,6 +128,9 @@ architecture struct of avr_core is
       -- General signals
       ireset : in std_logic;
       clock  : in std_logic;
+
+      -- dt-umpu_panic interface
+      dt_error            : out std_logic;
 
       -- Bus signals
       adr     : in std_logic_vector(5 downto 0);
@@ -128,9 +153,7 @@ architecture struct of avr_core is
       -- calculated domain id to mmc
       dt_new_dom_id     : out std_logic_vector(2 downto 0);
       -- signal to update domain id to mmc
-      dt_update_dom_id  : out std_logic;
-      -- signal to send domain_tracker_err to mmc
-      dt_err            : out std_logic
+      dt_update_dom_id  : out std_logic
       );
 
   end component;
@@ -170,6 +193,9 @@ architecture struct of avr_core is
       ireset : in std_logic;
       clock  : in std_logic;
 
+      -- MMC-umpu_panic interface
+      mmc_error : out std_logic;
+
       -- MMC-Bus arbiter interface
       mmc_addr        : out std_logic_vector(15 downto 0);  -- R/W addr
       mmc_wr_en       : out std_logic;                      -- Write enable
@@ -205,8 +231,6 @@ architecture struct of avr_core is
       dt_new_dom_id     : in  std_logic_vector(2 downto 0);
       -- Signal to update the domain ID
       dt_update_dom_id  : in  std_logic;
-      -- Signal to indicate error on a bad address on a call instr
-      dt_err : in std_logic;
 
       -- MMC-avr_core interface to allow local registers to be written in SW and
       -- receive the data when performing a ram read
@@ -220,8 +244,6 @@ architecture struct of avr_core is
       ssp_new_dom_id     : in std_logic_vector(2 downto 0);
       ssp_update_dom_id  : in std_logic;
       ssp_stack_bound    : in std_logic_vector(15 downto 0);
-      -- MMC-ssp interface to receive a stack_overflow error
-      ssp_stack_overflow : in std_logic;
 
       -- Expose the protection bit to domain tracker and safe stack
       mmc_umpu_en : out std_logic;
@@ -716,7 +738,6 @@ architecture struct of avr_core is
   signal sg_dt_new_dom_id     : std_logic_vector(2 downto 0);
   signal sg_dt_update_dom_id  : std_logic;
   signal sg_dt_mmc_status_reg : std_logic_vector(7 downto 0);
-  signal sg_dt_err : std_logic;
 
   -- signals between the domain_tracker and io_adr_dec
   signal sg_jmp_table_high_out : std_logic_vector(7 downto 0);
@@ -748,17 +769,36 @@ architecture struct of avr_core is
   signal sg_ssp_new_dom_id     : std_logic_vector(2 downto 0);
   signal sg_ssp_update_dom_id  : std_logic;
   signal sg_ssp_stack_bound    : std_logic_vector(15 downto 0);
-  signal sg_ssp_stack_overflow : std_logic;
 
   -- signals between mmc and (domain_tracker and safe stack)
   signal sg_mmc_umpu_en : std_logic;
 
+  -- signals between umpu_panic and the other modules for errors
+  signal sg_mmc_error : std_logic;
+  signal sg_dt_error : std_logic;
+  signal sg_ssp_stack_overflow : std_logic;
+
 begin
+
+  UMPU_PANIC_MODULE : component umpu_panic port map(
+    clock => cp2,
+    ireset => ireset,
+
+    mmc_status_reg => sg_mmc_status_reg_out,
+    mmc_error => sg_mmc_error,
+    ssp_stack_overflow => sg_ssp_stack_overflow,
+    dt_error => sg_dt_error,
+
+    umpu_irq => umpu_irq,
+    umpu_irqack => umpu_irqack
+    );
 
   SAFE_STK : component safe_stack port map(
     ireset => ireset,
     clock  => cp2,
 
+    ssp_stack_overflow => sg_ssp_stack_overflow,
+    
     adr     => sg_adr,
     reg_bus => sg_dbusout,
     ram_bus => sg_dbusin,
@@ -789,7 +829,6 @@ begin
     ssp_new_dom_id     => sg_ssp_new_dom_id,
     ssp_update_dom_id  => sg_ssp_update_dom_id,
     ssp_stack_bound    => sg_ssp_stack_bound,
-    ssp_stack_overflow => sg_ssp_stack_overflow,
     mmc_umpu_en        => sg_mmc_umpu_en,
 
     stack_pointer_low  => sg_spl_out,
@@ -801,6 +840,8 @@ begin
     ireset => ireset,
     clock  => cp2,
 
+    dt_error => sg_dt_error,
+
     adr     => sg_adr,
     reg_bus => sg_dbusout,
     iowe    => sg_iowe,
@@ -811,10 +852,9 @@ begin
     jmp_table_low_out  => sg_jmp_table_low_out,
     jmp_table_high_out => sg_jmp_table_high_out,
 
-    dt_mmc_status_reg => sg_dt_mmc_status_reg,
+    dt_mmc_status_reg => sg_mmc_status_reg_out,
     dt_new_dom_id => sg_dt_new_dom_id,
-    dt_update_dom_id => sg_dt_update_dom_id,
-    dt_err => sg_dt_err
+    dt_update_dom_id => sg_dt_update_dom_id
     );
 
   ARBITER : component ram_busArbiter port map (
@@ -845,12 +885,14 @@ begin
     ireset => ireset,
     clock  => cp2,
 
-    mmc_read_cycle  => sg_mmc_read_cycle,
-    mmc_write_cycle => sg_mmc_write_cycle,
+    mmc_error => sg_mmc_error,
+    
     mmc_addr        => sg_mmc_addr,
     mmc_wr_en       => sg_mmc_wr_en,
     mmc_rd_en       => sg_mmc_rd_en,
     mmc_dbusout     => sg_mmc_dbusout,
+    mmc_read_cycle  => sg_mmc_read_cycle,
+    mmc_write_cycle => sg_mmc_write_cycle,
 
     fet_dec_pc_stop    => sg_fet_dec_pc_stop,
     fet_dec_nop_insert => sg_fet_dec_nop_insert,
@@ -869,10 +911,8 @@ begin
     stack_pointer_low  => sg_spl_out,
     stack_pointer_high => sg_sph_out,
 
-    dt_mmc_status_reg => sg_dt_mmc_status_reg,
     dt_new_dom_id => sg_dt_new_dom_id,
     dt_update_dom_id => sg_dt_update_dom_id,
-    dt_err => sg_dt_err,
 
     adr     => sg_adr,
     reg_bus => sg_dbusout,
@@ -882,7 +922,6 @@ begin
     ssp_new_dom_id     => sg_ssp_new_dom_id,
     ssp_update_dom_id  => sg_ssp_update_dom_id,
     ssp_stack_bound    => sg_ssp_stack_bound,
-    ssp_stack_overflow => sg_ssp_stack_overflow,
 
     mmc_umpu_en => sg_mmc_umpu_en,
 

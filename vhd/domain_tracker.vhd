@@ -17,6 +17,9 @@ entity domain_tracker is
     ireset : in std_logic;
     clock  : in std_logic;
 
+    -- dt-umpu_panic interface
+    dt_error            : out std_logic;
+
     -- Bus signals
     adr     : in std_logic_vector(5 downto 0);
     reg_bus : in std_logic_vector(7 downto 0);
@@ -38,10 +41,7 @@ entity domain_tracker is
     -- calculated domain id to mmc
     dt_new_dom_id     : out std_logic_vector(2 downto 0);
     -- signal to update domain id to mmc
-    dt_update_dom_id  : out std_logic;
-    -- signal to send domain_tracker_err to mmc
-    dt_err            : out std_logic
-
+    dt_update_dom_id  : out std_logic
     );
 
 end domain_tracker;
@@ -133,7 +133,7 @@ begin
             else '0';
   ub_err <= '1' when fet_dec_pc > upper_bound
             else '0';
-  dt_err <= '1' when
+  dt_error <= '1' when
             (not in_trusted_domain and
              fet_dec_call_instr and
              (lb_err or ub_err)

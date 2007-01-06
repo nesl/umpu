@@ -29,7 +29,7 @@ vcom ../vhd/AVRuCPackage.vhd ../vhd/CPUWaitGenerator.vhd ../vhd/DataRAM.vhd ../v
 ../vhd/programToLoad.vhd ../vhd/ram_busArbiter.vhd ../vhd/reg_file.vhd \
 ../vhd/safe_stack.vhd ../vhd/shifter.vhd ../vhd/simple_timer.vhd \
 ../vhd/tb_programLoader.vhd ../vhd/top_avr_core_sim.vhd ../vhd/uart.vhd \
-../vhd/dom_bnd_filler.vhd
+../vhd/dom_bnd_filler.vhd ../vhd/umpu_panic.vhd
 
 
 echo -----------------------------------------------------
@@ -45,6 +45,15 @@ echo --- Adding Clock
 add wave -hex -label clock sim:/tb_programloader/programloader1/TOP_AVR/cp2
 echo --- Adding Panic Signal
 add wave -hex -label PANIC sim:/tb_programloader/programloader1/TOP_AVR/panic
+
+proc fet_dec_intr {} {
+    echo -- Adding signals to wave
+    add wave -label irqlines sim:/tb_programloader/programloader1/TOP_AVR/testing_core/main/irqlines
+    add wave -label irqack sim:/tb_programloader/programloader1/TOP_AVR/testing_core/main/irqack
+    add wave -label irqackad sim:/tb_programloader/programloader1/TOP_AVR/testing_core/main/irqackad
+    add wave -label irq_start sim:/tb_programloader/programloader1/TOP_AVR/testing_core/main/irq_start
+    add wave -label sreg_out sim:/tb_programloader/programloader1/TOP_AVR/testing_core/main/sreg_out
+}
 
 proc cross_dom_ret {} {
     echo -- Analyzing Cross Domain Return

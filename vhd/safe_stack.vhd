@@ -19,6 +19,9 @@ entity safe_stack is
     ireset : in std_logic;
     clock  : in std_logic;
 
+    -- ssp-umpu_panic interface
+    ssp_stack_overflow : out std_logic;
+
     -- Bus signals
     adr     : in std_logic_vector(5 downto 0);
     reg_bus : in std_logic_vector(7 downto 0);
@@ -57,8 +60,6 @@ entity safe_stack is
     ssp_new_dom_id    : out std_logic_vector(2 downto 0);
     ssp_update_dom_id : out std_logic;
     ssp_stack_bound   : out std_logic_vector(15 downto 0);
-    -- ssp-MMC to send the stack_overflow error
-    ssp_stack_overflow : out std_logic;
     -- ssp-MMC to receive the protection enable bit
     mmc_umpu_en : in std_logic;
 
