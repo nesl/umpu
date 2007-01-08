@@ -97,6 +97,9 @@ package AVRuCPackage is
   constant DOM_BND_CTL_Address        : std_logic_vector(IOAdrWidth - 1 downto 0) := CONV_STD_LOGIC_VECTOR(16#15#, IOAdrWidth);
   constant DOM_BND_DATA_Address       : std_logic_vector(IOAdrWidth - 1 downto 0) := CONV_STD_LOGIC_VECTOR(16#12#, IOAdrWidth);
 
+-- umpu_panic
+  constant UMPU_PANIC_REG_Address       : std_logic_vector(IOAdrWidth - 1 downto 0) := CONV_STD_LOGIC_VECTOR(16#11#, IOAdrWidth);
+
 -- Function declaration
   function LOG2(Number : integer) return integer;
 

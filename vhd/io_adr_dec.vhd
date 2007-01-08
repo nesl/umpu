@@ -16,6 +16,9 @@ entity io_adr_dec is port (
   dbusin_int : out std_logic_vector(7 downto 0);
   dbusin_ext : in  std_logic_vector(7 downto 0);
 
+  -- registers from umpu_panic
+  umpu_panic_reg_out : in std_logic_vector(7 downto 0);
+
   -- Registers from mmc.vhd
   mem_map_pointer_low_out  : in std_logic_vector(7 downto 0);
   mem_map_pointer_high_out : in std_logic_vector(7 downto 0);
@@ -24,8 +27,10 @@ entity io_adr_dec is port (
   mem_prot_top_low_out     : in std_logic_vector(7 downto 0);
   mem_prot_top_high_out    : in std_logic_vector(7 downto 0);
   mmc_status_reg_out       : in std_logic_vector(7 downto 0);
-  ssph_out                 : in std_logic_vector(7 downto 0);
-  sspl_out                 : in std_logic_vector(7 downto 0);
+
+  -- Registers from safe_stack
+  ssph_out : in std_logic_vector(7 downto 0);
+  sspl_out : in std_logic_vector(7 downto 0);
 
   -- registers from the domain tracker
   jmp_table_low_out  : in std_logic_vector(7 downto 0);
@@ -61,6 +66,7 @@ begin
                 dom_bnd_data_out         when (adr = DOM_BND_DATA_Address and iore = '1')         else
                 sspl_out                 when (adr = SSP_LOW_Address and iore = '1')              else
                 ssph_out                 when (adr = SSP_HIGH_Address and iore = '1')             else
+                umpu_panic_reg_out       when (adr = UMPU_PANIC_REG_Address and iore = '1')       else
                 dbusin_ext;
 
 end rtl;

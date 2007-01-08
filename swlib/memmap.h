@@ -39,6 +39,7 @@
 #define SSPH _SFR_IO8(0x02)
 #define DBCTL _SFR_IO8(0x15)
 #define DBDATA _SFR_IO8(0x12)
+#define UMPU_PANIC _SFR_IO8(0x11)
 
 //---------------------------------------------------
 // MEMORY MAP STATUS REGISTER

@@ -36,8 +36,8 @@ is port
        dbusout : out std_logic_vector (7 downto 0);
 
        -- interrupt port for umpu_panic
-       umpu_irq : out std_logic;
-       umpu_irqack : in std_logic;
+       umpu_irq    : out std_logic;
+       umpu_irqack : in  std_logic;
 
 -- INTERRUPTS PORT
        irqlines : in  std_logic_vector (22 downto 0);
@@ -53,23 +53,37 @@ architecture struct of avr_core is
   component umpu_panic
     port (
       -- Debug signals
-      dbg_umpu_panic : out std_logic;       -- panic signal
+      dbg_umpu_panic : out std_logic;   -- panic signal
 
       -- General signals
       clock  : in std_logic;
       ireset : in std_logic;
-      
-      mmc_status_reg : in std_logic_vector(7 downto 0);    
+
+      mmc_status_reg     : in std_logic_vector(7 downto 0);
       mmc_error          : in std_logic;
       ssp_stack_overflow : in std_logic;
       dt_error           : in std_logic;
 
+      -- signals to update the domain id at the mmc module when a panic occurs
+      up_update_dom_id : out std_logic;
+      up_new_dom_id    : out std_logic_vector(2 downto 0);
+
       -- Interrupt port
-      umpu_irq : out std_logic;
-      umpu_irqack : in std_logic
+      umpu_irq    : out std_logic;
+      umpu_irqack : in  std_logic;
+
+      -- output the local registers
+      umpu_panic_reg_out : out std_logic_vector(7 downto 0);
+
+      -- MMC-avr_core interface to allow local registers to be written in SW and
+      -- receive the data when performing a ram read
+      adr     : in std_logic_vector(5 downto 0);
+      reg_bus : in std_logic_vector(7 downto 0);
+      iowe    : in std_logic
+
       );
   end component;
-  
+
   component safe_stack
     port (
       -- General signals
@@ -108,14 +122,14 @@ architecture struct of avr_core is
       fet_dec_ret_dom_change    : in  std_logic_vector(4 downto 0);
       fet_dec_write_ram_data    : in  std_logic_vector(7 downto 0);
       fet_dec_ssp_ret_dom_start : out std_logic;
-      
+
       -- Signals from Domain Tracker
       dt_update_dom_id : in std_logic;
 
       -- ssp-MMC to update the dom id and send the stack_bound
-      ssp_new_dom_id     : out std_logic_vector(2 downto 0);
-      ssp_update_dom_id  : out std_logic;
-      ssp_stack_bound    : out std_logic_vector(15 downto 0);
+      ssp_new_dom_id    : out std_logic_vector(2 downto 0);
+      ssp_update_dom_id : out std_logic;
+      ssp_stack_bound   : out std_logic_vector(15 downto 0);
 
       -- Signal from io_reg_file
       stack_pointer_low  : in std_logic_vector(7 downto 0);
@@ -131,7 +145,7 @@ architecture struct of avr_core is
       clock  : in std_logic;
 
       -- dt-umpu_panic interface
-      dt_error            : out std_logic;
+      dt_error : out std_logic;
 
       -- Bus signals
       adr     : in std_logic_vector(5 downto 0);
@@ -195,7 +209,10 @@ architecture struct of avr_core is
       clock  : in std_logic;
 
       -- MMC-umpu_panic interface
-      mmc_error : out std_logic;
+      mmc_error        : out std_logic;
+      -- MMC-umpu_panic interface to update the dom_id
+      up_update_dom_id : in  std_logic;
+      up_new_dom_id    : in  std_logic_vector(2 downto 0);
 
       -- MMC-Bus arbiter interface
       mmc_addr        : out std_logic_vector(15 downto 0);  -- R/W addr
@@ -242,9 +259,9 @@ architecture struct of avr_core is
 
       -- MMC-ssp interface to update the dom id on a ret and receive the stack
       -- bound
-      ssp_new_dom_id     : in std_logic_vector(2 downto 0);
-      ssp_update_dom_id  : in std_logic;
-      ssp_stack_bound    : in std_logic_vector(15 downto 0)
+      ssp_new_dom_id    : in std_logic_vector(2 downto 0);
+      ssp_update_dom_id : in std_logic;
+      ssp_stack_bound   : in std_logic_vector(15 downto 0)
       );
   end component;
 
@@ -639,10 +656,11 @@ architecture struct of avr_core is
     mmc_status_reg_out       : in std_logic_vector(7 downto 0);
     jmp_table_low_out        : in std_logic_vector(7 downto 0);
     jmp_table_high_out       : in std_logic_vector(7 downto 0);
-    dom_bnd_data_out : in std_logic_vector(7 downto 0);
-    dom_bnd_ctl_out : in std_logic_vector(7 downto 0);
+    dom_bnd_data_out         : in std_logic_vector(7 downto 0);
+    dom_bnd_ctl_out          : in std_logic_vector(7 downto 0);
     ssph_out                 : in std_logic_vector(7 downto 0);
     sspl_out                 : in std_logic_vector(7 downto 0);
+    umpu_panic_reg_out       : in std_logic_vector(7 downto 0);
     -- End registers from mmc.vhd
 
     spl_out   : in std_logic_vector(7 downto 0);
@@ -737,8 +755,8 @@ architecture struct of avr_core is
   -- signals between the domain_tracker and io_adr_dec
   signal sg_jmp_table_high_out : std_logic_vector(7 downto 0);
   signal sg_jmp_table_low_out  : std_logic_vector(7 downto 0);
-  signal sg_dom_bnd_ctl_out : std_logic_vector(7 downto 0);
-  signal sg_dom_bnd_data_out : std_logic_vector(7 downto 0);
+  signal sg_dom_bnd_ctl_out    : std_logic_vector(7 downto 0);
+  signal sg_dom_bnd_data_out   : std_logic_vector(7 downto 0);
 
   -- signals between safe_stack and ram_busArbiter
   signal sg_ss_addr        : std_logic_vector(15 downto 0);
@@ -761,30 +779,46 @@ architecture struct of avr_core is
   signal sg_ssph_out : std_logic_vector(7 downto 0);
 
   -- signals between safe stack and MMC
-  signal sg_ssp_new_dom_id     : std_logic_vector(2 downto 0);
-  signal sg_ssp_update_dom_id  : std_logic;
-  signal sg_ssp_stack_bound    : std_logic_vector(15 downto 0);
+  signal sg_ssp_new_dom_id    : std_logic_vector(2 downto 0);
+  signal sg_ssp_update_dom_id : std_logic;
+  signal sg_ssp_stack_bound   : std_logic_vector(15 downto 0);
 
   -- signals between umpu_panic and the other modules for errors
-  signal sg_mmc_error : std_logic;
-  signal sg_dt_error : std_logic;
+  signal sg_mmc_error          : std_logic;
+  signal sg_dt_error           : std_logic;
   signal sg_ssp_stack_overflow : std_logic;
+
+  -- signals between umpu_panic and MMC for updating the dom_id
+  signal sg_up_update_dom_id : std_logic;
+  signal sg_up_new_dom_id    : std_logic_vector(2 downto 0);
+
+  -- signals between umpu_panic and io_adr_dec
+  signal sg_umpu_panic_reg_out : std_logic_vector(7 downto 0);
 
 begin
 
   UMPU_PANIC_MODULE : component umpu_panic port map(
     dbg_umpu_panic => panic,
-    
-    clock => cp2,
+
+    clock  => cp2,
     ireset => ireset,
 
-    mmc_status_reg => sg_mmc_status_reg_out,
-    mmc_error => sg_mmc_error,
+    mmc_status_reg     => sg_mmc_status_reg_out,
+    mmc_error          => sg_mmc_error,
     ssp_stack_overflow => sg_ssp_stack_overflow,
-    dt_error => sg_dt_error,
+    dt_error           => sg_dt_error,
 
-    umpu_irq => umpu_irq,
-    umpu_irqack => umpu_irqack
+    up_update_dom_id => sg_up_update_dom_id,
+    up_new_dom_id    => sg_up_new_dom_id,
+
+    umpu_irq    => umpu_irq,
+    umpu_irqack => umpu_irqack,
+
+    umpu_panic_reg_out => sg_umpu_panic_reg_out,
+
+    adr     => sg_adr,
+    reg_bus => sg_dbusout,
+    iowe    => sg_iowe
     );
 
   SAFE_STK : component safe_stack port map(
@@ -792,7 +826,7 @@ begin
     clock  => cp2,
 
     ssp_stack_overflow => sg_ssp_stack_overflow,
-    
+
     adr     => sg_adr,
     reg_bus => sg_dbusout,
     ram_bus => sg_dbusin,
@@ -820,9 +854,9 @@ begin
 
     dt_update_dom_id => sg_dt_update_dom_id,
 
-    ssp_new_dom_id     => sg_ssp_new_dom_id,
-    ssp_update_dom_id  => sg_ssp_update_dom_id,
-    ssp_stack_bound    => sg_ssp_stack_bound,
+    ssp_new_dom_id    => sg_ssp_new_dom_id,
+    ssp_update_dom_id => sg_ssp_update_dom_id,
+    ssp_stack_bound   => sg_ssp_stack_bound,
 
     stack_pointer_low  => sg_spl_out,
     stack_pointer_high => sg_sph_out
@@ -846,8 +880,8 @@ begin
     jmp_table_high_out => sg_jmp_table_high_out,
 
     dt_mmc_status_reg => sg_mmc_status_reg_out,
-    dt_new_dom_id => sg_dt_new_dom_id,
-    dt_update_dom_id => sg_dt_update_dom_id
+    dt_new_dom_id     => sg_dt_new_dom_id,
+    dt_update_dom_id  => sg_dt_update_dom_id
     );
 
   ARBITER : component ram_busArbiter port map (
@@ -878,8 +912,10 @@ begin
     ireset => ireset,
     clock  => cp2,
 
-    mmc_error => sg_mmc_error,
-    
+    mmc_error        => sg_mmc_error,
+    up_update_dom_id => sg_up_update_dom_id,
+    up_new_dom_id    => sg_up_new_dom_id,
+
     mmc_addr        => sg_mmc_addr,
     mmc_wr_en       => sg_mmc_wr_en,
     mmc_rd_en       => sg_mmc_rd_en,
@@ -904,7 +940,7 @@ begin
     stack_pointer_low  => sg_spl_out,
     stack_pointer_high => sg_sph_out,
 
-    dt_new_dom_id => sg_dt_new_dom_id,
+    dt_new_dom_id    => sg_dt_new_dom_id,
     dt_update_dom_id => sg_dt_update_dom_id,
 
     adr     => sg_adr,
@@ -912,64 +948,63 @@ begin
     ram_bus => sg_dbusin,
     iowe    => sg_iowe,
 
-    ssp_new_dom_id     => sg_ssp_new_dom_id,
-    ssp_update_dom_id  => sg_ssp_update_dom_id,
-    ssp_stack_bound    => sg_ssp_stack_bound
+    ssp_new_dom_id    => sg_ssp_new_dom_id,
+    ssp_update_dom_id => sg_ssp_update_dom_id,
+    ssp_stack_bound   => sg_ssp_stack_bound
 
     );
 
-  main : component pm_fetch_dec port map
-    (
-      -- MMC specific signals
-      fet_dec_pc_stop    => sg_fet_dec_pc_stop,
-      fet_dec_nop_insert => sg_fet_dec_nop_insert,
-      fet_dec_str_addr   => sg_fet_dec_str_addr,
-      fet_dec_run_mmc    => sg_fet_dec_run_mmc,
-      fet_dec_data       => sg_fet_dec_data,
+  main : component pm_fetch_dec port map(
+    -- MMC specific signals
+    fet_dec_pc_stop    => sg_fet_dec_pc_stop,
+    fet_dec_nop_insert => sg_fet_dec_nop_insert,
+    fet_dec_str_addr   => sg_fet_dec_str_addr,
+    fet_dec_run_mmc    => sg_fet_dec_run_mmc,
+    fet_dec_data       => sg_fet_dec_data,
 
-      -- domain_tracker specific signals
-      dt_pc            => sg_dt_pc,
-      dt_call_instr    => sg_dt_call_instr,
-      dt_update_dom_id => sg_dt_update_dom_id,
+    -- domain_tracker specific signals
+    dt_pc            => sg_dt_pc,
+    dt_call_instr    => sg_dt_call_instr,
+    dt_update_dom_id => sg_dt_update_dom_id,
 
-      -- safe_stack specific signals
-      fet_dec_pc                => sg_fet_dec_pc,
-      fet_dec_ssp_retL_wr       => sg_fet_dec_ssp_retL_wr,
-      fet_dec_ssp_retH_wr       => sg_fet_dec_ssp_retH_wr,
-      fet_dec_ssp_retH_rd       => sg_fet_dec_ssp_retH_rd,
-      fet_dec_ssp_retL_rd       => sg_fet_dec_ssp_retL_rd,
-      fet_dec_ssp_ret_dom_start => sg_fet_dec_ssp_ret_dom_start,
-      fet_dec_call_dom_change   => sg_fet_dec_call_dom_change,
-      fet_dec_ret_dom_change    => sg_fet_dec_ret_dom_change,
+    -- safe_stack specific signals
+    fet_dec_pc                => sg_fet_dec_pc,
+    fet_dec_ssp_retL_wr       => sg_fet_dec_ssp_retL_wr,
+    fet_dec_ssp_retH_wr       => sg_fet_dec_ssp_retH_wr,
+    fet_dec_ssp_retH_rd       => sg_fet_dec_ssp_retH_rd,
+    fet_dec_ssp_retL_rd       => sg_fet_dec_ssp_retL_rd,
+    fet_dec_ssp_ret_dom_start => sg_fet_dec_ssp_ret_dom_start,
+    fet_dec_call_dom_change   => sg_fet_dec_call_dom_change,
+    fet_dec_ret_dom_change    => sg_fet_dec_ret_dom_change,
 
 
 -- EXTERNAL INTERFACES OF THE CORE
-      clk     => cp2,
-      nrst    => ireset,
-      cpuwait => cpuwait,
+    clk     => cp2,
+    nrst    => ireset,
+    cpuwait => cpuwait,
 
 -- PROGRAM MEMORY PORTS
-      pc   => pc,
-      inst => inst,
+    pc   => pc,
+    inst => inst,
 
 -- I/O REGISTERS PORTS
-      adr  => sg_adr,
-      iore => sg_iore,
-      iowe => sg_iowe,
+    adr  => sg_adr,
+    iore => sg_iore,
+    iowe => sg_iowe,
 
 -- DATA MEMORY PORTS
-      -- THIS HAS BEEN EDITED TO COMMUNICATE THROUGH THE ARBITER
-      ramadr => sg_fet_dec_addr,
-      ramre  => sg_fet_dec_rd_en,
-      ramwe  => sg_fet_dec_wr_en,
+    -- THIS HAS BEEN EDITED TO COMMUNICATE THROUGH THE ARBITER
+    ramadr => sg_fet_dec_addr,
+    ramre  => sg_fet_dec_rd_en,
+    ramwe  => sg_fet_dec_wr_en,
 
-      dbusin  => sg_dbusin,
-      dbusout => sg_fet_dec_dbusout,
+    dbusin  => sg_dbusin,
+    dbusout => sg_fet_dec_dbusout,
 
 -- INTERRUPTS PORT
-      irqlines => irqlines,
-      irqack   => irqack,
-      irqackad => irqackad,
+    irqlines => irqlines,
+    irqack   => irqack,
+    irqackad => irqackad,
 
 -- END OF THE CORE INTERFACES
 
@@ -982,88 +1017,88 @@ begin
 -- *********************************************************************************************
 -- ******************** INTERFACES TO THE ALU *************************************************
 -- *********************************************************************************************
-      alu_data_r_in => sg_alu_data_r_in,
-      alu_data_d_in => sg_alu_data_d_in,
+    alu_data_r_in => sg_alu_data_r_in,
+    alu_data_d_in => sg_alu_data_d_in,
 
 -- OPERATION SIGNALS INPUTS
 
-      idc_add_out  => sg_idc_add,
-      idc_adc_out  => sg_idc_adc,
-      idc_adiw_out => sg_idc_adiw,
-      idc_sub_out  => sg_idc_sub,
-      idc_subi_out => sg_idc_subi,
-      idc_sbc_out  => sg_idc_sbc,
-      idc_sbci_out => sg_idc_sbci,
-      idc_sbiw_out => sg_idc_sbiw,
+    idc_add_out  => sg_idc_add,
+    idc_adc_out  => sg_idc_adc,
+    idc_adiw_out => sg_idc_adiw,
+    idc_sub_out  => sg_idc_sub,
+    idc_subi_out => sg_idc_subi,
+    idc_sbc_out  => sg_idc_sbc,
+    idc_sbci_out => sg_idc_sbci,
+    idc_sbiw_out => sg_idc_sbiw,
 
-      adiw_st_out => sg_adiw_st,
-      sbiw_st_out => sg_sbiw_st,
+    adiw_st_out => sg_adiw_st,
+    sbiw_st_out => sg_sbiw_st,
 
-      idc_and_out  => sg_idc_and,
-      idc_andi_out => sg_idc_andi,
-      idc_or_out   => sg_idc_or,
-      idc_ori_out  => sg_idc_ori,
-      idc_eor_out  => sg_idc_eor,
-      idc_com_out  => sg_idc_com,
-      idc_neg_out  => sg_idc_neg,
+    idc_and_out  => sg_idc_and,
+    idc_andi_out => sg_idc_andi,
+    idc_or_out   => sg_idc_or,
+    idc_ori_out  => sg_idc_ori,
+    idc_eor_out  => sg_idc_eor,
+    idc_com_out  => sg_idc_com,
+    idc_neg_out  => sg_idc_neg,
 
-      idc_inc_out => sg_idc_inc,
-      idc_dec_out => sg_idc_dec,
+    idc_inc_out => sg_idc_inc,
+    idc_dec_out => sg_idc_dec,
 
-      idc_cp_out   => sg_idc_cp,
-      idc_cpc_out  => sg_idc_cpc,
-      idc_cpi_out  => sg_idc_cpi,
-      idc_cpse_out => sg_idc_cpse,
+    idc_cp_out   => sg_idc_cp,
+    idc_cpc_out  => sg_idc_cpc,
+    idc_cpi_out  => sg_idc_cpi,
+    idc_cpse_out => sg_idc_cpse,
 
-      idc_lsr_out  => sg_idc_lsr,
-      idc_ror_out  => sg_idc_ror,
-      idc_asr_out  => sg_idc_asr,
-      idc_swap_out => sg_idc_swap,
+    idc_lsr_out  => sg_idc_lsr,
+    idc_ror_out  => sg_idc_ror,
+    idc_asr_out  => sg_idc_asr,
+    idc_swap_out => sg_idc_swap,
 
 
 -- DATA OUTPUT
-      alu_data_out => sg_alu_data_out,
+    alu_data_out => sg_alu_data_out,
 
 -- FLAGS OUTPUT
-      alu_c_flag_out => sg_alu_c_flag_out,
-      alu_z_flag_out => sg_alu_z_flag_out,
-      alu_n_flag_out => sg_alu_n_flag_out,
-      alu_v_flag_out => sg_alu_v_flag_out,
-      alu_s_flag_out => sg_alu_s_flag_out,
-      alu_h_flag_out => sg_alu_h_flag_out,
+    alu_c_flag_out => sg_alu_c_flag_out,
+    alu_z_flag_out => sg_alu_z_flag_out,
+    alu_n_flag_out => sg_alu_n_flag_out,
+    alu_v_flag_out => sg_alu_v_flag_out,
+    alu_s_flag_out => sg_alu_s_flag_out,
+    alu_h_flag_out => sg_alu_h_flag_out,
 
 -- *********************************************************************************************
 -- ******************** INTERFACES TO THE GENERAL PURPOSE REGISTER FILE ************************
 -- *********************************************************************************************
-      reg_rd_in  => sg_reg_rd_in,
-      reg_rd_out => sg_reg_rd_out,
-      reg_rd_adr => sg_reg_rd_adr,
-      reg_rr_out => sg_reg_rr_out,
-      reg_rr_adr => sg_reg_rr_adr,
-      reg_rd_wr  => sg_reg_rd_wr,
+    reg_rd_in  => sg_reg_rd_in,
+    reg_rd_out => sg_reg_rd_out,
+    reg_rd_adr => sg_reg_rd_adr,
+    reg_rr_out => sg_reg_rr_out,
+    reg_rr_adr => sg_reg_rr_adr,
+    reg_rd_wr  => sg_reg_rd_wr,
 
-      post_inc  => sg_post_inc,
-      pre_dec   => sg_pre_dec,
-      reg_h_wr  => sg_reg_h_wr,
-      reg_h_out => sg_reg_h_out,
-      reg_h_adr => sg_reg_h_adr,
-      reg_z_out => sg_reg_z_out,
+    post_inc  => sg_post_inc,
+    pre_dec   => sg_pre_dec,
+    reg_h_wr  => sg_reg_h_wr,
+    reg_h_out => sg_reg_h_out,
+    reg_h_adr => sg_reg_h_adr,
+    reg_z_out => sg_reg_z_out,
 
 -- *********************************************************************************************
 -- ******************** INTERFACES TO THE INPUT/OUTPUT REGISTER FILE ***************************
 -- *********************************************************************************************
 
-      sreg_fl_in => sg_sreg_fl_in,      --??   
-      sreg_out   => sg_sreg_out,
+    sreg_fl_in => sg_sreg_fl_in,        --??   
+    sreg_out   => sg_sreg_out,
 
-      sreg_fl_wr_en => sg_sreg_fl_wr_en,
+    sreg_fl_wr_en => sg_sreg_fl_wr_en,
 
-      spl_out     => sg_spl_out,
-      sph_out     => sg_sph_out,
-      sp_ndown_up => sg_sp_ndown_up,
-      sp_en       => sg_sp_en,
+    spl_out     => sg_spl_out,
+    sph_out     => sg_sph_out,
+    sp_ndown_up => sg_sp_ndown_up,
+    sp_en       => sg_sp_en,
 
-      rampz_out => sg_rampz_out,
+    rampz_out => sg_rampz_out,
 
 -- *********************************************************************************************
 -- ******************** INTERFACES TO THE INPUT/OUTPUT ADDRESS DECODER ************************
@@ -1079,46 +1114,46 @@ begin
 -- ******************** INTERFACES TO THE BIT PROCESSOR **************************************
 -- *********************************************************************************************
 
-      bit_num_r_io => sg_bit_num_r_io,
-      bitpr_io_out => sg_bitpr_io_out,
+    bit_num_r_io => sg_bit_num_r_io,
+    bitpr_io_out => sg_bitpr_io_out,
 
-      branch => sg_branch,
+    branch => sg_branch,
 
-      bit_pr_sreg_out => sg_bit_pr_sreg_out,
+    bit_pr_sreg_out => sg_bit_pr_sreg_out,
 
-      sreg_bit_num => sg_sreg_bit_num,
+    sreg_bit_num => sg_sreg_bit_num,
 
-      bld_op_out => sg_bld_op_out,
+    bld_op_out => sg_bld_op_out,
 
-      bit_test_op_out => sg_bit_test_op_out,
+    bit_test_op_out => sg_bit_test_op_out,
 
 
 -- OPERATION SIGNALS INPUTS
 
-      -- INSTRUCTUIONS AND STATES
+    -- INSTRUCTUIONS AND STATES
 
-      idc_sbi_out => sg_idc_sbi,
-      sbi_st_out  => sg_sbi_st,
-      idc_cbi_out => sg_idc_cbi,
-      cbi_st_out  => sg_cbi_st,
+    idc_sbi_out => sg_idc_sbi,
+    sbi_st_out  => sg_sbi_st,
+    idc_cbi_out => sg_idc_cbi,
+    cbi_st_out  => sg_cbi_st,
 
-      idc_bld_out  => sg_idc_bld,
-      idc_bst_out  => sg_idc_bst,
-      idc_bset_out => sg_idc_bset,
-      idc_bclr_out => sg_idc_bclr,
+    idc_bld_out  => sg_idc_bld,
+    idc_bst_out  => sg_idc_bst,
+    idc_bset_out => sg_idc_bset,
+    idc_bclr_out => sg_idc_bclr,
 
-      idc_sbic_out => sg_idc_sbic,
-      idc_sbis_out => sg_idc_sbis,
+    idc_sbic_out => sg_idc_sbic,
+    idc_sbis_out => sg_idc_sbis,
 
-      idc_sbrs_out => sg_idc_sbrs,
-      idc_sbrc_out => sg_idc_sbrc,
+    idc_sbrs_out => sg_idc_sbrs,
+    idc_sbrc_out => sg_idc_sbrc,
 
-      idc_brbs_out => sg_idc_brbs,
-      idc_brbc_out => sg_idc_brbc,
+    idc_brbs_out => sg_idc_brbs,
+    idc_brbc_out => sg_idc_brbc,
 
-      idc_reti_out => sg_idc_reti
+    idc_reti_out => sg_idc_reti
 
-      );
+    );
 
 
 
@@ -1214,8 +1249,9 @@ begin
     -- registers from domain_tracker
     jmp_table_low_out        => sg_jmp_table_low_out,
     jmp_table_high_out       => sg_jmp_table_high_out,
-    dom_bnd_ctl_out => sg_dom_bnd_ctl_out,
-    dom_bnd_data_out => sg_dom_bnd_data_out,
+    dom_bnd_ctl_out          => sg_dom_bnd_ctl_out,
+    dom_bnd_data_out         => sg_dom_bnd_data_out,
+    umpu_panic_reg_out       => sg_umpu_panic_reg_out,
 
     spl_out   => sg_spl_out,
     sph_out   => sg_sph_out,
