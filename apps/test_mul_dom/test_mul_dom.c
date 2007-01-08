@@ -31,11 +31,6 @@ void dom1_realmain(uint8_t* buffer)
     buffer[i] = buffer[i] * 2;
     PORTA = buffer[i];
   }
-
-  // This will cause a panic
-  buffer = buffer + 2*BUFF_SIZE;
-  *buffer = 10;
-  PORTA = 0xFF;
 }
 
 void dom0_realmain()
@@ -65,6 +60,8 @@ void dom0_realmain()
 
 SIGNAL(SIG_ADC) {
   PORTA = 0x33;
+  uint8_t x = 0x22;
   UMPU_PANIC = 0xF0;
+  PORTA = x;
   while(1);
 }

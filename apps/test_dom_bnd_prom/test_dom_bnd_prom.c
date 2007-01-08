@@ -17,10 +17,12 @@ int main(){
   SSPH = 0x09;
 
   // The following is a temp addition and should be removed
-  SET_DOM_LWBND(0,0x87);
-  SET_DOM_UPBND(0,0xBC);
-  SET_DOM_LWBND(1,0x7A);
-  SET_DOM_UPBND(1,0x86);
+  SET_DOM_LWBND(0,0x110);
+  SET_DOM_UPBND(0,0x17a);
+  SET_DOM_LWBND(1,0xf6);
+  SET_DOM_UPBND(1,0x10e);
+
+  sei();
 
   // Initialize memory
   mem_init();
@@ -65,3 +67,10 @@ void dom0_realmain()
   return;
 }
 
+SIGNAL(SIG_ADC) {
+  PORTA = 0x33;
+  uint8_t x = 0x22;
+  UMPU_PANIC = 0xF0;
+  PORTA = x;
+  while(1);
+}
