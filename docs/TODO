@@ -30,7 +30,7 @@ New things to do:
 1. Automate the setting of the domain bounds for each domain loaded into the system.
 2. Figure out how to deal with compiler generated routines such as multiplication and division
 3. Ensure that the priority of the umpu_irq is high as we think it is
-	- This can be accessed by writing a test program using the when thing
+	- This can be accessed by writing a test program using the 'when' thing in HW similar to the way priority is maintained in interrupts
 
 Work Done:
 1. MMC is not actually using the stack bound to check the stores to the stack
@@ -45,3 +45,6 @@ Work Done:
 	- Add two bound registers for the bounds of the current domain
 6. Simplistic exception routine
 	- Raise an interrupt on panic
+
+Things partially done:
+1. Instantiated a very simple program and ran it on the FPGA.

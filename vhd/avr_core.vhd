@@ -243,8 +243,6 @@ architecture struct of avr_core is
       stack_pointer_high : in std_logic_vector(7 downto 0);
 
       -- MMC-domain_tracker interface
-      -- Status register sent to the dt
-      dt_mmc_status_reg : out std_logic_vector(7 downto 0);
       -- New domain ID from dt
       dt_new_dom_id     : in  std_logic_vector(2 downto 0);
       -- Signal to update the domain ID
@@ -750,7 +748,6 @@ architecture struct of avr_core is
   -- signals between domain_tracker and mmc
   signal sg_dt_new_dom_id     : std_logic_vector(2 downto 0);
   signal sg_dt_update_dom_id  : std_logic;
-  signal sg_dt_mmc_status_reg : std_logic_vector(7 downto 0);
 
   -- signals between the domain_tracker and io_adr_dec
   signal sg_jmp_table_high_out : std_logic_vector(7 downto 0);

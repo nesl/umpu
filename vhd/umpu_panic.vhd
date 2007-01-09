@@ -83,16 +83,19 @@ begin
     end if;
   end process;
   -- In the second stage, the panic is set when the panic from first stage is set
-  SG_PANIC_LATCH_LATCH : process(ireset, panic_stage1, umpu_panic_reg(0))
-  begin
-    if ireset = '0' then
-      panic_stage2 <= '0';
-    elsif (panic_stage1 = '1' and panic_stage1'event) then
-      panic_stage2 <= '1';
-    elsif (umpu_panic_reg(0) = '0' and umpu_panic_reg(0)'event) then
-      panic_stage2 <= '0';
-    end if;
-  end process;
+--   SG_PANIC_LATCH_LATCH : process(ireset, panic_stage1, umpu_panic_reg(0))
+--   begin
+--     if ireset = '0' then
+--       panic_stage2 <= '0';
+--     elsif (panic_stage1 = '1' and panic_stage1'event) then
+--       panic_stage2 <= '1';
+--     elsif (umpu_panic_reg(0) = '0' and umpu_panic_reg(0)'event) then
+--       panic_stage2 <= '0';
+--     end if;
+--   end process;
+
+  panic_stage2 <= umpu_panic_reg(0);
+  
   -- The actual panic signal is ored between the latched panic signal and the errors
   umpu_panic       <= ((mmc_error or ssp_stack_overflow or dt_error) and umpu_en) or panic_stage2;
 
@@ -138,9 +141,9 @@ begin
   -- return early 
 
   -- This process sets the panic code based on the kind of error causing the panic
-  SET_PANIC_CODE : process(ireset, mmc_error, ssp_stack_overflow, dt_error,umpu_panic_reg(0))
+  SET_PANIC_CODE : process(ireset,mmc_error,ssp_stack_overflow,dt_error)
   begin
-    if (ireset = '0' or (umpu_panic_reg(0) = '0' and umpu_panic_reg(0)'event)) then
+    if (ireset = '0') then 
       umpu_panic_reg(3 downto 1) <= (others => '1');
     elsif (mmc_error = '1') then
       umpu_panic_reg(3 downto 1) <= "001";
@@ -148,17 +151,15 @@ begin
       umpu_panic_reg(3 downto 1) <= "010";
     elsif (ssp_stack_overflow = '1') then
       umpu_panic_reg(3 downto 1) <= "011";
-      -- else
-      -- umpu_panic_reg(3 downto 1) <= "111";
     end if;
   end process;
 
   -- This process sets the dom_id of the domain that caused the panic
-  SET_PANIC_DOM_ID : process(ireset, panic_stage2,umpu_panic_reg(0))
+  SET_PANIC_DOM_ID : process(ireset, panic_stage2)
   begin
-    if (ireset = '0' or (umpu_panic_reg(0) = '0' and umpu_panic_reg(0)'event)) then
+    if (ireset = '0') then
       umpu_panic_reg(6 downto 4) <= (others => '1');
-    elsif (panic_stage2 = '1' and panic_stage2'event) then
+    elsif (panic_stage2 = '1') then
       umpu_panic_reg(6 downto 4) <= dom_id;
     end if;
   end process;
