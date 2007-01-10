@@ -37,7 +37,7 @@ entity domain_tracker is
     dom_bnd_data_out   : out std_logic_vector(7 downto 0);
 
     -- status register from mmc
-    dt_mmc_status_reg : in  std_logic_vector(7 downto 0);
+    mmc_status_reg : in  std_logic_vector(7 downto 0);
     -- calculated domain id to mmc
     dt_new_dom_id     : out std_logic_vector(2 downto 0);
     -- signal to update domain id to mmc
@@ -99,8 +99,8 @@ architecture Beh of domain_tracker is
 begin
 
   -- Extract different regions from the mmc_status_reg
-  umpu_en    <= dt_mmc_status_reg(0);           -- Protection bit
-  cur_dom_id <= dt_mmc_status_reg(4 downto 2);  -- Current Domain ID
+  umpu_en    <= mmc_status_reg(0);           -- Protection bit
+  cur_dom_id <= mmc_status_reg(4 downto 2);  -- Current Domain ID
 
   -- In trusted domain when the current domain ID is '111'
   in_trusted_domain <= cur_dom_id(2) and cur_dom_id(1) and cur_dom_id(0);
@@ -153,19 +153,6 @@ begin
     upper_bound           => upper_bound,
     updated_domain_bounds => updated_domain_bounds
     );
-
---  -- When the dom_bnd_filler successfully accepts the new bound, the update bit
---   -- in the dom_bnd_ctl is set back to '0'
---   SET_UPDATE_BIT : process(clock, ireset)
---   begin
---     if ireset /= '0' then
---       if (clock = '1' and clock'event) then
---         if updated_domain_bounds = '1' then
---           dom_bnd_ctl(0) <= '0';
---         end if;
---       end if;
---     end if;
---   end process;
 
   -- Register for DOM_BND_CTL
   -- |UNUSED|DOMAIN ID (2:0)|UPPER OR LOWER BOUND|HIGH OR LOW BYTE BIT|UPDATE BIT|

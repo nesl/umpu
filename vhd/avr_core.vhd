@@ -164,7 +164,7 @@ architecture struct of avr_core is
       dom_bnd_data_out   : out std_logic_vector(7 downto 0);
 
       -- status register from mmc
-      dt_mmc_status_reg : in  std_logic_vector(7 downto 0);
+      mmc_status_reg : in  std_logic_vector(7 downto 0);
       -- calculated domain id to mmc
       dt_new_dom_id     : out std_logic_vector(2 downto 0);
       -- signal to update domain id to mmc
@@ -876,7 +876,7 @@ begin
     jmp_table_low_out  => sg_jmp_table_low_out,
     jmp_table_high_out => sg_jmp_table_high_out,
 
-    dt_mmc_status_reg => sg_mmc_status_reg_out,
+    mmc_status_reg => sg_mmc_status_reg_out,
     dt_new_dom_id     => sg_dt_new_dom_id,
     dt_update_dom_id  => sg_dt_update_dom_id
     );
