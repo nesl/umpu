@@ -1,0 +1,33 @@
+umpu_panic: 153
+
+safe_stack: 2114
+
+domain_tracker (including dom_bnd_filler): 4373
+	dom_bnd_filler: 3160
+	Therefore: domain_tracker: 1213
+
+mmc(including mem_map_addr and mem_map_error): 2379
+	mem_map_addr: 687
+		shifter: 342 gates
+	mem_map_error: 780
+		shifter: 342 gates
+	Therefore: mmc: 921
+
+ram_busArbiter: 372
+pm_fetch_dec (orig): 6685
+pm_fetch_dec (mod) : 6789
+
+Additions from above to the avr_core: 9495
+
+Total avr_core (orig): 16419
+Total avr_core (mod) : 25523
+
+Difference: 9104
+	    Percentage increase: 55.448%
+
+Removing the dom_bnd_filler: 
+	 Improvements of about 3160 => difference: 5944
+	 Percentage increase from the orig avr_core: 36.20%
+
+Approximate size of a 1 bit latch: 14.107
+This is exagurated though
