@@ -114,14 +114,14 @@ architecture struct of avr_core is
 
       -- Signals from pm_fetch_decoder
       fet_dec_pc                : in  std_logic_vector(15 downto 0);
-      fet_dec_ssp_retL_wr       : in  std_logic;
-      fet_dec_ssp_retH_wr       : in  std_logic;
-      fet_dec_ssp_retL_rd       : in  std_logic;
-      fet_dec_ssp_retH_rd       : in  std_logic;
+      fet_dec_retL_wr       : in  std_logic;
+      fet_dec_retH_wr       : in  std_logic;
+      fet_dec_retL_rd       : in  std_logic;
+      fet_dec_retH_rd       : in  std_logic;
       fet_dec_call_dom_change   : in  std_logic_vector(4 downto 0);
       fet_dec_ret_dom_change    : in  std_logic_vector(4 downto 0);
       fet_dec_write_ram_data    : in  std_logic_vector(7 downto 0);
-      fet_dec_ssp_ret_dom_start : out std_logic;
+      fet_dec_ret_dom_start : out std_logic;
 
       -- Signals from Domain Tracker
       dt_update_dom_id : in std_logic;
@@ -279,11 +279,11 @@ architecture struct of avr_core is
 
       -- safe stack specific signals
       fet_dec_pc                : out std_logic_vector(15 downto 0);
-      fet_dec_ssp_retL_wr       : out std_logic;
-      fet_dec_ssp_retH_wr       : out std_logic;
-      fet_dec_ssp_retH_rd       : out std_logic;
-      fet_dec_ssp_retL_rd       : out std_logic;
-      fet_dec_ssp_ret_dom_start : in  std_logic;
+      fet_dec_retL_wr       : out std_logic;
+      fet_dec_retH_wr       : out std_logic;
+      fet_dec_retH_rd       : out std_logic;
+      fet_dec_retL_rd       : out std_logic;
+      fet_dec_ret_dom_start : in  std_logic;
       fet_dec_call_dom_change   : out std_logic_vector(4 downto 0);
       fet_dec_ret_dom_change    : out std_logic_vector(4 downto 0);
 
@@ -763,13 +763,13 @@ architecture struct of avr_core is
 
   -- signals between safe stack and pm_fetch_dec
   signal sg_fet_dec_pc                : std_logic_vector(15 downto 0);
-  signal sg_fet_dec_ssp_retL_wr       : std_logic;
-  signal sg_fet_dec_ssp_retH_wr       : std_logic;
-  signal sg_fet_dec_ssp_retL_rd       : std_logic;
-  signal sg_fet_dec_ssp_retH_rd       : std_logic;
+  signal sg_fet_dec_retL_wr       : std_logic;
+  signal sg_fet_dec_retH_wr       : std_logic;
+  signal sg_fet_dec_retL_rd       : std_logic;
+  signal sg_fet_dec_retH_rd       : std_logic;
   signal sg_fet_dec_call_dom_change   : std_logic_vector(4 downto 0);
   signal sg_fet_dec_ret_dom_change    : std_logic_vector(4 downto 0);
-  signal sg_fet_dec_ssp_ret_dom_start : std_logic;
+  signal sg_fet_dec_ret_dom_start : std_logic;
 
   -- signals between safe stack and io_adr_dec
   signal sg_sspl_out : std_logic_vector(7 downto 0);
@@ -840,14 +840,14 @@ begin
     ss_dbusout_sel => sg_ss_dbusout_sel,
 
     fet_dec_pc                => sg_fet_dec_pc,
-    fet_dec_ssp_retL_wr       => sg_fet_dec_ssp_retL_wr,
-    fet_dec_ssp_retH_wr       => sg_fet_dec_ssp_retH_wr,
-    fet_dec_ssp_retL_rd       => sg_fet_dec_ssp_retL_rd,
-    fet_dec_ssp_retH_rd       => sg_fet_dec_ssp_retH_rd,
+    fet_dec_retL_wr       => sg_fet_dec_retL_wr,
+    fet_dec_retH_wr       => sg_fet_dec_retH_wr,
+    fet_dec_retL_rd       => sg_fet_dec_retL_rd,
+    fet_dec_retH_rd       => sg_fet_dec_retH_rd,
     fet_dec_call_dom_change   => sg_fet_dec_call_dom_change,
     fet_dec_ret_dom_change    => sg_fet_dec_ret_dom_change,
     fet_dec_write_ram_data    => sg_fet_dec_data,
-    fet_dec_ssp_ret_dom_start => sg_fet_dec_ssp_ret_dom_start,
+    fet_dec_ret_dom_start => sg_fet_dec_ret_dom_start,
 
     dt_update_dom_id => sg_dt_update_dom_id,
 
@@ -966,11 +966,11 @@ begin
 
     -- safe_stack specific signals
     fet_dec_pc                => sg_fet_dec_pc,
-    fet_dec_ssp_retL_wr       => sg_fet_dec_ssp_retL_wr,
-    fet_dec_ssp_retH_wr       => sg_fet_dec_ssp_retH_wr,
-    fet_dec_ssp_retH_rd       => sg_fet_dec_ssp_retH_rd,
-    fet_dec_ssp_retL_rd       => sg_fet_dec_ssp_retL_rd,
-    fet_dec_ssp_ret_dom_start => sg_fet_dec_ssp_ret_dom_start,
+    fet_dec_retL_wr       => sg_fet_dec_retL_wr,
+    fet_dec_retH_wr       => sg_fet_dec_retH_wr,
+    fet_dec_retH_rd       => sg_fet_dec_retH_rd,
+    fet_dec_retL_rd       => sg_fet_dec_retL_rd,
+    fet_dec_ret_dom_start => sg_fet_dec_ret_dom_start,
     fet_dec_call_dom_change   => sg_fet_dec_call_dom_change,
     fet_dec_ret_dom_change    => sg_fet_dec_ret_dom_change,
 

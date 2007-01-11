@@ -145,5 +145,4 @@ begin
   bit_1_mismatch <= '0' when (ram_data_dom_id(1) = dom_id(1)) else '1';
   bit_2_mismatch <= '0' when (ram_data_dom_id(2) = dom_id(2)) else '1';
 
-
 end Beh;

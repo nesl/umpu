@@ -18,25 +18,33 @@ entity pm_fetch_dec is
   port
     (
       -- MMC specific signals
+      -- this signal is used to stop the loading of the new pc
       fet_dec_pc_stop    : in  std_logic;
+      -- this signal is used to insert a nop state
       fet_dec_nop_insert : in  std_logic;
+      -- the address on a store instruction is sent
       fet_dec_str_addr   : out std_logic_vector(15 downto 0);
+      -- on a str instr, this is set high so mmc can run
       fet_dec_run_mmc    : out std_logic;
+      -- the data to be written to ram on a str instr
       fet_dec_data       : out std_logic_vector(7 downto 0);
 
       -- domain_tracker specific signals
+      -- This pc is different from the pc sent to ssp
+      -- this is program_counter_in and the fet_dec_pc is just program_counter
       dt_pc         : out std_logic_vector(15 downto 0);
+      -- set high on a call instr
       dt_call_instr : out std_logic;
 
       -- safe stack specific signals
-      fet_dec_pc                : out std_logic_vector(15 downto 0);
-      fet_dec_ssp_retL_wr       : out std_logic;
-      fet_dec_ssp_retH_wr       : out std_logic;
-      fet_dec_ssp_retH_rd       : out std_logic;
-      fet_dec_ssp_retL_rd       : out std_logic;
-      fet_dec_ssp_ret_dom_start : in  std_logic;
-      fet_dec_call_dom_change   : out std_logic_vector(4 downto 0);
-      fet_dec_ret_dom_change    : out std_logic_vector(4 downto 0);
+      fet_dec_pc              : out std_logic_vector(15 downto 0);
+      fet_dec_retL_wr         : out std_logic;
+      fet_dec_retH_wr         : out std_logic;
+      fet_dec_retH_rd         : out std_logic;
+      fet_dec_retL_rd         : out std_logic;
+      fet_dec_ret_dom_start   : in  std_logic;
+      fet_dec_call_dom_change : out std_logic_vector(4 downto 0);
+      fet_dec_ret_dom_change  : out std_logic_vector(4 downto 0);
 
       -- Signal from Domain Tracker (Pause Fet Dec Unit)
       dt_update_dom_id : in std_logic;
@@ -556,15 +564,15 @@ begin
   fet_dec_pc <= program_counter;
 
   -- writing low and then high bytes for return address
-  fet_dec_ssp_retL_wr <= call_st2;
-  fet_dec_ssp_retH_wr <= call_st3;
+  fet_dec_retL_wr <= call_st2;
+  fet_dec_retH_wr <= call_st3;
 
   -- reading high and then low bytes for return address
-  fet_dec_ssp_retH_rd <= ret_st1;
-  fet_dec_ssp_retL_rd <= ret_st2;
+  fet_dec_retH_rd <= ret_st1;
+  fet_dec_retL_rd <= ret_st2;
 
   -- setting dt specific signals
-  dt_pc         <= program_counter_in;
+  dt_pc <= program_counter_in;
   -- check for domain id change on call instrs
   dt_call_instr <= call_st1 or idc_rcall or idc_icall;
 
@@ -922,15 +930,15 @@ begin
                 dex_adrreg_r;
 
 -- MULTIPLEXER FOR REGISTER FILE Rd INPUT
-  reg_rd_in <= dbusin                                                                                                                                                                   when (idc_in or ((lds_st2 or ld_st)and not reg_file_adr_space) or pop_st) = '1' else  -- FROM INPUT DATA BUS
-               reg_rr_out                                                                                                                                                               when ((lds_st2 or ld_st) and reg_file_adr_space) = '1'                          else
-               gp_reg_tmp                                                                                                                                                               when ((st_st or sts_st2) and reg_file_adr_space) = '1'                          else  -- ST/STD/STS &  ADDRESS FROM 0 TO 31 (REGISTER FILE)
-               bld_op_out                                                                                                                                                               when (idc_bld = '1')else  -- FROM BIT PROCESSOR BLD COMMAND
-               reg_rr_out                                                                                                                                                               when (idc_mov = '1')else  -- FOR MOV INSTRUCTION 
-                                                                                                                                                           instruction_reg(15 downto 8) when (lpm_st2 = '1' and reg_z_out(0) = '1')                                     else  -- LPM/ELPM
-                                                                                                                                                           instruction_reg(7 downto 0)  when (lpm_st2 = '1' and reg_z_out(0) = '0')                                     else  -- LPM/ELPM
-                                                                                                                                                           dex_dat8_immed               when idc_ldi = '1'                                                              else
-                                                                                                                                                           alu_data_out;  -- FROM ALU DATA OUT
+  reg_rd_in <= dbusin                                                                                                                                                                                                        when (idc_in or ((lds_st2 or ld_st)and not reg_file_adr_space) or pop_st) = '1' else  -- FROM INPUT DATA BUS
+               reg_rr_out                                                                                                                                                                                                    when ((lds_st2 or ld_st) and reg_file_adr_space) = '1'                          else
+               gp_reg_tmp                                                                                                                                                                                                    when ((st_st or sts_st2) and reg_file_adr_space) = '1'                          else  -- ST/STD/STS &  ADDRESS FROM 0 TO 31 (REGISTER FILE)
+               bld_op_out                                                                                                                                                                                                    when (idc_bld = '1')else  -- FROM BIT PROCESSOR BLD COMMAND
+               reg_rr_out                                                                                                                                                                                                    when (idc_mov = '1')else  -- FOR MOV INSTRUCTION 
+                                                                                                                                                                                                instruction_reg(15 downto 8) when (lpm_st2 = '1' and reg_z_out(0) = '1')                                     else  -- LPM/ELPM
+                                                                                                                                                                                                instruction_reg(7 downto 0)  when (lpm_st2 = '1' and reg_z_out(0) = '0')                                     else  -- LPM/ELPM
+                                                                                                                                                                                                dex_dat8_immed               when idc_ldi = '1'                                                              else
+                                                                                                                                                                                                alu_data_out;  -- FROM ALU DATA OUT
 
 -- IORE/IOWE LOGIC (6 BIT ADDRESS adr[5..0] FOR I/O PORTS(64 LOCATIONS))
   iore_int <= idc_in or idc_sbi or idc_cbi or idc_sbic or idc_sbis or ((ld_st or lds_st2) and io_file_adr_space);  -- IN/SBI/CBI 
@@ -1336,13 +1344,13 @@ begin
       ret_st1          <= (not ret_st1 and not nret_st0 and idc_ret) or (ret_st1 and cpuwait);
       ret_st2          <= (not ret_st2 and ret_st1 and not cpuwait) or (ret_st2 and cpuwait);
 
-      ret_dom_change_0 <= not ret_dom_change_0 and (ret_st2 and fet_dec_ssp_ret_dom_start);
+      ret_dom_change_0 <= not ret_dom_change_0 and (ret_st2 and fet_dec_ret_dom_start);
       ret_dom_change_1 <= not ret_dom_change_1 and ret_dom_change_0;
       ret_dom_change_2 <= not ret_dom_change_2 and ret_dom_change_1;
       ret_dom_change_3 <= not ret_dom_change_3 and ret_dom_change_2;
       ret_dom_change_4 <= not ret_dom_change_4 and ret_dom_change_3;
 
-      ret_st3 <= not ret_st3 and ((ret_st2 and not fet_dec_ssp_ret_dom_start) or (ret_dom_change_4)) and not cpuwait;
+      ret_st3 <= not ret_st3 and ((ret_st2 and not fet_dec_ret_dom_start) or (ret_dom_change_4)) and not cpuwait;
     end if;
   end process;
 

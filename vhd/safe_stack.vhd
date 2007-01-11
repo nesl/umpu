@@ -44,14 +44,14 @@ entity safe_stack is
 
     -- Signals from pm_fetch_decoder
     fet_dec_pc                : in  std_logic_vector(15 downto 0);
-    fet_dec_ssp_retL_wr       : in  std_logic;
-    fet_dec_ssp_retH_wr       : in  std_logic;
-    fet_dec_ssp_retL_rd       : in  std_logic;
-    fet_dec_ssp_retH_rd       : in  std_logic;
+    fet_dec_retL_wr       : in  std_logic;
+    fet_dec_retH_wr       : in  std_logic;
+    fet_dec_retL_rd       : in  std_logic;
+    fet_dec_retH_rd       : in  std_logic;
     fet_dec_call_dom_change   : in  std_logic_vector(4 downto 0);
     fet_dec_ret_dom_change    : in  std_logic_vector(4 downto 0);
     fet_dec_write_ram_data    : in  std_logic_vector(7 downto 0);
-    fet_dec_ssp_ret_dom_start : out std_logic;
+    fet_dec_ret_dom_start : out std_logic;
 
     -- Signals from Domain Tracker
     dt_update_dom_id : in std_logic;
@@ -159,8 +159,8 @@ begin
 
   -- These signals denote when the return address is written to and read from
   -- the safe stack
-  ret_addr_wr <= fet_dec_ssp_retL_wr or fet_dec_ssp_retH_wr;
-  ret_addr_rd <= fet_dec_ssp_retL_rd or fet_dec_ssp_retH_rd;
+  ret_addr_wr <= fet_dec_retL_wr or fet_dec_retH_wr;
+  ret_addr_rd <= fet_dec_retL_rd or fet_dec_retH_rd;
 
   -- If any of the above signals are set, that means that the safe stack is
   -- going to either read or write to the RAM. So the select line is set.
@@ -227,14 +227,14 @@ begin
   -- CROSS DOMAIN CHANGE PUSH
   -----------------------------------------------------------------------------
   ss_dbusout_sel <= dt_update_dom_id or fet_dec_call_dom_change(0) or fet_dec_call_dom_change(1) or fet_dec_call_dom_change(2) or fet_dec_call_dom_change(3)
-                    or fet_dec_call_dom_change(4) or (fet_dec_ssp_retL_wr and cross_dom_call_in_progress);
+                    or fet_dec_call_dom_change(4) or (fet_dec_retL_wr and cross_dom_call_in_progress);
   ss_dbusout     <= "00000"&dom_id                  when (dt_update_dom_id = '1')                                         else
                     stack_bound(7 downto 0)         when (fet_dec_call_dom_change(0) = '1')                               else
                     stack_bound(15 downto 8)        when (fet_dec_call_dom_change(1) = '1')                               else
                     cross_dom_ret_addr(7 downto 0)  when (fet_dec_call_dom_change(2) = '1')                               else
                     cross_dom_ret_addr(15 downto 8) when (fet_dec_call_dom_change(3) = '1')                               else
                     call_addr(7 downto 0)           when fet_dec_call_dom_change(4) = '1'                                 else
-                    call_addr(15 downto 8)          when (fet_dec_ssp_retL_wr = '1' and cross_dom_call_in_progress = '1') else
+                    call_addr(15 downto 8)          when (fet_dec_retL_wr = '1' and cross_dom_call_in_progress = '1') else
                   "00000000";
 
   -------------------------------------------------------------------------------
@@ -245,19 +245,19 @@ begin
     if ireset = '0' then
       ret_cmp(15 downto 8)   <= (others => '0');
     elsif (clock = '1' and clock'event) then
-      if (fet_dec_ssp_retH_rd = '1') then
+      if (fet_dec_retH_rd = '1') then
         ret_cmp(15 downto 8) <= ram_bus;
       end if;
     end if;
   end process;
 
-  ret_cmp(7 downto 0) <= ram_bus when (fet_dec_ssp_retL_rd = '1') else
+  ret_cmp(7 downto 0) <= ram_bus when (fet_dec_retL_rd = '1') else
                          (others => '0');
 
   ret_cmp_result            <= '1' when (ret_cmp = cross_dom_ret_addr) else
                                '0';
   -- Signal is high on return match => Goes high only for one clock cycle
-  fet_dec_ssp_ret_dom_start <= ret_cmp_result and fet_dec_ssp_retL_rd;
+  fet_dec_ret_dom_start <= ret_cmp_result and fet_dec_retL_rd;
 
   -----------------------------------------------------------------------------
   -- LATCHES FOR CURRENT RETURN ADDRESS AND STACK BOUND
@@ -290,13 +290,13 @@ begin
       stack_bound <= (others => '0');
     elsif (clock'event and clock = '1') then
 
-      if ((fet_dec_ssp_retH_wr = '1') and (cross_dom_call_in_progress = '1')) then
+      if ((fet_dec_retH_wr = '1') and (cross_dom_call_in_progress = '1')) then
         stack_bound(15 downto 8) <= stack_pointer(15 downto 8);
       elsif (fet_dec_ret_dom_change(2) = '1') then
         stack_bound(15 downto 8) <= ram_bus;
       end if;
 
-      if ((fet_dec_ssp_retH_wr = '1') and (cross_dom_call_in_progress = '1')) then
+      if ((fet_dec_retH_wr = '1') and (cross_dom_call_in_progress = '1')) then
         stack_bound(7 downto 0) <= stack_pointer(7 downto 0);
       elsif (fet_dec_ret_dom_change(3) = '1') then
         stack_bound(7 downto 0) <= ram_bus;
