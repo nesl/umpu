@@ -55,15 +55,51 @@ proc fet_dec_intr {} {
     add wave -label sreg_out sim:/tb_programloader/programloader1/TOP_AVR/testing_core/main/sreg_out
 }
 
+proc mmc_status_reg {} {
+    add wave -divider MMC_STATUS_AND_RELATED
+    add wave -hex -label mmc_status_reg sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_status_reg
+    add wave -hex -label umpu_en sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_status_reg(0)
+    add wave -hex -label record_size sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_status_reg(1)
+    add wave -hex -label dom_id sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_status_reg(4:2)
+    add wave -hex -label block_size sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_status_reg(7:5)
+}    
+
+proc stack_bound {} {
+    add wave -divider STACK_BOUND
+    add wave -hex -label stack_bound sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/stack_bound
+    add wave -hex -label cross_dom_call_in_progress sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/cross_dom_call_in_progress
+    add wave -hex -label fet_dec_retH_wr sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/fet_dec_retH_wr
+    add wave -hex -label ret_dom_change sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/ret_dom_change
+    add wave -hex -label ram_bus sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/ram_bus
+}    
+
+proc ssp {} {
+    add wave -divider SSP_AND_RELATED
+    add wave -hex -label ssp sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/ssp
+    add wave -hex -label ssp_int sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/ssp_int
+    add wave -hex -label ssp_inc sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/ssp_incremented
+    add wave -hex -label ssp_dec sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/ssp_decremented
+
+    add wave -hex -label ss_addr sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/ss_addr
+    add wave -hex -label ss_addr_sel sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/ss_addr_sel
+    add wave -hex -label ss_dbusout sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/ss_dbusout
+    add wave -hex -label ss_dbusout_sel sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/ss_dbusout_sel
+}
+
 proc cross_dom_ret {} {
     echo -- Analyzing Cross Domain Return
+    echo -- Adding ssp signals
+    mmc_status_reg
+    ssp
+    stack_bound
     echo -- Adding signals to wave
     add wave -divider CROSS_DOMAIN_RETURN
+
     add wave -hex -label clock sim:/tb_programloader/programloader1/TOP_AVR/cp2
-    add wave -hex -label PC sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/main/pc
-    add wave -hex -label INSTR sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/main/instruction_code_reg
-    add wave -hex sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/main/instruction_reg
     add wave -hex -label Panic sim:/tb_programloader/tbpanic
+
+    add wave -hex -label PC sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/main/pc
+
     add wave -hex sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/main/nret_st0
     add wave -hex sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/main/idc_ret
     add wave -hex sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/main/ret_st1
@@ -74,26 +110,33 @@ proc cross_dom_ret {} {
     add wave -hex sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/main/ret_dom_change_3
     add wave -hex sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/main/ret_dom_change_4
     add wave -hex sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/main/ret_st3
-    add wave -hex sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/ret_cmpL
-    add wave -hex sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/ret_cmpH
-    add wave -hex sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/ret_cmp
-    add wave -hex sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/cross_dom_ret_addr
-    add wave -hex sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/sg_dbusin
-    add wave -hex sim:/tb_programloader/programloader1/TOP_AVR/DM/din
-    add wave -hex sim:/tb_programloader/programloader1/TOP_AVR/DM/dout
-    add wave -hex sim:/tb_programloader/programloader1/TOP_AVR/DM/address
+
+    add wave -hex -label fet_dec_retL_rd sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/fet_dec_retL_rd
+    add wave -hex -label fet_dec_retH_rd sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/fet_dec_retH_rd
+    add wave -hex -label fet_dec_ret_dom_change sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/fet_dec_ret_dom_change
+    add wave -hex -label fet_dec_ret_dom_start sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/fet_dec_ret_dom_start
+    add wave -hex -label ret_addr_rd sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/ret_addr_rd
+    add wave -hex -label ret_dom_change sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/ret_dom_change
+    add wave -hex -label ret_cmp sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/ret_cmp
+    add wave -hex -label ret_cmp_result sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/ret_cmp_result
+    add wave -hex -label cross_dom_ret_addr sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/cross_dom_ret_addr
 }
 
 
 proc cross_dom_call {} {
     echo -- Analyzing Cross Domain Call
+    echo -- Adding ssp signals
+    mmc_status_reg
+    ssp
+    stack_bound
     echo -- Adding signals to wave
     add wave -divider CROSS_DOMAIN_CALL
     add wave -hex -label clock sim:/tb_programloader/programloader1/TOP_AVR/cp2
-    add wave -hex -label PC sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/main/pc
-    add wave -hex -label INSTR sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/main/instruction_code_reg
-    add wave -hex sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/main/instruction_reg
     add wave -hex -label Panic sim:/tb_programloader/tbpanic
+
+    add wave -hex -label PC sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/main/pc
+    add wave -hex -label stack_pointer sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/stack_pointer
+
     add wave -hex sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/main/ncall_st0
     add wave -hex sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/main/idc_call
     add wave -hex sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/main/call_st1
@@ -102,13 +145,15 @@ proc cross_dom_call {} {
     add wave -hex sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/main/call_dom_change_2
     add wave -hex sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/main/call_dom_change_3
     add wave -hex sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/main/call_dom_change_4
-    add wave -hex sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/main/call_st1
+    add wave -hex sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/main/call_st2
     add wave -hex sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/main/call_st3
-    add wave -hex sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/cross_dom_ret_addr
-    add wave -hex sim:/tb_programloader/programloader1/TOP_AVR/RAM_Data_Register/RAMDataIn
-    add wave -hex sim:/tb_programloader/programloader1/TOP_AVR/DM/din
-    add wave -hex sim:/tb_programloader/programloader1/TOP_AVR/DM/dout
-    add wave -hex sim:/tb_programloader/programloader1/TOP_AVR/DM/address
+
+    add wave -hex -label fet_dec_retL_wr sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/fet_dec_retL_wr
+    add wave -hex -label fet_dec_retH_wr sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/fet_dec_retH_wr
+    add wave -hex -label fet_dec_call_dom_change sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/fet_dec_call_dom_change
+    add wave -hex -label call_dom_change sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/call_dom_change
+    add wave -hex -label ret_addr_wr sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/ret_addr_wr
+    add wave -hex -label cross_dom_ret_addr sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/SAFE_STK/cross_dom_ret_addr
 }
 
 proc mmc_complete {} {
@@ -131,6 +176,19 @@ proc mmc_complete {} {
 
     echo -- Adding mmc_ssp_interface signals
     mmc_ssp_interface
+}
+
+proc mmc_error {} {
+    add wave -divider MMC-ERROR
+    add wave -hex -label mem_map_error sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_error_calc/mem_map_error
+    add wave -hex -label err_stack_write sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_error_calc/err_stack_write
+    add wave -hex -label err_mem_prot_top sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_error_calc/err_mem_prot_top
+    add wave -hex -label err_mem_prot_bottom sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_error_calc/err_mem_prot_bottom
+    add wave -hex -label err_dom_id sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_error_calc/err_dom_id
+    add wave -hex -label stack_write sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_error_calc/stack_write
+    add wave -hex -label stack_bound_err sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_error_calc/stack_bound_err
+    add wave -hex -label fet_dec_str_addr sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_error_calc/fet_dec_str_addr
+    add wave -hex -label ssp_stack_bound sim:/tb_programloader/programloader1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_error_calc/ssp_stack_bound
 }
 
 proc test_bench {} {

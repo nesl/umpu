@@ -43,15 +43,15 @@ entity safe_stack is
     ss_dbusout_sel : out std_logic;
 
     -- Signals from pm_fetch_decoder
-    fet_dec_pc                : in  std_logic_vector(15 downto 0);
-    fet_dec_retL_wr       : in  std_logic;
-    fet_dec_retH_wr       : in  std_logic;
-    fet_dec_retL_rd       : in  std_logic;
-    fet_dec_retH_rd       : in  std_logic;
-    fet_dec_call_dom_change   : in  std_logic_vector(4 downto 0);
-    fet_dec_ret_dom_change    : in  std_logic_vector(4 downto 0);
-    fet_dec_write_ram_data    : in  std_logic_vector(7 downto 0);
-    fet_dec_ret_dom_start : out std_logic;
+    fet_dec_pc              : in  std_logic_vector(15 downto 0);
+    fet_dec_retL_wr         : in  std_logic;
+    fet_dec_retH_wr         : in  std_logic;
+    fet_dec_retL_rd         : in  std_logic;
+    fet_dec_retH_rd         : in  std_logic;
+    fet_dec_call_dom_change : in  std_logic_vector(4 downto 0);
+    fet_dec_ret_dom_change  : in  std_logic_vector(4 downto 0);
+    fet_dec_write_ram_data  : in  std_logic_vector(7 downto 0);
+    fet_dec_ret_dom_start   : out std_logic;
 
     -- Signals from Domain Tracker
     dt_update_dom_id : in std_logic;
@@ -166,7 +166,10 @@ begin
   -- going to either read or write to the RAM. So the select line is set.
   -- When in the trusted domain, the safe stack is not used so at that point
   -- this signal is not set.
-  ss_addr_sel <= (ret_addr_rd or ret_addr_wr or call_dom_change or ret_dom_change) and not in_trusted_domain;
+  -- MADE CHANGES HERE: Now when a cross domain call happens into the trusted
+  -- domain,the return addr is stored on the runtime stack and not on ssp. It
+  -- is also read from teh runtime stack. 
+  ss_addr_sel <= ((ret_addr_rd or ret_addr_wr) and not in_trusted_domain) or (call_dom_change or ret_dom_change);
 
   -- The address to read from in the ram is based on if the action is read or
   -- write. For read, the ssp_decremented is used, for write, the ssp is used 
@@ -186,14 +189,14 @@ begin
                           -- from a cross domain call
                           else ssp_incremented(15 downto 8) when (ret_addr_wr = '1' or call_dom_change = '1')
                           -- ssp is decremented when the return addr is read
-                          -- from it. WHY IS NOT DECREMENTED WHEN THE CROSS_DOMAIN_
-                          -- RETURN STUFF IS READ FROM IT??????????????????????
-                          else ssp_decremented(15 downto 8) when ret_addr_rd = '1'
+                          -- from it or the different items for a cross domain
+                          -- return
+                          else ssp_decremented(15 downto 8) when (ret_addr_rd = '1' or ret_dom_change = '1')
                           else ssp(15 downto 8);
   -- The lower ssp set in the similar way as above
   ssp_int(7 downto 0)  <= reg_bus                           when (adr = SSP_LOW_Address and iowe = '1' and in_trusted_domain = '1')
                           else ssp_incremented(7 downto 0)  when (ret_addr_wr = '1' or call_dom_change = '1')
-                          else ssp_decremented(7 downto 0)  when ret_addr_rd = '1'
+                          else ssp_decremented(7 downto 0)  when (ret_addr_rd = '1' or ret_dom_change = '1')
                           else ssp(7 downto 0);
 
   -- Latch for ssp
@@ -228,14 +231,14 @@ begin
   -----------------------------------------------------------------------------
   ss_dbusout_sel <= dt_update_dom_id or fet_dec_call_dom_change(0) or fet_dec_call_dom_change(1) or fet_dec_call_dom_change(2) or fet_dec_call_dom_change(3)
                     or fet_dec_call_dom_change(4) or (fet_dec_retL_wr and cross_dom_call_in_progress);
-  ss_dbusout     <= "00000"&dom_id                  when (dt_update_dom_id = '1')                                         else
-                    stack_bound(7 downto 0)         when (fet_dec_call_dom_change(0) = '1')                               else
-                    stack_bound(15 downto 8)        when (fet_dec_call_dom_change(1) = '1')                               else
-                    cross_dom_ret_addr(7 downto 0)  when (fet_dec_call_dom_change(2) = '1')                               else
-                    cross_dom_ret_addr(15 downto 8) when (fet_dec_call_dom_change(3) = '1')                               else
-                    call_addr(7 downto 0)           when fet_dec_call_dom_change(4) = '1'                                 else
+  ss_dbusout     <= "00000"&dom_id                  when (dt_update_dom_id = '1')                                     else
+                    stack_bound(7 downto 0)         when (fet_dec_call_dom_change(0) = '1')                           else
+                    stack_bound(15 downto 8)        when (fet_dec_call_dom_change(1) = '1')                           else
+                    cross_dom_ret_addr(7 downto 0)  when (fet_dec_call_dom_change(2) = '1')                           else
+                    cross_dom_ret_addr(15 downto 8) when (fet_dec_call_dom_change(3) = '1')                           else
+                    call_addr(7 downto 0)           when fet_dec_call_dom_change(4) = '1'                             else
                     call_addr(15 downto 8)          when (fet_dec_retL_wr = '1' and cross_dom_call_in_progress = '1') else
-                  "00000000";
+                    "00000000";
 
   -------------------------------------------------------------------------------
   -- CROSS DOMAIN CHANGE POP 
@@ -254,9 +257,11 @@ begin
   ret_cmp(7 downto 0) <= ram_bus when (fet_dec_retL_rd = '1') else
                          (others => '0');
 
-  ret_cmp_result            <= '1' when (ret_cmp = cross_dom_ret_addr) else
+  ret_cmp_result        <= '1' when (ret_cmp = cross_dom_ret_addr) else
                                '0';
   -- Signal is high on return match => Goes high only for one clock cycle
+  -- fet_dec_retL_rd is ret_st2 of the return state machine, so this goes high
+  -- when that goes high
   fet_dec_ret_dom_start <= ret_cmp_result and fet_dec_retL_rd;
 
   -----------------------------------------------------------------------------
@@ -266,37 +271,45 @@ begin
   CROSS_DOM_RET_ADDR_REG : process(ireset, clock)
   begin  -- process
     if (ireset = '0') then
-      cross_dom_ret_addr <= (others => '0');
+      cross_dom_ret_addr <= x"dead";
     elsif (clock'event and clock = '1') then
+
       if (fet_dec_call_dom_change(3) = '1') then
         cross_dom_ret_addr(7 downto 0)  <= call_addr(7 downto 0);
       elsif (fet_dec_ret_dom_change(1) = '1') then
         cross_dom_ret_addr(7 downto 0)  <= ram_bus;
       end if;
+      
       -- Input signal corresponds to retL even though we are reading in retH
       -- This is because data on RamDataBus is put one clock cycle before write
       if (fet_dec_call_dom_change(3) = '1') then
         cross_dom_ret_addr(15 downto 8) <= call_addr(15 downto 8);
       elsif (fet_dec_ret_dom_change(0) = '1') then
-        cross_dom_ret_addr(7 downto 0)  <= ram_bus;
+        cross_dom_ret_addr(15 downto 8)  <= ram_bus;
       end if;
     end if;
   end process;
 
   -- Register for stack bound
+  -- stack_bound points to the address where the high byte of the return
+  -- address is stored in the run time stack.
+  -- RUN TIME STACK
+  -- |      | <-- SP (Run-Time Stack Pointer after Cross Domain Call)
+  -- | RetH | <-- Stack Bound for new domain (All writes to stack strictly
+  -- | RetL |     lesser than this address is valid.
   STACK_BOUND_REGISTER : process(ireset, clock)
   begin
     if (ireset = '0') then
-      stack_bound <= (others => '0');
+      stack_bound <= x"beef";
     elsif (clock'event and clock = '1') then
 
-      if ((fet_dec_retH_wr = '1') and (cross_dom_call_in_progress = '1')) then
+      if ((fet_dec_retL_wr = '1') and (cross_dom_call_in_progress = '1')) then
         stack_bound(15 downto 8) <= stack_pointer(15 downto 8);
       elsif (fet_dec_ret_dom_change(2) = '1') then
         stack_bound(15 downto 8) <= ram_bus;
       end if;
 
-      if ((fet_dec_retH_wr = '1') and (cross_dom_call_in_progress = '1')) then
+      if ((fet_dec_retL_wr = '1') and (cross_dom_call_in_progress = '1')) then
         stack_bound(7 downto 0) <= stack_pointer(7 downto 0);
       elsif (fet_dec_ret_dom_change(3) = '1') then
         stack_bound(7 downto 0) <= ram_bus;

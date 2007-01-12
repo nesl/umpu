@@ -94,7 +94,7 @@ begin
   stack_write     <= '1' when fet_dec_str_addr > stack_pointer
                  else '0';
   -- Check for stack writes outside the stack bound
-  stack_bound_err <= '1' when fet_dec_str_addr > ssp_stack_bound
+  stack_bound_err <= '1' when fet_dec_str_addr >= ssp_stack_bound
                      else '0';
 
   -- prot bottom and top errors

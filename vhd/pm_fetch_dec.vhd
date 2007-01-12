@@ -37,13 +37,23 @@ entity pm_fetch_dec is
       dt_call_instr : out std_logic;
 
       -- safe stack specific signals
+      -- This is the actual program_counter
       fet_dec_pc              : out std_logic_vector(15 downto 0);
+      -- During any call instr, when the processor is writing the return addr
       fet_dec_retL_wr         : out std_logic;
       fet_dec_retH_wr         : out std_logic;
+      -- During any call instr, when the processor is reading the return addr
       fet_dec_retH_rd         : out std_logic;
       fet_dec_retL_rd         : out std_logic;
+      -- sent by the safe_stack, this signal indicates when a cross domain
+      -- return is been executed. This signal jump starts the additional states
+      -- of the return instr not the usual ones.
       fet_dec_ret_dom_start   : in  std_logic;
+      -- This signal is used to indicate which state of the processor is in when
+      -- it is executing a cross domain call. This only tracks the added
+      -- states to the call instr and not the original ones.
       fet_dec_call_dom_change : out std_logic_vector(4 downto 0);
+      -- Similar to cross domain call
       fet_dec_ret_dom_change  : out std_logic_vector(4 downto 0);
 
       -- Signal from Domain Tracker (Pause Fet Dec Unit)

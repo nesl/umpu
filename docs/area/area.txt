@@ -1,3 +1,8 @@
+- The current design is using a huge array in the dom_bnd_filler module
+- It is not taking into account that the data is sent to the ram module one clk cycle before it is written. 
+    This would mean that some of the latches in the system are useless.
+- The mmc is using two shifters. Maybe one of them can be removed.
+
 umpu_panic: 153
 
 safe_stack: 2114
