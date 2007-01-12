@@ -85,8 +85,9 @@ begin
   -- if the write is to stack and outside the stack bound
   -- or outside the protected memory
   -- or there is a error in ownership information
-  mem_map_error <= err_stack_write or err_mem_prot_top
-                   or err_mem_prot_bottom or err_dom_id;
+  mem_map_error <= err_stack_write or
+                   (not stack_write and (err_mem_prot_top
+                   or err_mem_prot_bottom or err_dom_id));
 
   -- error on stack write
   err_stack_write <= stack_write and stack_bound_err;
