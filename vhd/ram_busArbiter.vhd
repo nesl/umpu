@@ -40,7 +40,7 @@ end ram_busArbiter;
 
 architecture Beh of ram_busArbiter is
 
-  signal ram_addr_sel : std_logic_vector(1 downto 0);
+  signal ram_addr_sel    : std_logic_vector(1 downto 0);
   signal ram_dbusout_sel : std_logic_vector(1 downto 0);
 
   signal ram_wr_en_sel : std_logic_vector(1 downto 0);
@@ -64,25 +64,14 @@ begin
   -- RAM Write Enable Select Logic
   ram_wr_en_sel(1) <= ss_dbusout_sel;
   ram_wr_en_sel(0) <= mmc_write_cycle or mmc_read_cycle;
-  ram_wr_en <= mmc_wr_en when ram_wr_en_sel = "01"
-               else '1' when ram_wr_en_sel = "10"
+  ram_wr_en        <= mmc_wr_en when ram_wr_en_sel = "01"
+               else '1'         when ram_wr_en_sel = "10"
                else fet_dec_wr_en;
 
   -- RAM Read Enable Select Logic
   ram_rd_en_sel(1) <= ss_addr_sel and (not ss_dbusout_sel);
   ram_rd_en_sel(0) <= mmc_read_cycle;
-  ram_rd_en <= mmc_rd_en when ram_rd_en_sel = "01"
-               else '1' when ram_rd_en_sel = "10"
+  ram_rd_en        <= mmc_rd_en when ram_rd_en_sel = "01"
+               else '1'         when ram_rd_en_sel = "10"
                else fet_dec_rd_en;
-
-  
-  
---  ram_wr_en <= mmc_wr_en when ((mmc_read_cycle = '1') or (mmc_write_cycle = '1'))
---               else fet_dec_wr_en;
---  ram_rd_en <= mmc_rd_en when mmc_read_cycle = '1'
---               else fet_dec_rd_en;
-
-
-
-
 end Beh;

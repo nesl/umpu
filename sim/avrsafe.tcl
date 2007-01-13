@@ -29,7 +29,7 @@ vcom ../vhd/AVRuCPackage.vhd ../vhd/CPUWaitGenerator.vhd ../vhd/DataRAM.vhd ../v
 ../vhd/programToLoad.vhd ../vhd/ram_busArbiter.vhd ../vhd/reg_file.vhd \
 ../vhd/safe_stack.vhd ../vhd/shifter.vhd ../vhd/simple_timer.vhd \
 ../vhd/tb_programLoader.vhd ../vhd/top_avr_core_sim.vhd ../vhd/uart.vhd \
-../vhd/dom_bnd_filler.vhd ../vhd/umpu_panic.vhd
+../vhd/dom_bnd_filler.vhd ../vhd/umpu_panic.vhd ../vhd/shifter_mux.vhd
 
 
 echo -----------------------------------------------------

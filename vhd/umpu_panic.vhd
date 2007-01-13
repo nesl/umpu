@@ -82,17 +82,6 @@ begin
       panic_stage1 <= (mmc_error or ssp_stack_overflow or dt_error) and umpu_en;
     end if;
   end process;
-  -- In the second stage, the panic is set when the panic from first stage is set
---   SG_PANIC_LATCH_LATCH : process(ireset, panic_stage1, umpu_panic_reg(0))
---   begin
---     if ireset = '0' then
---       panic_stage2 <= '0';
---     elsif (panic_stage1 = '1' and panic_stage1'event) then
---       panic_stage2 <= '1';
---     elsif (umpu_panic_reg(0) = '0' and umpu_panic_reg(0)'event) then
---       panic_stage2 <= '0';
---     end if;
---   end process;
 
   panic_stage2 <= umpu_panic_reg(0);
   
