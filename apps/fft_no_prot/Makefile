@@ -52,4 +52,4 @@ all:	$(PROJ).elf $(PROJ).elf.lst $(PROJ).bin $(PROJ).ihex $(PROJ).vhd
 
 
 clean:
-	rm -f *.elf *.elf.lst *.bin *.lst *.o *.map *~
+	rm -f *.elf *.elf.lst *.bin *.lst *.o *.map *~ *.ihex
