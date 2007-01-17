@@ -3,11 +3,11 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 
-entity tb_programLoader is
+entity tb_umpu is
 
-end tb_programLoader;
+end tb_umpu;
 
-architecture test_bench of tb_programLoader is
+architecture test_bench of tb_umpu is
 
   -- General Ports
   signal tbClock : std_logic;
@@ -46,7 +46,7 @@ architecture test_bench of tb_programLoader is
   signal tbRamWrEn    : std_logic;
   -- temp signals end
 
-  component programLoader
+  component umpu
     port (
       -- temp signals begin
       loadingData    : out std_logic_vector(15 downto 0);
@@ -92,7 +92,7 @@ architecture test_bench of tb_programLoader is
 
 begin  -- test_bench
 
-  programLoader1 : programLoader
+  umpu1 : umpu
     port map (
 
       -- temp signals begin
@@ -139,7 +139,6 @@ begin  -- test_bench
   
   rt_clock_process : process
     begin
-      -- rt clock period of 30518 ns or 32,768 Hz
       tb_rt_Clock <= '1', '0' after 150 ns;
       wait for 300 ns;
     end process rt_clock_process;
@@ -162,12 +161,12 @@ begin  -- test_bench
 
 end test_bench;
 
-configuration cfg_tb_programLoader of tb_programLoader is
+configuration cfg_tb_umpu of tb_umpu is
 
   for test_bench
-    for programLoader1 : programLoader
-      use entity work.programLoader(Behavioral);
+    for umpu1 : umpu
+      use entity work.umpu(Behavioral);
     end for;
   end for;
 
-end cfg_tb_programLoader;
+end cfg_tb_umpu;

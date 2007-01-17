@@ -17,11 +17,17 @@ int main () {
 
   sei();
   UCR = 0x00;
-  UCR = (1 << TXEN) | (1 << RXCIE) | (1 << RXEN);
+  UCR = (1 << TXEN) | (1 << TXCIE) | (1 << RXCIE) | (1 << RXEN);
   
   DDRA = 0xFF;
   PORTA = 0x02;
 
+  while (!(USR & (1<<UDRE)));
+  UDR = counter++;
+  while(1);
+  return 0;
+
+  /*
   while(1) {
     while(state == 0);
     while (!(USR & (1<<UDRE)));
@@ -30,23 +36,18 @@ int main () {
   }
   while(1);
   return 0;
-
-  /*
-  while(1) {
-    //Transmit
-    while (!(USR & (1<<UDRE)));
-    PORTA = PORTA ^ 0xFC;
-  }
   */
+  
 }
 
+/*
 SIGNAL(SIG_UART_RECV) {
   counter = UDR;
   if(state != 1)
     state = 1;
 }
-/*
-SIGNAL(SIG_UART_TRANS) {
-  UDR = counter;
-}
 */
+SIGNAL(SIG_UART_TRANS) {
+  UDR = counter++;
+}
+

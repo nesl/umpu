@@ -5,7 +5,7 @@ use IEEE.STD_LOGIC_UNSIGNED.all;
 
 use WORK.AVRuCPackage.all;
 
-entity programLoader
+entity umpu
 is port (
 
   -- temp signals begin
@@ -48,9 +48,9 @@ is port (
   INT7  : in    std_logic
   );
 
-end programLoader;
+end umpu;
 
-architecture beh of programLoader is
+architecture beh of umpu is
 
   signal eightMhzClock : std_logic_vector(1 downto 0);
 
