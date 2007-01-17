@@ -147,8 +147,8 @@ begin  -- test_bench
   clock_process : process
   begin
     -- clock period of 100 ns
-    tbClock <= '1', '0' after 50 ns;
-    wait for 100 ns;
+    tbClock <= '1', '0' after 15.625 ns;
+    wait for 31.25 ns;
   end process clock_process;
 
   test_stimuli : process

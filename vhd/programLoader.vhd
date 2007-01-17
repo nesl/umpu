@@ -169,13 +169,6 @@ begin  -- beh
     end if;
   end process scalingClock;
 
---    PANIC_PROCESS : process(sgPanic)
---    begin
---      if (sgPanic = '1') then
---        sgAvrReset <= '0';
---      end if;
---    end process;
-  
   resetProcess : process (eightMhzClock(1), reset)
   begin  -- process on clock or reset
     -- if initial reset, reset the entire system
@@ -187,7 +180,6 @@ begin  -- beh
       if (eightMhzClock(1) = '1' and eightMhzClock(1)'event) then
         -- if we are done loading the PROM
         if (sgAddress = X"2000") then
-        --if (sgAddress = "1111111111111111") then
           -- Stop writing and reset the avr_core
           sgWrEn     <= '0';
           sgAvrReset <= '1';

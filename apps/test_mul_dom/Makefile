@@ -60,7 +60,6 @@ LDFLAGS += -Wl,--section-start=.dom0jmptbl=0x2000 -Wl,--section-start=.dom1jmptb
 	../../swlib/hex2vhd.exe $<
 	mv programToLoad.vhd ../../vhd/
 
-
 all:	$(PROJ).elf $(PROJ).elf.lst $(PROJ).bin $(PROJ).ihex $(PROJ).vhd
 
 

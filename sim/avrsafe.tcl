@@ -260,6 +260,9 @@ proc test_bench {} {
     add wave -label Ram_Data_Out -hex sim:/tb_programloader/tbRamDataOut
     add wave -label Ram_Data_In -hex sim:/tb_programloader/tbRamDataIn
     add wave -label Ram_Wr_En -hex sim:/tb_programloader/tbRamWrEn
+
+    add wave -label rxd -hex sim:/tb_programloader/tbRxd
+    add wave -label txd -hex sim:/tb_programloader/tbTxd
 }
 
 proc mmc_arbiter_interface {} {
