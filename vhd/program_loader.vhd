@@ -45,22 +45,24 @@ begin
   data_ready <= '1' when counter = '1'
                 else '0';
   
-  WRITE_PROM:process(reset,clock)
-  begin
-    if (reset = '0') then
-      prom_address <= (others => '0');
-      prom_wr_en <= '1';
-      avr_reset <= '0';
-    elsif (clock = '1' and clock'event) then
-      if (prom_address_int = X"2000") then
-        prom_wr_en <= '0';
-        avr_reset <= '1';
-      elsif (data_ready = '1') then
-        prom_wr_en <= '1';
-        prom_address_int <= prom_address_int + 1;
-      end if;
-    end if;
-  end process;
-  prom_address <= prom_address_int;
+
+
+--   WRITE_PROM:process(reset,clock)
+--   begin
+--     if (reset = '0') then
+--       prom_address <= (others => '0');
+--       prom_wr_en <= '1';
+--       avr_reset <= '0';
+--     elsif (clock = '1' and clock'event) then
+--       if (prom_address_int = X"2000") then
+--         prom_wr_en <= '0';
+--         avr_reset <= '1';
+--       elsif (data_ready = '1') then
+--         prom_wr_en <= '1';
+--         prom_address_int <= prom_address_int + 1;
+--       end if;
+--     end if;
+--   end process;
+--   prom_address <= prom_address_int;
 
 end Beh;

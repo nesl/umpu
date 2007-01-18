@@ -102,11 +102,45 @@ architecture beh of umpu is
       );
   end component;
 
+  component uart_wrapper
+    is port (
+      reset : in  std_logic;
+      clock : in  std_logic;
+      load_rxd   : in  std_logic;
+      load_txd   : out std_logic;
+
+      tx_data : in std_logic_vector(7 downto 0);
+
+      rx_data_req   : in  std_logic;
+      rx_data_ready : out std_logic;
+      rx_data       : out std_logic_vector(7 downto 0)
+      );
+  end component;
+
+  component program_loader
+    is port (
+      reset : in std_logic;
+      clock : in std_logic;
+
+      data_in   : in  std_logic_vector(7 downto 0);
+      data_req  : out std_logic;
+      data_recd : in  std_logic;
+
+      avr_reset : out std_logic;
+
+      prom_wr_en   : out std_logic;
+      prom_address : out std_logic_vector(15 downto 0);
+      prom_data    : out std_logic_vector(15 downto 0)
+      );
+  end component;
+
   signal sgData     : std_logic_vector(15 downto 0);
   signal sgAddress  : std_logic_vector(15 downto 0);
   signal sgWrEn     : std_logic;
   signal sgAvrReset : std_logic;
   signal sgPanic    : std_logic;
+
+  signal avr_txd : std_logic;
 
 begin  -- beh
 
@@ -116,6 +150,17 @@ begin  -- beh
 
   -- map the panic signal so it can be observed
   panic <= sgPanic;
+
+  UART_LOADER : component uart_wrapper port map (
+    reset => reset,
+    clock => eightMhzClock(1),
+    load_rxd => avr_txd,
+--     load_txd => ,
+     tx_data => (others => '0'),
+     rx_data_req => '0'
+--     rx_data_ready => ,
+--     rx_data => 
+    );
 
   TOP_AVR : component top_avr_core_sim port map (
     -- temp signals begin
@@ -130,7 +175,7 @@ begin  -- beh
     -- real time clock for timer counter
     rt_Clock      => rt_Clock,
     -- Panic signal from mmc
-    panic => sgPanic,
+    panic         => sgPanic,
     -- avr_core
     cp2           => eightMhzClock(1),
     ireset        => sgAvrReset,
@@ -138,7 +183,7 @@ begin  -- beh
     portb         => portb,
     -- UART 
     rxd           => rxd,
-    txd           => txd,
+    txd           => avr_txd,
     -- External interrupt inputs
     nINT0         => nINT0,
     nINT1         => nINT1,
@@ -153,6 +198,7 @@ begin  -- beh
     promDataIn    => sgData,
     promWrEn      => sgWrEn
     );
+  txd <= avr_txd;
 
   loader : component programToLoad port map (
     address_in => sgAddress,

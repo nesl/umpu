@@ -23,7 +23,8 @@ int main () {
   PORTA = 0x02;
 
   while (!(USR & (1<<UDRE)));
-  UDR = counter++;
+  UDR = 0x55;
+  //UDR = counter++;
   while(1);
   return 0;
 
@@ -48,6 +49,7 @@ SIGNAL(SIG_UART_RECV) {
 }
 */
 SIGNAL(SIG_UART_TRANS) {
-  UDR = counter++;
+  UDR = 0x55;
+  //UDR = counter++;
 }
 
