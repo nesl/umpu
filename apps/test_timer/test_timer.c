@@ -11,9 +11,14 @@ SIGNAL (SIG_OVERFLOW0){
 
 }
 */
+
+//uint8_t period = 0;
+
 SIGNAL (SIG_OUTPUT_COMPARE0){
 
   PORTA = PORTA ^ 0xFF;
+  //OCR0 = 0x23;
+  OCR0 = OCR0 - 1;
 
 }
 
@@ -26,9 +31,9 @@ void init_timer( void ) {
  
   ASSR = 1 << AS0 ;
   TIMSK = (1 << OCIE0); // Output compare match interrupt enable for Timer 0
-  TCNT0 = 0x00;
   TCCR0 = (1 << CS00)|(1 << CTC0);  // No-prescaling
-  OCR0 = 0xA0;
+  TCNT0 = 0x00;
+  OCR0 = 0x67;
   
 }
 

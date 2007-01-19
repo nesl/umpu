@@ -47,6 +47,41 @@ add wave -hex -label clock sim:/tb_umpu/umpu1/TOP_AVR/cp2
 echo --- Adding Panic Signal
 add wave -hex -label PANIC sim:/tb_umpu/umpu1/TOP_AVR/panic
 
+proc ocr0 {} {
+    add wave -divider OCR0_AND_RELATED
+    add wave -hex -label ocr0 sim:/tb_umpu/umpu1/TOP_AVR/tim_cnt/ocr0
+    add wave -hex -label ocr0_wr_en sim:/tb_umpu/umpu1/TOP_AVR/tim_cnt/ocr0_wr_en
+    add wave -hex -label ocr0ub sim:/tb_umpu/umpu1/TOP_AVR/tim_cnt/ocr0ub
+    add wave -hex -label ocr0ub_tmp sim:/tb_umpu/umpu1/TOP_AVR/tim_cnt/ocr0ub_tmp
+    add wave -hex -label pck0 sim:/tb_umpu/umpu1/TOP_AVR/tim_cnt/pck0
+    add wave -hex -label as0 sim:/tb_umpu/umpu1/TOP_AVR/tim_cnt/as0
+    add wave -hex -label pwm0 sim:/tb_umpu/umpu1/TOP_AVR/tim_cnt/pwm0
+    add wave -divider OCR0_IN_AND_RELATED
+    add wave -hex -label ocr0_in sim:/tb_umpu/umpu1/TOP_AVR/tim_cnt/ocr0_in
+    add wave -hex -label ocr0_in_wr_en sim:/tb_umpu/umpu1/TOP_AVR/tim_cnt/ocr0_in_wr_en
+    add wave -hex -label ocr0_tmp sim:/tb_umpu/umpu1/TOP_AVR/tim_cnt/ocr0_tmp
+    add wave -hex -label tcr0ub sim:/tb_umpu/umpu1/TOP_AVR/tim_cnt/tcr0ub
+    add wave -hex -label tcr0ub_tmp sim:/tb_umpu/umpu1/TOP_AVR/tim_cnt/tcr0ub_tmp
+    add wave -hex -label pck0 sim:/tb_umpu/umpu1/TOP_AVR/tim_cnt/pck0
+    add wave -hex -label as0 sim:/tb_umpu/umpu1/TOP_AVR/tim_cnt/as0
+    add wave -hex -label pwm0 sim:/tb_umpu/umpu1/TOP_AVR/tim_cnt/pwm0
+    add wave -divider OCR0_TMP_IN_AND_RELATED
+    add wave -hex -label ocr0_tmp sim:/tb_umpu/umpu1/TOP_AVR/tim_cnt/ocr0_tmp
+    add wave -hex -label ocr0_sel sim:/tb_umpu/umpu1/TOP_AVR/tim_cnt/ocr0_sel
+    add wave -hex -label dbus_in sim:/tb_umpu/umpu1/TOP_AVR/tim_cnt/dbus_in
+}
+
+proc timer {} {
+    ocr0
+    add wave -divider TCNT0
+    add wave -hex -label tcnt0 sim:/tb_umpu/umpu1/TOP_AVR/tim_cnt/tcnt0
+    add wave -divider TIMER_INTERRUPTS
+    add wave -hex -label tc0ovfirq sim:/tb_umpu/umpu1/TOP_AVR/tim_cnt/tc0ovfirq
+    add wave -hex -label tc0ovfirq_ack sim:/tb_umpu/umpu1/TOP_AVR/tim_cnt/tc0ovfirq_ack
+    add wave -hex -label tc0cmpirq sim:/tb_umpu/umpu1/TOP_AVR/tim_cnt/tc0cmpirq
+    add wave -hex -label tc0cmpirq_ack sim:/tb_umpu/umpu1/TOP_AVR/tim_cnt/tc0cmpirq_ack
+}
+
 proc fet_dec_intr {} {
     echo -- Adding signals to wave
     add wave -label irqlines sim:/tb_umpu/umpu1/TOP_AVR/testing_core/main/irqlines

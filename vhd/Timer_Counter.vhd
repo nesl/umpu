@@ -54,6 +54,9 @@ end Timer_Counter;
 
 architecture rtl of Timer_Counter is
 
+  signal ocr0_wr_en    : std_logic;
+  signal ocr0_in_wr_en : std_logic;
+
 -- Copies of the external signals
   signal OC0_PWM0_Int : std_logic := '0';
   signal OC2_PWM2_Int : std_logic := '0';
@@ -473,7 +476,7 @@ begin
                 (TCN0UB and not (not TCN0UB_Tmp and PCK0));
 
       AS0 <= (not AS0 and(ASSR_Sel and iowe and dbus_in(3)))or
-                (AS0 and not(ASSR_Sel and iowe and not dbus_in(3)));
+             (AS0 and not(ASSR_Sel and iowe and not dbus_in(3)));
 
     end if;
   end process;
@@ -536,18 +539,30 @@ begin
     if ireset = '0' then                -- Reset
       OCR0   <= (others => '0');
     elsif cp2 = '1' and cp2'event then  -- Clock
-      if ((((OCR0_Sel and iowe and not AS0)or  -- Synchronous non PWM mode 
-             (OCR0UB and not OCR0UB_Tmp and PCK0 and AS0))and not PWM0)or  -- Asynchronous non PWM mode
-           (TCNT0(7) and TCNT0(6) and TCNT0(5) and TCNT0(4) and TCNT0(3) and TCNT0(2) and TCNT0(1) and TCNT0(0) and PWM0 and TCNT0_En))  -- Reload OCR0 with new value when TCNT0=0xFF (for PWM)
+      if ((OCR0_Sel and iowe and not AS0)or  -- Synchronous non PWM mode
+          ocr0_wr_en or
+          --(OCR0UB and not OCR0UB_Tmp and PCK0 and AS0))and not PWM0)or  -- Asynchronous non PWM mode
+          (TCNT0(7) and TCNT0(6) and TCNT0(5) and TCNT0(4) and TCNT0(3) and TCNT0(2) and TCNT0(1) and TCNT0(0) and PWM0 and TCNT0_En))
+                                        -- Reload OCR0 with new value when TCNT0=0xFF (for PWM)
          = '1' then                     -- Clock enable ??!!
         OCR0 <= OCR0_In;
       end if;
     end if;
   end process;
 
+  ocr0_wr_en    <= (OCR0UB and not OCR0UB_Tmp and PCK0 and AS0) and not PWM0;
+  ocr0_in_wr_en <= TCR0UB and not TCR0UB_Tmp and PCK0 and AS0 and not PWM0;
+
+  -----------------------------------------------------------------------------
+  -- THIS IS CHANGED BY AKHI, flipped the dbus_in and OCR0_Tmp signals 
+  -----------------------------------------------------------------------------
+  OCR0_In <= dbus_in when (ocr0_in_wr_en or
+                           (TCNT0(7) and TCNT0(6) and TCNT0(5) and TCNT0(4) and TCNT0(3) and TCNT0(2) and TCNT0(1) and TCNT0(0) and PWM0 and TCNT0_En)) = '1'
+              else OCR0_TMP;
 -- OCR0 can be loaded from OCR0_Tmp (asynchronous non PWM mode, synchronous PWM mode ) or from dbus_in (synchronous non PWM mode only)
-  OCR0_In <= OCR0_Tmp when ((TCR0UB and not TCR0UB_Tmp and PCK0 and AS0 and not PWM0)or
-                            (TCNT0(7) and TCNT0(6) and TCNT0(5) and TCNT0(4) and TCNT0(3) and TCNT0(2) and TCNT0(1) and TCNT0(0) and PWM0 and TCNT0_En)) = '1' else dbus_in;
+--   OCR0_In <= OCR0_Tmp when (ocr0_in_wr_en or
+--                             (TCNT0(7) and TCNT0(6) and TCNT0(5) and TCNT0(4) and TCNT0(3) and TCNT0(2) and TCNT0(1) and TCNT0(0) and PWM0 and TCNT0_En)) = '1'
+--              else dbus_in;
 
 --OC0_PWM0 output
 -- Attention!!! In the real ATmega103 chip this output of the TCNT0 combined with PB4
@@ -671,7 +686,7 @@ begin
       OCR2   <= (others => '0');
     elsif cp2 = '1' and cp2'event then  -- Clock
       if ((OCR2_Sel and iowe)or         -- Non PWM mode 
-           (TCNT2(7) and TCNT2(6) and TCNT2(5) and TCNT2(4) and TCNT2(3) and TCNT2(2) and TCNT2(1) and TCNT2(0) and PWM2 and TCNT2_En))  -- Reload OCR2 with new value when TCNT2=0xFF (for PWM)
+          (TCNT2(7) and TCNT2(6) and TCNT2(5) and TCNT2(4) and TCNT2(3) and TCNT2(2) and TCNT2(1) and TCNT2(0) and PWM2 and TCNT2_En))  -- Reload OCR2 with new value when TCNT2=0xFF (for PWM)
          = '1' then                     -- Clock enable ??!!
         OCR2 <= OCR2_In;
       end if;
@@ -745,10 +760,10 @@ begin
               (TOV0 and not(TC0OvfIRQ_Ack or(TIFR_Sel and iowe and dbus_in(0))));
 
       OCF0 <= (not OCF0 and ( not PWM0 and TCNT0_Cmp_Out))
-               or (OCF0 and not(TC0CmpIRQ_Ack or(TIFR_Sel and iowe and dbus_in(1))));
+              or (OCF0 and not(TC0CmpIRQ_Ack or(TIFR_Sel and iowe and dbus_in(1))));
 
---       OCF0 <= (not OCF0 and(not PWM0 and COM00 and TCNT0_Cmp_Out))
---               or(OCF0 and not(TC0CmpIRQ_Ack or(TIFR_Sel and iowe and dbus_in(1))));
+-- OCF0 <= (not OCF0 and(not PWM0 and COM00 and TCNT0_Cmp_Out))
+-- or(OCF0 and not(TC0CmpIRQ_Ack or(TIFR_Sel and iowe and dbus_in(1))));
 
 -- Timer/Counter2
       TOV2 <= (not TOV2 and (TCNT2_En and(
@@ -777,35 +792,35 @@ begin
 
 -- Interrupt flags of Timer/Counter0
   TC2OvfIRQ <= TOV2 and TOIE2;          -- Interrupt on overflow of TCNT2
-  TC2CmpIRQ <= OCF2 and OCIE2;	  -- Interrupt on compare match	of TCNT2
+  TC2CmpIRQ <= OCF2 and OCIE2;          -- Interrupt on compare match of TCNT2
 
--- -------------------------------------------------------------------------------------------
+--  -------------------------------------------------------------------------------------------
 -- End of common (Control/Interrupt) bits
 -- -------------------------------------------------------------------------------------------
 
--- -------------------------------------------------------------------------------------------
+--  -------------------------------------------------------------------------------------------
 -- Bus interface
 -- -------------------------------------------------------------------------------------------
-  out_en <= (TCCR0_Sel or TCCR1A_Sel or TCCR1B_Sel or TCCR2_Sel or ASSR_Sel or TIMSK_Sel or 
-             TIFR_Sel  or TCNT0_Sel  or TCNT2_Sel or OCR0_Sel or OCR2_Sel or TCNT1H_Sel or 
-             TCNT1L_Sel or OCR1AH_Sel or OCR1AL_Sel or OCR1BH_Sel or OCR1BL_Sel or ICR1AH_Sel or  
+  out_en <= (TCCR0_Sel or TCCR1A_Sel or TCCR1B_Sel or TCCR2_Sel or ASSR_Sel or TIMSK_Sel or
+             TIFR_Sel or TCNT0_Sel or TCNT2_Sel or OCR0_Sel or OCR2_Sel or TCNT1H_Sel or
+             TCNT1L_Sel or OCR1AH_Sel or OCR1AL_Sel or OCR1BH_Sel or OCR1BL_Sel or ICR1AH_Sel or
              ICR1AL_Sel) and iore;
 
-  Common_Out_Mux: for i in dbus_out'range generate
-    dbus_out(i)	<= (TCCR0(i) and (TCCR0_Sel and not AS0))or  -- TCCR0 (Synchronous mode of TCNT0)
-                   (TCCR0_Tmp(i) and (TCCR0_Sel and AS0))or	 -- TCCR0 (Asynchronous mode of TCNT0)
-                   (OCR0(i) and (OCR0_Sel and not AS0))or	 -- OCR0  (Synchronous mode of TCNT0)
-                   (OCR0_Tmp(i) and (OCR0_Sel and AS0)) or	 -- OCR0  (Asynchronous mode of TCNT0)
-                   (TCNT0(i) and TCNT0_Sel) or 				 -- TCNT0 (Both modes of TCNT0)
-                   
-                   (TCCR2(i) and TCCR2_Sel )or               -- TCCR2
-                   (OCR2(i) and OCR2_Sel)or	                 -- OCR2
-                   (TCNT2(i) and TCNT2_Sel) or 				 -- TCNT2
-                   
-                   (TIFR(i) and TIFR_Sel) or				 -- TIFR
-                   (TIMSK(i) and TIMSK_Sel);				 -- TIMSK
-  end generate;			  
--- -------------------------------------------------------------------------------------------
+  Common_Out_Mux : for i in dbus_out'range generate
+    dbus_out(i) <= (TCCR0(i) and (TCCR0_Sel and not AS0))or  -- TCCR0 (Synchronous mode of TCNT0)
+                   (TCCR0_Tmp(i) and (TCCR0_Sel and AS0))or  -- TCCR0 (Asynchronous mode of TCNT0)
+                   (OCR0(i) and (OCR0_Sel and not AS0))or  -- OCR0  (Synchronous mode of TCNT0)
+                   (OCR0_Tmp(i) and (OCR0_Sel and AS0)) or  -- OCR0  (Asynchronous mode of TCNT0)
+                   (TCNT0(i) and TCNT0_Sel) or  -- TCNT0 (Both modes of TCNT0)
+
+                   (TCCR2(i) and TCCR2_Sel )or  -- TCCR2
+                   (OCR2(i) and OCR2_Sel)or     -- OCR2
+                   (TCNT2(i) and TCNT2_Sel) or  -- TCNT2
+
+                   (TIFR(i) and TIFR_Sel) or  -- TIFR
+                   (TIMSK(i) and TIMSK_Sel);  -- TIMSK
+  end generate;
+--  -------------------------------------------------------------------------------------------
 -- End of bus interface
 -- -------------------------------------------------------------------------------------------
 

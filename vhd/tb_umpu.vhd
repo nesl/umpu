@@ -130,18 +130,18 @@ begin  -- test_bench
       INT7  => tb_INT7
       );
 
+  rt_clock_process : process
+  begin
+    -- rt clock period of 30518 ns or 32,768 Hz
+    tb_rt_Clock <= '1', '0' after 15258.79 ns;
+    wait for 30517.58 ns;
+  end process rt_clock_process;
+  
 --   rt_clock_process : process
 --     begin
---       -- rt clock period of 30518 ns or 32,768 Hz
---       tb_rt_Clock <= '1', '0' after 15259 ns;
---       wait for 30518 ns;
+--       tb_rt_Clock <= '1', '0' after 333.33 ns;
+--       wait for 666.66 ns;
 --     end process rt_clock_process;
-  
-  rt_clock_process : process
-    begin
-      tb_rt_Clock <= '1', '0' after 150 ns;
-      wait for 300 ns;
-    end process rt_clock_process;
   
   clock_process : process
   begin
