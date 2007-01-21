@@ -32,7 +32,6 @@ int8_t ker_sys_post_value(sos_pid_t dst_mod_id,
 uint8_t ker_hw_type();
 uint16_t ker_id();
 uint16_t ker_rand();
-uint32_t ker_systime32();
 int8_t ker_sys_sensor_get_data( uint8_t sensor_id );
 int8_t ker_led(uint8_t op);
 void* ker_sys_get_module_state( void );
@@ -561,32 +560,6 @@ static inline uint16_t sys_rand( void )
 	return ((sys_rand_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*13))();
 #else
 	return ker_rand();
-#endif
-}
-/* @} */
-
-/**
- * \ingroup coreApi
- * \defgroup sysTime System Time
- * Functions to access the node system time
- * @{
- */
-/// \cond NOTYPEDEF
-typedef uint32_t (* sys_time32_ker_func_t)( void );
-/// \endcond
-/**
- *
- * Get CPU "time"
- *
- * \return Current CPU clock value
- *
- */
-static inline uint32_t sys_time32( void )    
-{
-#ifdef SYS_JUMP_TBL_START
-	return ((sys_time32_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*14))( );
-#else
-	return ker_systime32();
 #endif
 }
 /* @} */

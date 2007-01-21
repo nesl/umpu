@@ -61,7 +61,9 @@ void sched_loop()
 			ENABLE_GLOBAL_INTERRUPTS();
 			sched_dispatch();
 		} else {
-			SLEEP();
+		  ENABLE_GLOBAL_INTERRUPTS();
+
+		  //SLEEP();
 		}
 	}
 }

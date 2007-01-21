@@ -60,8 +60,8 @@
 #define uart_getByte()          (UDR)
 #define uart_setByte(b)         (UDR = (b))
 
-#define uart_recv_interrupt()   SIGNAL(SIG_USART0_RECV)
-#define uart_send_interrupt()   SIGNAL(SIG_USART0_TRANS)
+#define uart_recv_interrupt()   SIGNAL(SIG_UART_RECV)
+#define uart_send_interrupt()   SIGNAL(SIG_UART_TRANS)
 
 #define uart_disable()			UCR &= ((unsigned char)~((1<<(RXCIE))|(1<<(TXCIE))))
 
@@ -72,8 +72,6 @@
 #define uart_enable_rx()        UCR |= (1<<(RXCIE))
 
 #define uart_is_disabled()      ((UCR & (1 << TXCIE)) ? 0 : 1)
-
-
 
 /**
  * @brief UART_HAL init

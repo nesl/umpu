@@ -25,7 +25,7 @@ int main()
 
   sei();
   
-  sp_timer_start( &app_timer, 30L, 100L, app_timeout);
+  sp_timer_start( &app_timer, 20L, 20L, app_timeout);
   //sp_timer_start( &app_timer, 1024L, 1024L, insort_timeout);
 
   DDRA = 0xFF;

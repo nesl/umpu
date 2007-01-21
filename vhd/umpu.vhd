@@ -225,7 +225,7 @@ begin  -- beh
     else
       if (eightMhzClock(1) = '1' and eightMhzClock(1)'event) then
         -- if we are done loading the PROM
-        if (sgAddress = X"2000") then
+        if (sgAddress = X"4000") then
           -- Stop writing and reset the avr_core
           sgWrEn     <= '0';
           sgAvrReset <= '1';

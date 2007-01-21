@@ -290,8 +290,16 @@ proc test_bench {} {
     echo -- Adding the test bench signals
 
     add wave -label PORT_A -hex sim:/tb_umpu/tbPorta
+    add wave -hex -label PC sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/pc
+    add wave -label instr_code_reg -hex sim:/tb_umpu/umpu1/top_avr/testing_core/main/instruction_code_reg
+    add wave -label instr_reg -hex sim:/tb_umpu/umpu1/top_avr/testing_core/main/instruction_reg
     add wave -label Proc_Addr -hex sim:/tb_umpu/tbProcAddress
     add wave -label Proc_Data -hex sim:/tb_umpu/tbProcData
+
+    add wave -label IRQLines  sim:/tb_umpu/umpu1/top_avr/testing_core/main/irqlines(22:0)
+    add wave -label sreg  sim:/tb_umpu/umpu1/top_avr/testing_core/main/sreg_out
+
+
     add wave -label Ram_Addr -hex sim:/tb_umpu/tbRamAddress
     add wave -label Ram_Data_Out -hex sim:/tb_umpu/tbRamDataOut
     add wave -label Ram_Data_In -hex sim:/tb_umpu/tbRamDataIn

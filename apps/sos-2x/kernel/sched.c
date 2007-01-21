@@ -141,8 +141,6 @@ static Message short_msg;
  */
 static sos_module_t* mod_bin[SCHED_NUMBER_BINS] NOINIT_VAR;
 
-uint8_t sched_stalled = false;
-
 /**
  * @brief pid pool
  *
@@ -180,7 +178,6 @@ void sched_init(uint8_t cond)
 		pid_pool[i] = 0;
   }
   sched_register_kernel_module(&sched_module, sos_get_header_address(mod_header), mod_bin);
-	sched_stalled = false;
 
 	for(i = 0; i < SCHED_NUM_INTS; i++) {
 		int_array[i] = NULL;
@@ -987,21 +984,20 @@ void sched(void)
 
 		if (int_ready != 0) {
 			ENABLE_GLOBAL_INTERRUPTS();
-			if (true == sched_stalled) continue;
 			handle_callback();
 		} else if( schedpq.msg_cnt != 0 ) {
 			ENABLE_GLOBAL_INTERRUPTS();
-			if (true == sched_stalled) continue;
 			do_dispatch();
 		} else {
 			SOS_MEASUREMENT_IDLE_START();
 			/**
 			 * ENABLE_INTERRUPT() is done inside atomic_hardware_sleep()
 			 */
-			ker_log_flush();
-			atomic_hardware_sleep();
+			//ker_log_flush();
+			//atomic_hardware_sleep();
+			sei();
 		}
-		watchdog_reset();
+		//watchdog_reset();
 	}
 }
 

@@ -194,6 +194,10 @@ build_info:
 %.ihex : %.elf
 	$(OBJCOPY) -j .text -O ihex -R .eeprom $< $@
 
+%.vhd: %.ihex
+	$(ROOTDIR)/../../swlib/hex2vhd.exe $<
+	mv programToLoad.vhd $(ROOTDIR)/../../vhd/
+
 %.cof : %.elf
 	$(OBJCOPY) --debugging -O coff-ext-avr \
 	--change-section-address .data-0x800000 \

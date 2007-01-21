@@ -45,8 +45,7 @@ void timer_hardware_init(uint8_t interval, uint8_t scale){
 	//scale |= (1<<WGM1); // reset on match
 	
 
-	TIMSK &= ((unsigned char)~(1 << (TOIE0)));
-	TIMSK &= ((unsigned char)~(1 << (OCIE0)));
+	TIMSK = 0;
 	//!< Disable TC0 interrupt
 
 	/** 
