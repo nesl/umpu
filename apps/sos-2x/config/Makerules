@@ -92,9 +92,6 @@ endif
 
 $(PLATFORM): $(PROCESSOR)
 
-all:
-	@echo "make { $(PLATLIST) check}";
-	@echo "make mica2 install ADDRESS=<node_address>";
 
 install: $(PLATFORM)_install
 
@@ -110,9 +107,6 @@ clean:
 	rm -f $(PROJ).bd $(PROJ).bin.out xflash.log
 	rm -f *.i *.check
 	rm -f sfi_jumptable_proc.S	
-	for mod in $(MOD_PATHS); do               \
-		$(MAKE) --directory=$$mod clean;  \
-	done
 
 .PHONY: $(EMU_PLATFORM)
 $(EMU_PLATFORM):
