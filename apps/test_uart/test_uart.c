@@ -1,19 +1,20 @@
 #include <avr/io.h>
 #include <inttypes.h>
-#include <avr/signal.h>
 #include <avr/sleep.h>
 #include <avr/interrupt.h>
 
 #include <avr/io.h>
 #include <inttypes.h>
 
-uint8_t counter = 0;
+uint8_t counter;
 uint8_t state = 0;
 
 int main () {
   //Initialize
   //This sets it to a baud rate of 9600  
   UBRR = 51;
+
+  counter = 0x55;
 
   sei();
   UCR = 0x00;
@@ -23,7 +24,7 @@ int main () {
   PORTA = 0x02;
 
   while (!(USR & (1<<UDRE)));
-  UDR = 0x55;
+  UDR = counter++;
   //UDR = counter++;
   while(1);
   return 0;
@@ -49,7 +50,7 @@ SIGNAL(SIG_UART_RECV) {
 }
 */
 SIGNAL(SIG_UART_TRANS) {
-  UDR = 0x55;
-  //UDR = counter++;
+  //UDR = 0x55;
+  UDR = counter++;
 }
 

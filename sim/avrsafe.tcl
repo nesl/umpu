@@ -30,7 +30,7 @@ vcom ../vhd/AVRuCPackage.vhd ../vhd/CPUWaitGenerator.vhd ../vhd/DataRAM.vhd ../v
 ../vhd/safe_stack.vhd ../vhd/shifter.vhd ../vhd/simple_timer.vhd \
 ../vhd/tb_umpu.vhd ../vhd/top_avr_core_sim.vhd ../vhd/uart.vhd \
 ../vhd/dom_bnd_filler.vhd ../vhd/umpu_panic.vhd ../vhd/uart_wrapper.vhd \
-../vhd/program_loader.vhd
+../vhd/program_loader.vhd ../vhd/sos_packet.vhd
 
 
 echo -----------------------------------------------------
@@ -285,6 +285,15 @@ proc mmc_error {} {
     add wave -hex -label ssp_stack_bound sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_error_calc/ssp_stack_bound
 }
 
+proc sos_packet {} {
+    add wave -divider SOS_PACKET
+    add wave -label data -hex sim:/tb_umpu/umpu1/sos_packet_module/rx_data_latched
+    add wave -label data_ready -hex sim:/tb_umpu/umpu1/sos_packet_module/data_ready
+    add wave -label data_req -hex sim:/tb_umpu/umpu1/sos_packet_module/data_req
+    add wave -label sos_rxd -hex sim:/tb_umpu/umpu1/sos_packet_module/load_rxd
+    add wave -label sos_fe sim:/tb_umpu/umpu1/sos_packet_module/uart_wrapper_module/uart_module/fe
+}
+
 proc test_bench {} {
     echo -- Analyzing the test bench
     echo -- Adding the test bench signals
@@ -311,7 +320,6 @@ proc test_bench {} {
     add wave -label reg_bus_addr -hex sim:/tb_umpu/umpu1/top_avr/testing_core/adr
     add wave -label read_en -hex sim:/tb_umpu/umpu1/top_avr/testing_core/iore
     add wave -label read_bus -hex sim:/tb_umpu/umpu1/top_avr/testing_core/dbusin
-    add wave -label wr_bus -hex sim:/tb_umpu/umpu1/top_avr/testing_core/dbusout
     add wave -label wr_en -hex sim:/tb_umpu/umpu1/top_avr/testing_core/iowe
     add wave -label wr_bus -hex sim:/tb_umpu/umpu1/top_avr/testing_core/dbusout
 }

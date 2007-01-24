@@ -102,18 +102,12 @@ architecture beh of umpu is
       );
   end component;
 
-  component uart_wrapper
-    is port (
-      reset : in  std_logic;
-      clock : in  std_logic;
-      load_rxd   : in  std_logic;
-      load_txd   : out std_logic;
-
-      tx_data : in std_logic_vector(7 downto 0);
-
-      rx_data_req   : in  std_logic;
-      rx_data_ready : out std_logic;
-      rx_data       : out std_logic_vector(7 downto 0)
+  component sos_packet
+    is port(
+      reset    : in  std_logic;
+      clock    : in  std_logic;
+      load_rxd : in  std_logic;
+      load_txd : out std_logic
       );
   end component;
 
@@ -151,15 +145,11 @@ begin  -- beh
   -- map the panic signal so it can be observed
   panic <= sgPanic;
 
-  UART_LOADER : component uart_wrapper port map (
-    reset => reset,
-    clock => eightMhzClock(1),
-    load_rxd => avr_txd,
---     load_txd => ,
-     tx_data => (others => '0'),
-     rx_data_req => '0'
---     rx_data_ready => ,
---     rx_data => 
+  SOS_PACKET_MODULE : component sos_packet port map (
+    reset       => reset,
+    clock       => eightMhzClock(1),
+    load_rxd    => avr_txd
+-- load_txd => ,
     );
 
   TOP_AVR : component top_avr_core_sim port map (

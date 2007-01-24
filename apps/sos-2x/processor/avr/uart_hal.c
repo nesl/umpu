@@ -24,8 +24,8 @@ int8_t uart_hardware_init(void){
 	  ENTER_CRITICAL_SECTION();
 #ifndef DISABLE_UART
 	  
-	  //! UART will run at: 19.2kbps, N-8-1
-	  UBRR = (uint8_t) (BAUD_19_2k);
+	  //! UART will run at: 9.6kbps, N-8-1
+	  UBRR = (uint8_t) (BAUD_9600);
 
 	  /**
 	   * Enable reciever and transmitter and their interrupts

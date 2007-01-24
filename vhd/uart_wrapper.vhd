@@ -49,14 +49,11 @@ architecture Beh of uart_wrapper is
   signal reg_data  : std_logic_vector(7 downto 0);
   signal reg_wr_en : std_logic;
 
-  signal data       : std_logic_vector(7 downto 0);
-  signal data_rd_en : std_logic;
-
-  signal rxd_irq : std_logic;
-
   signal state         : std_logic_vector(1 downto 0);
   signal state_counter : std_logic_vector(1 downto 0);
   signal change_state  : std_logic;
+
+  signal rx_irq : std_logic;
 
 begin  -- Beh
 
@@ -106,19 +103,17 @@ begin  -- Beh
     end if;
   end process;
 
---   RXD_IRQ_HANDLER : process(reset, clock)
+--   DATA_READ : process(clock)
 --   begin
---     if (reset = '0') then
---       data_rd_en <= '0';
---     elsif (clock = '1' and clock'event) then
---       if (rxd_irq = '1' and data_rd_en = '0') then
---         data_rd_en <= '1';        
+--     if (clock = '1' and clock'event) then
+--       if (rx_irq = '1') then
+--         rx_data_ready <= '1';
 --       else
---         data_rd_en <= '0';
+--         rx_data_ready <= '0';
 --       end if;
 --     end if;
 --   end process;
-
+  
   UART_MODULE : component uart port map(
     ireset   => reset,
     cp2      => clock,

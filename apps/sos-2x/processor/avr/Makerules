@@ -47,7 +47,7 @@ DEFS += -DSYS_JUMP_TBL_SIZE=4
 #===============================================================================================
 ifeq ($(BUILD),_SOS_KERNEL_)
 BLS_START = -Wl,--section-start=.sos_bls=0x1fc00 
-#SRCS += uart_hal.c uart.c uart_system.c 
+SRCS += uart_hal.c uart.c uart_system.c 
 SRCS += crc.c timer.c
 ASMSRCS += sos_fnptr_call.S
 ASMSRCS += sys_jmptable.S

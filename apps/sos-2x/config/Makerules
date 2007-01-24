@@ -70,7 +70,7 @@ SRCS += malloc.c
 endif
 #################################################
 
-#SRCS += $(PROJ).c
+SRCS += $(PROJ).c
 SRCS += sched.c message.c message_queue.c message_net.c
 SRCS += fntable.c
 SRCS += sos_timer.c monitor.c
