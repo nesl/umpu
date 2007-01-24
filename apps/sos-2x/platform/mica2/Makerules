@@ -13,7 +13,7 @@ ifndef USE_SOS_I2C
 DEFS += -DNO_SOS_I2C
 endif
 
-DEFS += -DNO_SOS_RADIO
+DEFS += -DNO_SOS_RADIO -DNO_SOS_UART
 
 PROCESSOR = avr
 
@@ -26,24 +26,9 @@ INCDIR += -I$(ROOTDIR)/drivers/uart/include
 INCDIR += -I$(ROOTDIR)/drivers/i2c/include
 
 ifeq ($(BUILD),_SOS_KERNEL_)
-SRCS +=  sos_uart.c sos_uart_mgr.c led.c
+#SRCS +=  sos_uart.c sos_uart_mgr.c 
+SRCS += led.c
 endif
-
-#ifeq  ($(RADIOSTACK), ubmac)
-#SRCS += rats.c linear.c ubmac.c cc1k_ubmac.c
-#INCDIR += -I$(ROOTDIR)/drivers/ubmac/include
-
-#LDFLAGS += -lm
-
-#VPATH += $(ROOTDIR)/modules/timesync/rats
-#VPATH += $(ROOTDIR)/drivers/ubmac
-
-#DEFS += -DUBMAC
-
-#else
-#SRCS += cc1k_radio.c
-#endif
-
 
 include $(ROOTDIR)/processor/$(PROCESSOR)/Makerules
 

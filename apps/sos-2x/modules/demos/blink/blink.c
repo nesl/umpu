@@ -17,7 +17,7 @@
 
 #include "blink.h"
 
-#define BLINK_TIMER_INTERVAL	100L
+#define BLINK_TIMER_INTERVAL	20L
 #define BLINK_TID               0
 /**
  * Module can define its own state

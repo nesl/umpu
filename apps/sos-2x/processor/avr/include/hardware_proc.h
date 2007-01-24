@@ -6,7 +6,7 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#define USE_OBSOLETE_LIBC
+//#define USE_OBSOLETE_LIBC
 #ifdef USE_OBSOLETE_LIBC
 #include <avr/signal.h>
 #endif

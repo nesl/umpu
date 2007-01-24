@@ -47,7 +47,8 @@ DEFS += -DSYS_JUMP_TBL_SIZE=4
 #===============================================================================================
 ifeq ($(BUILD),_SOS_KERNEL_)
 BLS_START = -Wl,--section-start=.sos_bls=0x1fc00 
-SRCS += uart_hal.c uart.c uart_system.c crc.c timer.c
+#SRCS += uart_hal.c uart.c uart_system.c 
+SRCS += crc.c timer.c
 ASMSRCS += sos_fnptr_call.S
 ASMSRCS += sys_jmptable.S
 #LDFLAGS +=  -Wl,--section-start=.sos_sysjmptbl=$(SYS_JUMP_TBL_ADDR)
@@ -102,10 +103,14 @@ SFLAGS += $(STACK_START) -Wa,$(MCUFLAG),$(AS_DEBUG),-ahlms=$(notdir $(<:.S=.lst)
 endif # _MODULE_
 
 
+
 sfi_jumptable_proc.S:
 	$(ROOTDIR)/processor/avr/create_sfijumptable.py $(ROOTDIR)/kernel/include/kertable.h $(ROOTDIR)/processor/avr/include/kertable_proc.h $(ROOTDIR)/platform/$(PLATFORM)/include/kertable_plat.h
 
 avr: $(PROJ).elf $(PROJ).elf.lst $(PROJ).srec $(OBJS) $(PROJ).vhd $(PROJ).ihex
+
+
+
 
 ifeq ($(BUILD),_SOS_KERNEL_)
 	$(ROOTDIR)/tools/utils/verify_avr_image.pl $(PROJ).elf 

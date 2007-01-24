@@ -182,7 +182,9 @@ build_info:
 	$(AS) -c $(SFLAGS) $(INCDIR) $< -o $@
 
 %.elf: $(OBJS)
+	@echo === LINKING =====================
 	$(CC) $(OBJS) $(LIBS) $(LDFLAGS) -o $@
+	@echo === SIZE ========================
 	$(SIZE) -A $@
 
 %.elf.lst: %.elf

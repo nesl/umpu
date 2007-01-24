@@ -307,6 +307,13 @@ proc test_bench {} {
 
     add wave -label rxd -hex sim:/tb_umpu/tbRxd
     add wave -label txd -hex sim:/tb_umpu/tbTxd
+
+    add wave -label reg_bus_addr -hex sim:/tb_umpu/umpu1/top_avr/testing_core/adr
+    add wave -label read_en -hex sim:/tb_umpu/umpu1/top_avr/testing_core/iore
+    add wave -label read_bus -hex sim:/tb_umpu/umpu1/top_avr/testing_core/dbusin
+    add wave -label wr_bus -hex sim:/tb_umpu/umpu1/top_avr/testing_core/dbusout
+    add wave -label wr_en -hex sim:/tb_umpu/umpu1/top_avr/testing_core/iowe
+    add wave -label wr_bus -hex sim:/tb_umpu/umpu1/top_avr/testing_core/dbusout
 }
 
 proc mmc_arbiter_interface {} {

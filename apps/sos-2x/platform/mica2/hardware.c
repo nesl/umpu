@@ -115,16 +115,16 @@ void hardware_init(void){
   timer_hardware_init(DEFAULT_INTERVAL, DEFAULT_SCALE);
 
   // UART
-  uart_system_init();
+  //  uart_system_init();
 #ifndef NO_SOS_UART
   //! Initalize uart comm channel
   sos_uart_init();
 #endif
 
   // MICA2 PERIPHERALS (Optional)
-#ifdef SOS_MICA2_PERIPHERAL
-  mica2_peripheral_init();
-#endif
+/* #ifdef SOS_MICA2_PERIPHERAL */
+/*   mica2_peripheral_init(); */
+/* #endif */
 
 }
 

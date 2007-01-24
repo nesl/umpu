@@ -70,7 +70,7 @@ SRCS += malloc.c
 endif
 #################################################
 
-SRCS += $(PROJ).c
+#SRCS += $(PROJ).c
 SRCS += sched.c message.c message_queue.c message_net.c
 SRCS += fntable.c
 SRCS += sos_timer.c monitor.c
@@ -81,6 +81,8 @@ SRCS += sos_cam.c sos_logging.c
 
 OBJS += $(SRCS_FIRST:.c=.o) $(OBJS_FIRST) $(SRCS:.c=.o) $(ASMSRCS:.S=.o)
 
+
+
 ifneq ($(PLATFORM),)
 include $(ROOTDIR)/kernel/Makerules
 endif
@@ -89,7 +91,6 @@ endif
 ####
 # Make rules
 ####
-
 $(PLATFORM): $(PROCESSOR)
 
 

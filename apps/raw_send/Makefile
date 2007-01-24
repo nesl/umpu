@@ -1,4 +1,4 @@
-PROJ  = port_avr
+PROJ  = raw_send
 SRCS  = port_avr.c sp_timer.c hw_timer.c sched.c
 OBJS += $(SRCS:.c=.o)
 INSTALLER = uisp -dpart=atmega103 -dprog=mib510 -dserial=$(PORT)

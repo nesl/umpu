@@ -41,8 +41,8 @@ void timer_hardware_init(uint8_t interval, uint8_t scale){
 	HAS_CRITICAL_SECTION;
 	ENTER_CRITICAL_SECTION();
 
-	//scale &= 0x7;
-	//scale |= (1<<WGM1); // reset on match
+	scale &= 0x7;
+	scale |= (1<<CTC0); // reset on match
 	
 
 	TIMSK = 0;
