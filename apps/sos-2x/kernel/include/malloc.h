@@ -44,8 +44,8 @@
 #include <pid.h>
 #include <malloc_conf.h>
 #include <sos_module_types.h>
-#ifdef FAULT_TOLERANT_SOS
-#include <malloc_domains.h>
+#ifdef SOS_SFI
+#include <umpu.h>
 #endif
 
 /**
@@ -61,17 +61,21 @@ extern void mem_start(void);
 /**
  * @brief Allocate a chunk of blocks from the heap
  */
-extern void *sos_blk_mem_alloc(uint16_t size, sos_pid_t id, bool bCallFromModule);
+#ifdef SOS_SFI
+extern void* sos_blk_mem_alloc(uint16_t size, sos_pid_t id, uint8_t calleedomid)
+#else
+extern void* sos_blk_mem_alloc(uint16_t size, sos_pid_t id)
+#endif
 
 /**
  * @brief Free a block back into the heap
  */
-extern void sos_blk_mem_free(void* ptr, bool bCallFromModule);
+#ifdef SOS_SFI
+extern void sos_blk_mem_free(void* pntr, uint8_t calleedomid)
+#else
+extern void sos_blk_mem_free(void* ptr);
+#endif
 
-/**
- * @brief Re-allocate a block of memory from the heap
- */
-extern void *sos_blk_mem_realloc(void* pntr, uint16_t newSize, bool bCallFromModule);
 
 /**
  * @brief Change memory ownership of a segment of memory
@@ -81,8 +85,11 @@ extern int8_t sos_blk_mem_change_own(void* ptr, sos_pid_t id, bool bCallFromModu
 /**
  * @brief Allocate a block of memory for long term usage
  */
-extern void *sos_blk_mem_longterm_alloc(uint16_t size, sos_pid_t id, bool bCallFromModule);
-
+#ifdef SOS_SFI
+extern void* sos_blk_mem_longterm_alloc(uint16_t size, sos_pid_t id, uint8_t calleedomid)
+#else
+extern void* sos_blk_mem_longterm_alloc(uint16_t size, sos_pid_t id)
+#endif
 
 /**
  * @brief Allocate dynamic memory
@@ -93,19 +100,11 @@ extern void *sos_blk_mem_longterm_alloc(uint16_t size, sos_pid_t id, bool bCallF
  */
 static inline void *ker_malloc(uint16_t size, sos_pid_t id)
 {
-  return sos_blk_mem_alloc(size, id, false);
-}
-
-/**
- * @brief Reallocate dynamic memory
- * @param pntr Pointer to the currently held block of memory
- * @param newSize Number of bytes to be allocated
- * @return Returns the pointer to the reallocated memory.
- * Returns a NULL if unable to reallocate but the original pointer is still valid.
- */
-static inline void* ker_realloc(void* pntr, uint16_t newSize)
-{
-  return sos_blk_mem_realloc(pntr, newSize, false);
+#ifdef SOS_SFI
+  return sos_blk_mem_alloc(size, id, GET_MSR_DOM_ID());
+#else
+  return sos_blk_mem_alloc(size, id);
+#endif
 }
 
 /**
@@ -115,7 +114,11 @@ static inline void* ker_realloc(void* pntr, uint16_t newSize)
  */
 static inline void ker_free(void* ptr)
 {
-  sos_blk_mem_free(ptr, false);
+#ifdef SOS_SFI
+  sos_blk_mem_free(ptr, GET_MSR_DOM_ID());
+#else
+  sos_blk_mem_free(ptr);
+#endif
   return;
 }
 
@@ -128,11 +131,13 @@ static inline void ker_free(void* ptr)
  */
 static inline int8_t ker_change_own(void* ptr, sos_pid_t id)
 {
-  return sos_blk_mem_change_own(ptr, id, false);
+#ifdef SOS_SFI
+  return sos_blk_mem_change_own(ptr, id, GET_MSR_DOM_ID());
+#else
+  return sos_blk_mem_change_own(ptr, id);
+#endif
 }
 
-
-extern sos_pid_t mem_check_memory();
 
 /**
  * @brief Free up all memory held by id 
@@ -146,12 +151,13 @@ extern int8_t mem_remove_all(sos_pid_t id);
  */
 static inline void* malloc_longterm(uint16_t size, sos_pid_t id)
 {
-  return sos_blk_mem_longterm_alloc(size, id, true);
+#ifdef SOS_SFI
+  return sos_blk_mem_longterm_alloc(size, id, GET_MSR_DOM_ID());
+#else
+  return sos_blk_mem_longterm_alloc(size, id);
+#endif
 }
 
-#ifndef FAULT_TOLERANT_SOS
-#define ker_valid_access NULL
-#endif //FAULT_TOLERANT_SOS
 
 /**
  * force kernel enters panic mode

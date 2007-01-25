@@ -37,10 +37,8 @@
 #include <sos_logging.h>
 // SFI Mode Includes
 #ifdef SOS_SFI
-#include <memmap.h>          // Memmory Map AOI
-#include <sfi_jumptable.h>   // sfi_get_domain_id
-#include <sfi_exception.h>   // sfi_exception
-#include <cross_domain_cf.h> // curr_dom_id
+#include <memmap.h>          // Memmory Map API
+#include <umpu.h>
 #endif
 
 //-----------------------------------------------------------------------------
@@ -90,8 +88,7 @@ typedef struct _BlockHeaderType
 {
   uint16_t blocks;
   uint8_t  owner;
-} //PACK_STRUCT
-  BlockHeaderType;
+} BlockHeaderType;
 
 
 typedef struct _Block
@@ -105,20 +102,17 @@ typedef struct _Block
       struct _Block *prev;
       struct _Block *next;
     };
-  } /*PACK_STRUCT */;
-} //PACK_STRUCT
-  Block;
+  };
+} Block;
 
 //-----------------------------------------------------------------------------
 // LOCAL FUNCTIONS
 //-----------------------------------------------------------------------------
-//static int8_t mem_handler(void *state, Message *msg);
 static void InsertAfter(Block*);
 static void Unlink(Block*);
 static Block* MergeBlocks(Block* block);
 static Block* MergeBlocksQuick(Block *block, uint16_t req_blocks);
 static void SplitBlock(Block* block, uint16_t reqBlocks);
-//static void verify_memory( void );
 
 //-----------------------------------------------------------------------------
 // LOCAL GLOBAL VARIABLES
@@ -130,36 +124,22 @@ static Block            malloc_heap[(MALLOC_HEAP_SIZE + (BLOCK_SIZE - 1))/BLOCK_
 
 
 
-#if 0
-static sos_module_t malloc_module;
-static mod_header_t mod_header SOS_MODULE_HEADER ={
-  mod_id : KER_MEM_PID,
-  state_size : 0,
-  num_timers : 1,
-  num_sub_func : 0,
-  num_prov_func : 0,
-  module_handler: mem_handler,
-};
-#endif
-
-
 //-----------------------------------------------------------------------------
 // Return a pointer to an area of memory that is at least the right size.
 // SFI Mode: Allocate domain ID based upon requestor pid.
 //-----------------------------------------------------------------------------
-void* sos_blk_mem_longterm_alloc(uint16_t size, sos_pid_t id, bool bCallFromModule)
-{
-#if 0
-  return sos_blk_mem_alloc(size, id, false);
+#ifdef SOS_SFI
+void* sos_blk_mem_longterm_alloc(uint16_t size, sos_pid_t id, uint8_t calleedomid)
 #else
+void* sos_blk_mem_longterm_alloc(uint16_t size, sos_pid_t id)
+#endif
+{
   HAS_CRITICAL_SECTION;
   uint16_t reqBlocks;
   Block* block;
   Block* max_block = NULL;
   Block* newBlock;
-#ifdef SOS_SFI
-  int8_t domid;
-#endif
+
 
   if (size == 0) return NULL;
   printMem("malloc_longterm begin: ");
@@ -203,33 +183,31 @@ void* sos_blk_mem_longterm_alloc(uint16_t size, sos_pid_t id, bool bCallFromModu
   newBlock->blockhdr.owner = id;
 
 #ifdef SOS_SFI
-  domid = sfi_get_domain_id(id);
-  memmap_set_perms((void*) newBlock, sizeof(Block), DOM_SEG_START(domid));
-  memmap_set_perms((void*) ((Block*)(newBlock + 1)), sizeof(Block) * (reqBlocks - 1), DOM_SEG_LATER(domid));
+  memmap_set_perms((void*) newBlock, sizeof(Block), DOM_SEG_START(calleedomid));
+  memmap_set_perms((void*) ((Block*)(newBlock + 1)), sizeof(Block) * (reqBlocks - 1), DOM_SEG_LATER(calleedomid));
 #else
   BLOCK_GUARD_BYTE(newBlock) = id;
 #endif
 
   printMem("malloc_longterm end: ");
-  //DEBUG("malloc_longterm return %x\n", (unsigned int)newBlock);
   LEAVE_CRITICAL_SECTION();
   ker_log( SOS_LOG_MALLOC, id, reqBlocks );
   return newBlock->userPart;
-#endif
 }
 
 //-----------------------------------------------------------------------------
 // Malloc Function
 // SFI Mode: Allocate domain ID based upon requestor pid
 //-----------------------------------------------------------------------------
-void* sos_blk_mem_alloc(uint16_t size, sos_pid_t id, bool bCallFromModule)
+#ifdef SOS_SFI
+void* sos_blk_mem_alloc(uint16_t size, sos_pid_t id, uint8_t calleedomid)
+#else
+void* sos_blk_mem_alloc(uint16_t size, sos_pid_t id)
+#endif
 {
   HAS_CRITICAL_SECTION;
   uint16_t reqBlocks;
   Block* block;
-#ifdef SOS_SFI
-  int8_t domid;
-#endif
 
   // Check for errors.
   if (size == 0) return NULL;
@@ -237,15 +215,11 @@ void* sos_blk_mem_alloc(uint16_t size, sos_pid_t id, bool bCallFromModule)
   // Compute the number of blocks to satisfy the request.
   reqBlocks = (size + BLOCKOVERHEAD + sizeof(Block) - 1) >> SHIFT_VALUE;
 
-  //DEBUG("sizeof(BlockHeaderType) = %d, sizeof(block) = %d\n", sizeof(BlockHeaderType), sizeof(Block));
-  //DEBUG("req size = %d, reqBlocks = %d\n", size, reqBlocks);
-    
   ENTER_CRITICAL_SECTION();
   //verify_memory();
   // Traverse the free list looking for the first block that will fit the
   // request. This is a "first-fit" strategy.
   //
-  //printMem("malloc_start: ");
   for (block = mSentinel->next; block != mSentinel; block = block->next)
     {
       block = MergeBlocksQuick(block, reqBlocks);
@@ -285,9 +259,8 @@ void* sos_blk_mem_alloc(uint16_t size, sos_pid_t id, bool bCallFromModule)
   block->blockhdr.owner = id;
 
 #ifdef SOS_SFI
-  domid = sfi_get_domain_id(id);
-  memmap_set_perms((void*) block, sizeof(Block), DOM_SEG_START(domid));
-  memmap_set_perms((void*) ((Block*)(block + 1)), sizeof(Block) * (reqBlocks - 1), DOM_SEG_LATER(domid));
+  memmap_set_perms((void*) block, sizeof(Block), DOM_SEG_START(calleedomid));
+  memmap_set_perms((void*) ((Block*)(block + 1)), sizeof(Block) * (reqBlocks - 1), DOM_SEG_LATER(calleedomid));
 #else                           
   BLOCK_GUARD_BYTE(block) = id; 
 #endif
@@ -304,10 +277,14 @@ void* sos_blk_mem_alloc(uint16_t size, sos_pid_t id, bool bCallFromModule)
 // SFI Mode: 1. If call comes from un-trusted domain, then free only if current domain is owner
 //           2. Block being freed should be start of segment
 //-----------------------------------------------------------------------------
-void sos_blk_mem_free(void* pntr, bool bCallFromModule)
+#ifdef SOS_SFI
+void sos_blk_mem_free(void* pntr, uint8_t calleedomid)
+#else
+void sos_blk_mem_free(void* pntr)
+#endif
 {
-	uint16_t freed_blocks;
-	sos_pid_t owner;
+  uint16_t freed_blocks;
+  sos_pid_t owner;
 #ifdef SOS_SFI
   uint16_t block_num;
   uint8_t perms;
@@ -342,12 +319,7 @@ void sos_blk_mem_free(void* pntr, bool bCallFromModule)
     return; 
   }
   // Check - Untrusted domain trying to free memory that it does not own or that is free.
-#ifdef SFI_DOMS_8
-  if ((bCallFromModule) && ((perms & MEMMAP_DOM_MASK) != curr_dom_id))
-#endif
-#ifdef SFI_DOMS_2
-  if ((bCallFromModule) && ((perms & MEMMAP_DOM_MASK) == KER_DOM_ID))
-#endif
+  if (calleedomid != KER_DOM_ID) && ((perms & MEMMAP_DOM_MASK) != calleedomid))
     {
       LEAVE_CRITICAL_SECTION();
       sfi_exception(MALLOC_EXCEPTION);
@@ -392,13 +364,16 @@ void sos_blk_mem_free(void* pntr, bool bCallFromModule)
 // SFI Mode: 1. If call from un-trusted domain. change permissions only if current domain is block owner
 //           2. If call from trusted domain, everything is fair !!
 //-----------------------------------------------------------------------------
-int8_t sos_blk_mem_change_own(void* ptr, sos_pid_t id, bool bCallFromModule) 
+#ifdef SOS_SFI
+int8_t sos_blk_mem_change_own(void* ptr, sos_pid_t id, uint8_t calleedomid) 
+#else
+int8_t sos_blk_mem_change_own(void* ptr, sos_pid_t id) 
+#endif
 {
 #ifdef SOS_SFI
   HAS_CRITICAL_SECTION;
   uint8_t perms;
   uint16_t block_num;
-  int8_t domid;
 #endif
 
   Block* blockptr = TO_BLOCK_PTR(ptr); // Convert to a block address         
@@ -419,12 +394,8 @@ int8_t sos_blk_mem_change_own(void* ptr, sos_pid_t id, bool bCallFromModule)
     sfi_exception(MALLOC_EXCEPTION);
   }
 
-#ifdef SFI_DOMS_8 
-  if ((bCallFromModule && ((perms & MEMMAP_DOM_MASK) == curr_dom_id))|| (!bCallFromModule))
-#endif
-#ifdef SFI_DOMS_2
-  if ((bCallFromModule && ((perms & MEMMAP_DOM_MASK) != KER_DOM_ID)) || (!bCallFromModule))
-#endif
+
+    if (((calleedomid != KER_DOM_ID) && ((perms & MEMMAP_DOM_MASK) != KER_DOM_ID)) || (calleedomid == KER_DOM_ID))
     {
       // Call has come from trusted domain OR
       // Call has come from block owner
@@ -470,11 +441,6 @@ int8_t sos_blk_mem_change_own(void* ptr, sos_pid_t id, bool bCallFromModule)
   return SOS_OK;
 }
 
-void mem_start() 
-{
-  // sched_register_kernel_module(&malloc_module, sos_get_header_address(mod_header), NULL);
-}
-
 int8_t mem_remove_all(sos_pid_t id)
 {
   HAS_CRITICAL_SECTION;
@@ -496,127 +462,6 @@ int8_t mem_remove_all(sos_pid_t id)
 }
 
 
-//-----------------------------------------------------------------------------
-// Re-allocate the buffer to a new area the requested size. If possible the
-// existing area is simply expanded. Otherwise a new area is allocated and
-// the current contents copied.
-// SFI Mode: 1. If call from untrusted domain, only owner is allowed to realloc
-//-----------------------------------------------------------------------------
-void* sos_blk_mem_realloc(void* pntr, uint16_t newSize, bool bCallFromModule)
-{
-  HAS_CRITICAL_SECTION;
-  sos_pid_t id;
-#ifdef SOS_SFI
-  uint16_t block_num;
-  uint8_t perms;  
-  uint16_t oldSize;
-  int8_t domid;
-#endif
-  // Check for errors.
-  //
-  if ( (pntr == NULL ) || (newSize == 0) ) return pntr;
-
-#ifdef SOS_SFI
-  ENTER_CRITICAL_SECTION();
-  // Get the permission of the first block
-  block_num = MEMMAP_GET_BLK_NUM(pntr);
-  MEMMAP_GET_PERMS(block_num, perms);
-#ifdef SFI_DOMS_8
-  if ((bCallFromModule) && ((perms & MEMMAP_DOM_MASK) != curr_dom_id))
-#endif
-#ifdef SFI_DOMS_2
-  if ((bCallFromModule) && ((perms & MEMMAP_DOM_MASK) == KER_DOM_ID))
-#endif
-    {
-      LEAVE_CRITICAL_SECTION();
-      sfi_exception(MALLOC_EXCEPTION);
-      // Error - Untrusted domain trying to realloc memory that it does not own or that is free.
-    }
-  domid = perms & MEMMAP_DOM_MASK;
-  LEAVE_CRITICAL_SECTION();
-#endif
-
-
-  Block* block = TO_BLOCK_PTR(pntr);   // convert user to block address
-  uint16_t reqBlocks = (newSize + BLOCKOVERHEAD + sizeof(Block) - 1) >> SHIFT_VALUE;
-
-  ENTER_CRITICAL_SECTION();
-  id = block->blockhdr.owner;
-  block->blockhdr.blocks &= ~RESERVED;         // expose the size
-#ifdef SOS_SFI
-  oldSize = BLOCKS_TO_BYTES(block->blockhdr.blocks);
-#endif
-
-  // The fastest option is to merge this block with any free blocks
-  // that are contiguous with this block.
-  //
-  block = MergeBlocks(block);
-
-  if (block->blockhdr.blocks > reqBlocks)
-    {
-      // The merge produced a larger block than required, so split it
-      // into two blocks. This also takes care of the case where the
-      // new size is less than the old.
-      //
-      SplitBlock(block, reqBlocks);
-#ifdef SOS_SFI
-      if (reqBlocks < oldSize){
-	memmap_set_perms((Block*)(block + reqBlocks), 
-			 (oldSize - reqBlocks)*(sizeof(Block)), 
-			 MEMMAP_SEG_START|BLOCK_FREE);
-      }
-      else{
-	memmap_set_perms((Block*)(block + oldSize),
-			   (reqBlocks - oldSize)*(sizeof(Block)), 
-			   DOM_SEG_LATER(domid));
-      }
-#endif
-      
-    }
-  else if (block->blockhdr.blocks < reqBlocks)
-    {
-      // Could not expand this block. Must attempt to allocate
-      // a new one the correct size and copy the current contents.
-      //
-#ifndef SOS_SFI
-      uint16_t oldSize = BLOCKS_TO_BYTES(block->blockhdr.blocks);
-#endif
-      block = (Block*)ker_malloc(newSize, id);
-      if (NULL != block)
-        {
-	  // A new block large enough has been allocated. Copy the
-	  // existing data and then discard the old block.
-	  //
-	  block = TO_BLOCK_PTR(block);
-	  memcpy(block->userPart, (Block*)(TO_BLOCK_PTR(pntr))->userPart, oldSize);
-	  sos_blk_mem_free(pntr, bCallFromModule);
-        }
-      else
-        {
-	  // Cannot re-allocate this block. Note the old pointer
-	  // is still valid.
-	  //
-	  LEAVE_CRITICAL_SECTION();
-	  return NULL;        // no valid options
-        }
-    }
-#ifdef SOS_SFI
-  else if (block->blockhdr.blocks == reqBlocks)
-    {
-      memmap_set_perms((Block*)(block + oldSize), 
-		       (reqBlocks - oldSize)*(sizeof(Block)), 
-		       DOM_SEG_LATER(domid));
-    }
-#endif
-
-  block->blockhdr.blocks |= RESERVED;
-  block->blockhdr.owner = id;
-#ifndef SOS_SFI                                
-  BLOCK_GUARD_BYTE(block) = id; 
-#endif
-  LEAVE_CRITICAL_SECTION();
-  return block->userPart;
-}
 //-----------------------------------------------------------------------------
 // Compute the number of blocks that will fit in the memory area defined.
 // Allocate the pool of blocks. Note this includes the sentinel area that is 
@@ -648,8 +493,17 @@ void mem_init(void)
 #ifdef SOS_SFI
   memmap_init(); // Initialize all the memory to be owned by the kernel
   memmap_set_perms((void*) mPool, mNumberOfBlocks * sizeof(Block), MEMMAP_SEG_START|BLOCK_FREE); // Init heap to unallocated
+  SET_MSR_BLK_SIZE(8);
+  SET_MSR_DOMS_8();
+  MMBL = (uint8_t)((uint16_t)heapStart & 0x00FF);
+  MMBH = (uint8_t)((uint16_t)heapStart >> 8);
+  MMTL = (uint8_t)((uint16_t)heapEnd & 0x00FF);
+  MMTH = (uint8_t)((uint16_t)heapEnd >> 8);
+  MMPL = (uint8_t)((uint16_t)memmap & 0x00FF);
+  MMPH = (uint8_t)((uint16_t)memmap >> 8);
+  MSR_ENABLE();
 #endif
-
+  
 }
 
 //-----------------------------------------------------------------------------
@@ -728,132 +582,6 @@ static void Unlink(Block* block)
   block->next->prev = block->prev;
 }
 
-#if 0
-static inline void mem_defrag()
-{
-  HAS_CRITICAL_SECTION;
-  Block* block;
-  ENTER_CRITICAL_SECTION();
-  printMem("before defrag\n");
-  for (block = mSentinel->next; block != mSentinel; block = block->next)
-    {
-      block = MergeBlocks(block);
-    }
-  printMem("after defrag\n");
-  LEAVE_CRITICAL_SECTION();
-}
-
-static int8_t mem_handler(void *state, Message *msg)
-{
-  switch(msg->type){
-  case MSG_TIMER_TIMEOUT:
-    {
-      mem_defrag();
-      break;
-    }
-  case MSG_INIT:
-    {
-      ker_timer_init(KER_MEM_PID, 0, TIMER_REPEAT);
-      ker_timer_start(KER_MEM_PID, 0, 10 * 1024L);
-      break;
-    }
-  case MSG_DEBUG:
-    {
-      break;
-    }
-  default:
-    return -EINVAL;
-  }
-  return SOS_OK;
-}
-#endif /* #if 0 */
-
-#if 0
-static void verify_memory( void )
-{
-  Block* block;
-  block = (Block*)malloc_heap;
-  Block* next_block;
-  while(block != mSentinel) {
-    next_block = block + (block->blockhdr.blocks & ~RESERVED);
-    if( block->blockhdr.blocks & RESERVED ) {
-      if( block->blockhdr.owner != BLOCK_GUARD_BYTE(block) ) {
-	ker_led(LED_RED_TOGGLE);
-	return;
-      }
-    }
-    if( next_block != mSentinel) {
-      if( (next_block->blockhdr.blocks & ~RESERVED) > ((MALLOC_HEAP_SIZE + (BLOCK_SIZE - 1))/BLOCK_SIZE) ) {
-	ker_led(LED_GREEN_TOGGLE);
-	ker_led(LED_RED_TOGGLE);
-	return;
-      }	
-    }
-    block = next_block;
-  }
-
-}
-#endif
-
-#ifdef SOS_DEBUG_MALLOC
-#ifndef SOS_SFI
-static void printMem(char* s)
-{
-  Block* block;
-  int i = 0;
-
-  DEBUG("%s\n", s);
-  for (block = mSentinel->next; block != mSentinel; block = block->next)
-    {
-      /*
-	if(block->blockhdr.owner != BLOCK_GUARD_BYTE(block)) {
-	DEBUG("detect memory corruption in PrintMem\n");
-	DEBUG("possible owner %d %d\n", block->blockhdr.owner, BLOCK_GUARD_BYTE(block));
-	} else {
-      */
-      DEBUG("block %d : block: %x, prev : %x, next : %x, blocks : %d\n", i,
-	    (unsigned int) block, 
-	    (unsigned int) block->prev, 
-	    (unsigned int) block->next, 
-	    (unsigned int) block->blockhdr.blocks);	
-      //}
-      i++;
-    }
-  DEBUG("Memory Map:\n");
-  block = (Block*)malloc_heap;
-  i = 0;
-  while(block != mSentinel) {
-    DEBUG("block %d : addr: %x size: %d alloc: %d owner: %d check %d\n", i++, 
-	  (unsigned int) block, 
-	  (unsigned int) (block->blockhdr.blocks & ~RESERVED), 
-	  (unsigned int) (block->blockhdr.blocks & RESERVED), 
-	  (unsigned int) block->blockhdr.owner,
-	  (unsigned int) BLOCK_GUARD_BYTE(block));
-    block += block->blockhdr.blocks & ~RESERVED;
-  }
-
-}
-#else
-static void printMem(char* s)
-{
-  Block* block;
-  int i = 0;
-
-  DEBUG("%s\n", s);
-  for (block = mSentinel->next; block != mSentinel; block = block->next){
-    DEBUG("Block %d : Addr: %x, Prev : %x, Next : %x, Blocks : %d\n", i++, (uint32_t)block, (uint32_t)block->prev, (uint32_t)block->next, block->blockhdr.blocks);	
-  }
-  DEBUG("Memory Map:\n");
-  block = (Block*)malloc_heap;
-  i = 0;
-  while(block != mSentinel) {
-    DEBUG("block %d : Addr: %x size: %d alloc: %d owner: %d\n", i++, (uint32_t)block, block->blockhdr.blocks & ~RESERVED, block->blockhdr.blocks & RESERVED, block->blockhdr.owner);
-    block += block->blockhdr.blocks & ~RESERVED;
-  }
-}
-#endif // SOS_SFI
-#endif
-
 /**
  * Use by SYS API to notify module's panic
  */
@@ -889,10 +617,14 @@ int8_t ker_panic(void)
   return -EINVAL;	
 }
 
-void* ker_sys_malloc(uint16_t size)
+void* ker_sys_malloc(uint16_t size, uint8_t calleedomid)
 {    
-  sos_pid_t my_id = ker_get_current_pid();    
-  void *ret = sos_blk_mem_alloc(size, my_id, true);    
+  sos_pid_t my_id = ker_get_current_pid();
+#ifdef SOS_SFI    
+  void *ret = sos_blk_mem_alloc(size, my_id, calleedomid);
+#else    
+  void *ret = sos_blk_mem_alloc(size, my_id);
+#endif    
   if( ret != NULL ) {        
     return ret;    
   }    
@@ -900,26 +632,25 @@ void* ker_sys_malloc(uint16_t size)
   return NULL;
 }
 
-void* ker_sys_realloc(void* pntr, uint16_t newSize)
-{
-  void *ret = sos_blk_mem_realloc(pntr, newSize, true);
-  if( ret != NULL ) {
-    return ret;
-  }
-  ker_mod_panic(ker_get_current_pid());
-  return NULL;
-}
 
-void ker_sys_free(void *pntr) 
+void ker_sys_free(void *pntr, uint8_t calleedomid) 
 {
+#ifdef SOS_SFI
+  sos_blk_mem_free(pntr, calleedomid);
+#else
   sos_blk_mem_free(pntr, true);
+#endif
 }	
 
-int8_t ker_sys_change_own( void* ptr )
+int8_t ker_sys_change_own(void* ptr, uint8_t calleedomid)
 {
   sos_pid_t my_id = ker_get_current_pid();    
-  if( SOS_OK != sos_blk_mem_change_own( ptr, my_id, true ) ) {
-	ker_mod_panic(my_id);
+#ifdef SOS_SFI
+  if( SOS_OK != sos_blk_mem_change_own( ptr, my_id, calleedomid)) {
+#else
+  if( SOS_OK != sos_blk_mem_change_own( ptr, my_id)) {
+#endif
+    ker_mod_panic(my_id);
   }
   return SOS_OK;
 }

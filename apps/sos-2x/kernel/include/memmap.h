@@ -17,17 +17,6 @@
 //-----------------------------------------------------------------------
 // FUNCTION PROTOTYPES
 //-----------------------------------------------------------------------
-#ifndef _MODULE_
-
-/**
- * \ingroup runtimechecker
- * \brief Assembly routine to check validity of memory accesses made by modules.
- */
-void ker_memmap_perms_check_xptr(void* x);
-void ker_memmap_perms_check_yptr(void* x);
-void ker_memmap_perms_check_zptr(void* x);
-#endif
-
 
 /**
  * \addtogroup memorymap
@@ -180,86 +169,5 @@ extern uint8_t memmap[MEMMAP_TABLE_SIZE];
   }
 
 /* @} */
-
-
-
-
-
-
-
-/* /\** */
-/*  * Get the index in the memory map table for the given address */
-/*  *\/ */
-/* #define MEMMAP_GET_BYTE_INDEX(addr) (uint16_t)((uint16_t)addr >> MEMMAP_TABLE_INDEX_LSB) */
-
-/* /\** */
-/*  * Get the offset in the memory map byte and the address offset within a block */
-/*  *\/ */
-/* #define MEMMAP_GET_BYTE_AND_BLK_OFFSET(addr) (uint8_t)((uint8_t)addr & MEMMAP_BYTE_BLK_OFFSET) */
-
-
-/* /\** */
-/*  * Get the block number */
-/*  *\/ */
-/* #define MEMMAP_GET_BLOCK_NUM(addr)    (uint16_t)((uint16_t)addr >> BLOCK_NUMBER_LSB) */
-
-/* /\** */
-/*  * Get the memmory map table index and the offset within the memory map table byte (multiplied by 2) */
-/*  *\/ */
-/* #define MEMMAP_GET_BYTE_INDEX_BYTE_OFFSETX2(addr, memmap_table_index, memmap_byte_offset) { \ */
-/*     uint16_t __temp;							\ */
-/*     __temp = (uint16_t)((uint16_t)addr >> 2);				\ */
-/*     memmap_byte_offset = __temp & 0x06;					\ */
-/*     memmap_table_index = (__temp >> 3);					\ */
-/*   } */
-
-/* /\** */
-/*  * Memory map  */
-/*  *\/ */
-/* enum domain_perm_t */
-/*   { */
-/*     BLOCK_FREE                      = 0x00, //!< Block with no owner */
-/*     BLOCK_START_KERNEL_SEG          = 0x00, //!< First block of kernel segment */
-/*     BLOCK_KERNEL_SEG                = 0x01, //!< Block belonging to a kernel segment */
-/*     BLOCK_START_MODULE_SEG          = 0x02, //!< First block of module segment */
-/*     BLOCK_MODULE_SEG                = 0x03, //!< Block belonging to a module segment */
-/*   }; */
-
-/* /\** */
-/*  * Byte vectors for the memory map array */
-/*  *\/ */
-/* enum domain_perm_vec_t */
-/*   { */
-/*     BLOCK_FREE_BYTE_VEC             = 0x00, //!< Block free byte vector  */
-/*     BLOCK_START_KERNEL_SEG_BYTE_VEC = 0x00, //!< Byte vector for start of kernel segment */
-/*     BLOCK_KERNEL_SEG_BYTE_VEC       = 0x55, //!< Byte vector for a kernel segment */
-/*     BLOCK_START_MODULE_SEG_BYTE_VEC = 0xAA, //!< Byte vector for start of module segment */
-/*     BLOCK_MODULE_SEG_BYTE_VEC       = 0xFF, //!< Byte vector for the module segment */
-/*   }; */
-
-
-/* /\** */
-/*  * Bit-masks to determine block ownership */
-/*  *\/ */
-/* enum block_owner_t */
-/*   { */
-/*     BLOCK_TYPE_BM                   = 0x02, //!< Mask for determining block owner */
-/*     BLOCK_TYPE_KERNEL               = 0x00, //!< Block owned by the kernel */
-/*     BLOCK_TYPE_MODULE               = 0x02, //!< Block owned by the module */
-/*   }; */
-
-/* /\** */
-/*  * Bit-masks to determine block layout */
-/*  *\/ */
-/* enum block_layout_t */
-/*   { */
-/*     SEG_LATER_PART_MASK = 0x01, //!< Mask for determining block layout */
-/*     SEG_START_BLOCK     = 0x00, //!< Block is the start of segment */
-/*     SEG_LATER_PART      = 0x01, //!< Block is NOT the start of segment */
-/*   }; */
-
-
-
-
 
 #endif//_MEMMAP_H_

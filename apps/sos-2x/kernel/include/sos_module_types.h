@@ -30,7 +30,11 @@ typedef struct mod_header {
   uint8_t processor_type;  //!< processor type of this module
   uint8_t platform_type;   //!< platform type of this module
   sos_code_id_t code_id;   //!< module image identifier
+#ifdef SOS_SFI
+  uint8_t dom_id;          //!< Domain ID of module
+#else
   uint8_t padding;
+#endif
   uint8_t padding2; 
   msg_handler_t module_handler;
   func_cb_t funct[];

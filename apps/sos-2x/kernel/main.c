@@ -82,10 +82,14 @@ extern void sos_start();
  * @brief Core event loop
  */
 int sos_main(uint8_t cond){
-
 	//! disable interrupt
 	DISABLE_GLOBAL_INTERRUPTS();
 	
+#ifdef SOS_SFI
+	//! Initialize SFI
+	sfi_modtable_init();
+#endif
+
 	//! Initialize the ID
 	id_init();
 
@@ -115,11 +119,6 @@ int sos_main(uint8_t cond){
 
 	//! starting memory module
 	mem_start();
-
-#ifdef SOS_SFI
-	//! Initialize SFI
-	sfi_modtable_init();
-#endif
 
     //! enable interrupt
 	ENABLE_GLOBAL_INTERRUPTS();
