@@ -62,7 +62,6 @@
 #include <led_dbg.h>
 #endif
 #ifdef SOS_SFI
-#include <cross_domain_cf.h>
 #include <sfi_jumptable.h>
 #endif
 
@@ -286,9 +285,6 @@ void ker_killall(sos_code_id_t code_id)
 				cid = entohs(cid);
 				if( cid == code_id ) {
 					ker_deregister_module(handle->pid);
-#ifdef SOS_SFI
-					sfi_modtable_deregister(handle->pid);
-#endif
 					found = true;	
 					break;
 				}
@@ -549,12 +545,7 @@ int8_t ker_deregister_module(sos_pid_t pid)
 		msg.len = 0;
 		msg.data = NULL;
 		msg.flag = 0;
-		// Ram - If the handler does not write to the message, all is fine
-#ifdef SOS_SFI
-		ker_cross_domain_call_mod_handler(handler_state, &msg, handler);
-#else
 		handler(handler_state, &msg);
-#endif
 		curr_pid = prev_pid;
 	}
 
@@ -696,11 +687,7 @@ void sched_dispatch_short_message(sos_pid_t dst, sos_pid_t src,
 	 */
 	curr_pid = dst;
 	ker_log( SOS_LOG_HANDLE_MSG, curr_pid, type );
-#ifdef SOS_SFI
-		ker_cross_domain_call_mod_handler(handler_state, &short_msg, handler);
-#else
 		handler(handler_state, &short_msg);
-#endif
 		ker_log( SOS_LOG_HANDLE_MSG_END, curr_pid, type );
 }
 
@@ -796,11 +783,7 @@ static void do_dispatch()
 	  DEBUG("RUNNING HANDLER OF MODULE %d \n", handle->pid);
 		curr_pid = handle->pid;
 		ker_log( SOS_LOG_HANDLE_MSG, curr_pid, e->type );
-#ifdef SOS_SFI
-		ret = ker_cross_domain_call_mod_handler(handler_state, e, handler);
-#else
 	  ret = handler(handler_state, e);
-#endif
 		ker_log( SOS_LOG_HANDLE_MSG_END, curr_pid, e->type );
 	  DEBUG("FINISHED HANDLER OF MODULE %d \n", handle->pid);
 

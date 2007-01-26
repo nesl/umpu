@@ -1,6 +1,5 @@
 /* -*- Mode: C; tab-width:4 -*- */
 /* ex: set ts=4 shiftwidth=4 softtabstop=4 cindent: */
-#include <module.h>
 #include <sos.h>
 #include <sos_sched.h>
 #include <sos_module_fetcher.h>
@@ -23,7 +22,6 @@
 #endif
 
 #ifdef SOS_SFI
-#include <sos_mod_verify.h>
 #include <sfi_jumptable.h>
 #include <sfi_exception.h>
 #endif

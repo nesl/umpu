@@ -7,7 +7,7 @@
 #include <sos_sched.h>
 #endif
 
-#include <module_ker.h>
+//#include <module_ker.h>
 
 #ifndef NO_MODULE_PLAT
 #include <module_plat.h>

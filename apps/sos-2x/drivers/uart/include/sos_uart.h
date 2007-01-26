@@ -10,9 +10,8 @@
 
 
 #ifndef _MODULE_
+#include <message_types.h>
 #include <sos_types.h>
-
-#ifndef QUALNET_PLATFORM
 
 /**
  * init function
@@ -43,7 +42,6 @@ extern void uart_msg_alloc(Message *e);
 #define uart_msg_alloc(e) 
 #endif
 
-#endif //QUALNET_PLATFORM
 #endif /* _MODULE_ */
 
 #endif

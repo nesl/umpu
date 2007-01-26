@@ -38,6 +38,8 @@
 // SFI Mode Includes
 #ifdef SOS_SFI
 #include <memmap.h>          // Memmory Map API
+#include <sfi_exception.h>
+#include <sfi_jumptable.h>
 #include <umpu.h>
 #endif
 
@@ -319,7 +321,7 @@ void sos_blk_mem_free(void* pntr)
     return; 
   }
   // Check - Untrusted domain trying to free memory that it does not own or that is free.
-  if (calleedomid != KER_DOM_ID) && ((perms & MEMMAP_DOM_MASK) != calleedomid))
+  if ((calleedomid != KER_DOM_ID) && ((perms & MEMMAP_DOM_MASK) != calleedomid))
     {
       LEAVE_CRITICAL_SECTION();
       sfi_exception(MALLOC_EXCEPTION);
@@ -399,7 +401,7 @@ int8_t sos_blk_mem_change_own(void* ptr, sos_pid_t id)
     {
       // Call has come from trusted domain OR
       // Call has come from block owner
-      
+      int8_t domid;
       // Get domain id of new owner
       domid = sfi_get_domain_id(id);
       if (domid < 0){

@@ -41,28 +41,21 @@
  *
  *
  */
-#include "hardware.h"
-#include <flash.h>
-#include <kertable.h>
-#include <kertable_proc.h>
-#include <kertable_plat.h>
 
+#include "hardware.h"
+// Timer
+#include <timer.h>
+#include <timer_conf.h>
+// Leds
 #define LED_DEBUG
 #include <led_dbg.h>
-
+// UART
 #ifndef NO_SOS_UART
 #include <uart_system.h>
 #include <sos_uart.h>
 #endif
 
-#ifndef NO_SOS_I2C
-#include <sos_i2c.h>
-#include <sos_i2c_mgr.h>
-#endif
 
-#ifdef SOS_SFI
-#include <sfi_jumptable.h>
-#endif
 
 
   
@@ -70,46 +63,12 @@
 //  Typedefs
 //----------------------------------------------------------------------------
 
-//----------------------------------------------------------------------------
-//  GLOBAL DATA 
-//----------------------------------------------------------------------------
-//static uint8_t reset_flag NOINIT_VAR;
-/**
- * @brief Kernel jump table
- * The table entries are defined in kertable.h
- */
-
-#ifdef SOS_SFI
-PGM_VOID_P ker_jumptable[128] PROGMEM = SOS_SFI_KER_TABLE;
-#else
-/** Append any processor or platform specific kernel tables */
-#if defined(PROC_KER_TABLE) && defined(PLAT_KER_TABLE)
-PGM_VOID_P ker_jumptable[128] PROGMEM =
-SOS_KER_TABLE( CONCAT_TABLES(PROC_KER_TABLE , PLAT_KER_TABLE) );
-#elif defined(PROC_KER_TABLE)
-PGM_VOID_P ker_jumptable[128] PROGMEM =
-SOS_KER_TABLE(PROC_KER_TABLE);
-#elif defined(PLAT_KER_TABLE)
-PGM_VOID_P ker_jumptable[128] PROGMEM =
-SOS_KER_TABLE(PLAT_KER_TABLE);
-#else
-PGM_VOID_P ker_jumptable[128] PROGMEM =
-SOS_KER_TABLE(NULL);
-#endif
-#endif//SOS_SFI
-
-
 //-------------------------------------------------------------------------
 // FUNCTION DECLARATION
 //-------------------------------------------------------------------------
 void hardware_init(void){
-  //init_IO();
-
   // LEDS
   led_init();
-
-  // LOCAL TIME
-  //systime_init();
 
   // SYSTEM TIMER
   timer_hardware_init(DEFAULT_INTERVAL, DEFAULT_SCALE);
@@ -120,12 +79,6 @@ void hardware_init(void){
   //! Initalize uart comm channel
   sos_uart_init();
 #endif
-
-  // MICA2 PERIPHERALS (Optional)
-/* #ifdef SOS_MICA2_PERIPHERAL */
-/*   mica2_peripheral_init(); */
-/* #endif */
-
 }
 
 //-------------------------------------------------------------------------

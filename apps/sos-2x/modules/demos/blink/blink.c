@@ -5,20 +5,22 @@
  * This module shows some of concepts in SOS
  */
 
-/**
- * Module needs to include <module.h>
- */
-//#undef _MODULE_
-
 #include <sys_module.h>
-
+#ifdef SOS_SFI
+#include <sfi_jumptable.h>
+#endif
 //#define LED_DEBUG
 #include <led_dbg.h>
-
 #include "blink.h"
+
+#ifdef SOS_SFI
+#define BLINK_DOM_ID  SFI_DOM0
+#endif
+
 
 #define BLINK_TIMER_INTERVAL	20L
 #define BLINK_TID               0
+
 /**
  * Module can define its own state
  */
@@ -41,7 +43,7 @@ typedef struct {
  * state, and a handler for MSG_FINAL to release module resources.
  */
 
-static int8_t blink_msg_handler(void *start, Message *e);
+int8_t blink_msg_handler(void *start, Message *e);
 
 /**
  * This is the only global variable one can have.
@@ -54,11 +56,16 @@ static mod_header_t mod_header SOS_MODULE_HEADER = {
 	.platform_type  = HW_TYPE /* or PLATFORM_ANY */,
 	.processor_type = MCU_TYPE,
 	.code_id        = ehtons(DFLT_APP_ID0),
+	.dom_id         = BLINK_DOM_ID,
+#ifdef SOS_SFI
+	.module_handler = (msg_handler_t)SFI_MOD_TABLE_ENTRY_LOC(BLINK_DOM_ID, 0),
+#else
 	.module_handler = blink_msg_handler,
+#endif
 };
 
 
-static int8_t blink_msg_handler(void *state, Message *msg)
+int8_t blink_msg_handler(void *state, Message *msg)
 {
   /**
    * The module is passed in a void* that contains its state.  For easy

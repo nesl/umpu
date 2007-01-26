@@ -45,59 +45,19 @@
 #ifndef _HARDWARE_H
 #define _HARDWARE_H
 
-// avr glib headers
-#include <stdio.h>
-
-// system headers
-#include <hardware_types.h>
-#include <avr/eeprom.h>
-#include <sos_types.h>
-#include <pin_map.h>
-#include <plat_msg_types.h>
-
-#include "systime.h"
-#include "led.h"
-#include "radio_spi.h"
-#include "timer.h"
-#include "cc1k.h"
-#include "adc_proc.h"
-#include "uart.h"
-#include "exflash.h"
-#include "uart_system.h"
-#include "i2c_system.h"
-
-#ifdef SOS_SFI
-// AVR Specific Functionality
-#include <memmap.h>
-#endif
+#include <sos_uart.h>
 
 /**
  * @brief initialize hardware
  */
 extern void hardware_init(void);
 
-#define SOS_HAS_EXFLASH
-
-//! Mica2 Peripheral Init
-#ifdef SOS_MICA2_PERIPHERAL
-void  mica2_peripheral_init();
-#endif
-
-// I/O setup for the Mica2 platform
-#ifndef NO_SOS_RADIO
-#define SOS_RADIO_CHANNEL
-#define SOS_RADIO_LINK_DISPATCH(m) radio_msg_alloc(m)
-#endif
-
 #ifndef NO_SOS_UART
 #define SOS_UART_CHANNEL
 #define SOS_UART_LINK_DISPATCH(m) uart_msg_alloc(m)
 #endif
 
-#ifndef NO_SOS_I2C
-#define SOS_I2C_CHANNEL
-#define SOS_I2C_LINK_DISPATCH(m) i2c_msg_alloc(m)
-#endif
+
 
 
 #endif // _HARDWARE_H

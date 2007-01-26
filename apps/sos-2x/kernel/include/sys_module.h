@@ -11,33 +11,16 @@
 #include <sos_timer.h>
 #include <pid.h>
 #include <stddef.h>
-#include <kertable_conf.h>  // for get_kertable_entry()
 #include <sos_error_types.h>
+#ifdef SOS_SFI
+#include <sfi_jumptable.h>
+#endif
 
-#ifndef SYS_JUMP_TBL_START
-/// \cond NOTYPEDEF
-void* ker_sys_malloc(uint16_t size);
-void* ker_sys_realloc(void* pntr, uint16_t newSize);
-void ker_sys_free(void *pntr);
-void* ker_sys_msg_take_data(Message *msg);
-int8_t ker_sys_timer_start(uint8_t tid, int32_t interval, uint8_t type);
-int8_t ker_sys_timer_restart(uint8_t tid, int32_t interval);
-int8_t ker_sys_timer_stop(uint8_t tid);
-int8_t ker_sys_post(sos_pid_t did, uint8_t type, uint8_t size, void *data,
-        uint16_t flag);
-int8_t ker_sys_post_link(sos_pid_t dst_mod_id, uint8_t type,
-    uint8_t size, void *data, uint16_t flag, uint16_t dst_node_addr);
-int8_t ker_sys_post_value(sos_pid_t dst_mod_id,
-                uint8_t type, uint32_t data, uint16_t flag);
-uint8_t ker_hw_type();
-uint16_t ker_id();
-uint16_t ker_rand();
-int8_t ker_sys_sensor_get_data( uint8_t sensor_id );
-int8_t ker_led(uint8_t op);
-void* ker_sys_get_module_state( void );
-int8_t ker_sys_fntable_subscribe( sos_pid_t pub_pid, uint8_t fid, uint8_t table_index );
-int8_t ker_sys_change_own( void* ptr );
-/// \endcond 
+
+#ifdef SOS_SFI
+#define FLASH_PAGE_SIZE 256L // For AVR only
+#define SYS_JUMP_TBL_START (SFI_SYS_TABLE * FLASH_PAGE_SIZE)
+#define SYS_JUMP_TBL_SIZE 4 // Jump Instruction takes 4 bytes
 #endif
 
 /**
@@ -50,6 +33,7 @@ int8_t ker_sys_change_own( void* ptr );
 /// \cond NOTYPEDEF
 typedef void *  (* sys_malloc_ker_func_t)( uint16_t size );
 /// \endcond
+
 /**
  *
  * Allocate memory
@@ -68,52 +52,15 @@ typedef void *  (* sys_malloc_ker_func_t)( uint16_t size );
  * memory.  Leaky motes sink boats!  Or is that lips...
  *
  */
-static inline void *  sys_malloc( uint16_t size )
+static inline void * sys_malloc( uint16_t size)
 {
-#ifdef SYS_JUMP_TBL_START
-	return ((sys_malloc_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*1))(size); 
-#else
-	return ker_sys_malloc( size );
-#endif
+  return ((sys_malloc_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*1))(size); 
 }
-
-/// \cond NOTYPEDEF
-typedef void *  (* sys_realloc_ker_func_t)( void *  ptr, uint16_t newSize );
-/// \endcond
-/**
- * 
- * Reallocate dynamic memory
- * 
- * \param ptr Pointer to the currently held block of memory
- *
- * \param newSize Number of bytes to be allocated
- *
- * \return Pointer to the reallocated memory.
- *
- * This function is a slightly optimized way to extend the size of a buffer.
- * If it can, the function will simply extend the current block of memory so
- * that no data needs to be copied and return the ptr passed in.  If that
- * fails the kernel w ill attempt to allocate a fresh larger buffer, copy the
- * data over, and return a pointer to this new buffer.  If neither of these
- * two succeed, the function returns NULL, but you still have access to ptr.
- *
- * \note Returns a NULL if unable to reallocate but the original pointer is
- * still valid.
- *
- */
-static inline void *  sys_realloc( void *  ptr, uint16_t newSize )
-{
-#ifdef SYS_JUMP_TBL_START                                                               
-	return ((sys_realloc_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*2))( ptr, newSize );                                
-#else
-	return ker_sys_realloc( ptr, newSize );
-#endif
-} 
-
 
 /// \cond NOTYPEDEF                                             
 typedef void (* sys_free_ker_func_t)( void *  ptr );            
 /// \endcond  
+
 /**
  *
  * Free memory
@@ -123,16 +70,13 @@ typedef void (* sys_free_ker_func_t)( void *  ptr );
  */
 static inline void sys_free( void *  ptr )                      
 {                                          
-#ifdef SYS_JUMP_TBL_START 
-	((sys_free_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*3))( ptr );  
-#else
-	ker_sys_free( ptr );
-#endif
+  ((sys_free_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*3))( ptr );  
 }   
 
 /// \cond NOTYPEDEF                                             
 typedef void *  (* sys_msg_take_data_ker_func_t)( Message *  msg );
 /// \endcond        
+
 /**
  *
  * Claim the data payload of a message
@@ -169,11 +113,7 @@ typedef void *  (* sys_msg_take_data_ker_func_t)( Message *  msg );
  */
 static inline void *  sys_msg_take_data( Message *  msg )       
 {
-#ifdef SYS_JUMP_TBL_START                                                               
-	return ((sys_msg_take_data_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*4))( msg );                                         
-#else
-	return ker_sys_msg_take_data( msg );
-#endif
+  return ((sys_msg_take_data_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*4))( msg );                                         
 }        
 
 /* @} */
@@ -207,17 +147,14 @@ typedef int8_t (* sys_timer_start_ker_func_t)( uint8_t tid, int32_t interval, ui
  */
 static inline int8_t sys_timer_start( uint8_t tid, int32_t interval, uint8_t type )
 {
-#ifdef SYS_JUMP_TBL_START
-	return ((sys_timer_start_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*5))( tid, interval, type );
-#else
-	return ker_sys_timer_start( tid, interval, type );
-#endif
+  return ((sys_timer_start_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*5))( tid, interval, type );
 }
 
 
 /// \cond NOTYPEDEF                                             
 typedef int8_t (* sys_timer_restart_ker_func_t)( uint8_t tid, int32_t interval );
 /// \endcond    
+
 /**
  * Restart a timer
  *
@@ -241,17 +178,14 @@ typedef int8_t (* sys_timer_restart_ker_func_t)( uint8_t tid, int32_t interval )
  */
 static inline int8_t sys_timer_restart( uint8_t tid, int32_t interval )
 {    
-#ifdef SYS_JUMP_TBL_START
-	return ((sys_timer_restart_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*6))( tid, interval );
-#else
-	return ker_sys_timer_restart( tid, interval );
-#endif
+  return ((sys_timer_restart_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*6))( tid, interval );
 }
 
 
 /// \cond NOTYPEDEF                                             
 typedef int8_t (* sys_timer_stop_ker_func_t)( uint8_t tid );    
 /// \endcond         
+
 /**
  * Stop a running timer
  *
@@ -265,11 +199,7 @@ typedef int8_t (* sys_timer_stop_ker_func_t)( uint8_t tid );
  */
 static inline int8_t sys_timer_stop( uint8_t tid ) 
 {
-#ifdef SYS_JUMP_TBL_START
-	return ((sys_timer_stop_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*7))( tid );
-#else
-	return ker_sys_timer_stop( tid );
-#endif
+  return ((sys_timer_stop_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*7))( tid );
 }   
 /* @} */
 
@@ -323,11 +253,8 @@ typedef int8_t (* sys_post_ker_func_t)( sos_pid_t dst_mod_id, uint8_t type, uint
  */
 static inline int8_t sys_post( sos_pid_t dst_mod_id, uint8_t type, uint8_t size, void *  data, uint16_t flag )
 {                 
-#ifdef SYS_JUMP_TBL_START                                              
-	return ((sys_post_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*8))( dst_mod_id, type, size, data, flag );          
-#else
-	return ker_sys_post( dst_mod_id, type, size, data, flag );
-#endif
+  return ((sys_post_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*8))( dst_mod_id, type, size, data, flag );          
+
 }             
 
 /// \cond NOTYPEDEF
@@ -343,11 +270,7 @@ typedef int8_t (* sys_post_link_ker_func_t)( sos_pid_t dst_mod_id, uint8_t type,
  */
 static inline int8_t sys_post_link( sos_pid_t dst_mod_id, uint8_t type, uint8_t size, void *  data, uint16_t flag, uint16_t dst_node_addr )
 {
-#ifdef SYS_JUMP_TBL_START 
-	return ((sys_post_link_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*9))( dst_mod_id, type, size, data, flag, dst_node_addr );
-#else
-	return ker_sys_post_link( dst_mod_id, type, size, data, flag, dst_node_addr );
-#endif
+  return ((sys_post_link_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*9))( dst_mod_id, type, size, data, flag, dst_node_addr );
 }
 
 
@@ -459,11 +382,7 @@ typedef int8_t (* sys_post_value_ker_func_t)( sos_pid_t dst_mod_id, uint8_t type
  */
 static inline int8_t sys_post_value( sos_pid_t dst_mod_id, uint8_t type, uint32_t data, uint16_t flag )
 {
-#ifdef SYS_JUMP_TBL_START
-	return ((sys_post_value_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*10))( dst_mod_id, type, data, flag );
-#else
-	return ker_sys_post_value( dst_mod_id, type, data, flag );
-#endif
+  return ((sys_post_value_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*10))( dst_mod_id, type, data, flag );
 }
 /* @} */
 
@@ -497,11 +416,7 @@ typedef uint16_t (* sys_hw_type_ker_func_t)( void );
  */
 static inline uint16_t sys_hw_type( void )                       
 {
-#ifdef SYS_JUMP_TBL_START                                                               
-	return ((sys_hw_type_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*11))( );                                             
-#else
-	return ker_hw_type();
-#endif
+  return ((sys_hw_type_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*11))( );                                             
 }     
 
 /// \cond NOTYPEDEF                                             
@@ -526,11 +441,7 @@ typedef uint16_t (* sys_id_ker_func_t)( void );
  */
 static inline uint16_t sys_id( void )
 {
-#ifdef SYS_JUMP_TBL_START
-	return ((sys_id_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*12))( );
-#else
-	return ker_id();
-#endif
+  return ((sys_id_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*12))( );
 }
 
 /* @} */
@@ -556,11 +467,7 @@ typedef uint16_t (* sys_rand_ker_func_t)( void );
  */
 static inline uint16_t sys_rand( void )
 {
-#ifdef SYS_JUMP_TBL_START
-	return ((sys_rand_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*13))();
-#else
-	return ker_rand();
-#endif
+  return ((sys_rand_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*13))();
 }
 /* @} */
 
@@ -580,11 +487,7 @@ typedef int8_t (* sys_sensor_get_data_ker_func_t)( uint8_t sensor_id );
  */
 static inline int8_t sys_sensor_get_data( uint8_t sensor_id )
 {
-#ifdef SYS_JUMP_TBL_START
-	return ((sys_sensor_get_data_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*15))( sensor_id );
-#else
-	return ker_sys_sensor_get_data( sensor_id );
-#endif
+  return ((sys_sensor_get_data_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*15))( sensor_id );
 }
 /* @} */
 
@@ -602,11 +505,7 @@ typedef void (* sys_led_ker_func_t)( uint8_t op );
 /// \endcond
 static inline void sys_led( uint8_t op )
 {
-#ifdef SYS_JUMP_TBL_START
-	((sys_led_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*16))( op );
-#else
-	ker_led( op );
-#endif
+  ((sys_led_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*16))( op );
 }
 /* @} */
 
@@ -625,11 +524,7 @@ typedef void* (* sys_get_module_state_func_t)( void );
  */
 static inline void* sys_get_state( void )
 {
-#ifdef SYS_JUMP_TBL_START
-	return ((sys_get_module_state_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*17))( );
-#else
-	return ker_sys_get_module_state();
-#endif
+  return ((sys_get_module_state_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*17))( );
 }
 /* @} */
 
@@ -644,11 +539,7 @@ typedef int8_t (* sys_fntable_subscribe_func_t)( sos_pid_t pub_pid, uint8_t fid,
 
 static inline int8_t sys_fntable_subscribe( sos_pid_t pub_pid, uint8_t fid, uint8_t table_index )
 {
-#ifdef SYS_JUMP_TBL_START
-	return ((sys_fntable_subscribe_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*18))(pub_pid, fid, table_index);
-#else
-	return ker_sys_fntable_subscribe( pub_pid, fid, table_index );
-#endif
+  return ((sys_fntable_subscribe_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*18))(pub_pid, fid, table_index);
 }
 /* @} */
 
@@ -656,11 +547,7 @@ typedef int8_t (* sys_change_own_func_t)( void* ptr );
 
 static inline int8_t sys_change_own( void* ptr )
 {
-#ifdef SYS_JUMP_TBL_START
-	return ((sys_change_own_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*19))(ptr);
-#else
-	return ker_sys_change_own( ptr );
-#endif
+  return ((sys_change_own_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*19))(ptr);
 }
 
 #endif

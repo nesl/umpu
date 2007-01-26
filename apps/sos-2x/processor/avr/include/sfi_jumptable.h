@@ -4,50 +4,30 @@
  * \author Ram Kumar {ram@ee.ucla.edu}
  */
 #include <inttypes.h>
-#include <codemem_conf.h> // For CODEMEM_END_PAGE
 #include <sos_module_types.h>
 #include <sos_linker_conf.h>
-#ifdef MINIELF_LOADER
-#include <codemem.h>
-#endif
+
 #ifndef _SFI_JUMPTABLE_H_
 #define _SFI_JUMPTABLE_H_
-
-/**
- * \addtogroup sfijumptable
- * <STRONG>SFI Jumptable Organization</STRONG> <BR>
- * Pages: (CODEMEM_END_PAGE + 1) - (CODEMEM_END_PAGE + 10) <BR>
- * Kernel: 2 pages <BR>
- * Modules: 7 pages <BR>
- * 1 extra page left at the end <BR>
- * SFI Jumptable contains instructions: jmp <addr> <BR>
- * Similar in design to the interrupt table <BR>
- * The SFI table for the kernel is created at compile time by a script <BR>
- * The SFI table for each module is created at load-time <BR>
- * @{
- */
 
 
 
 /**
  * Configuration for SFI Jumptable
  */
-// Ram - Modify the AVR Makerules to move .sfijmptbl to the page SFI_JUMP_TABLE_START
-// Ram - Modify create_sfijumptable.py if the order of tables is shuffled
+
 enum sfi_jumptable_config_t
   {
-    SFI_JUMP_TABLE_START = (CODEMEM_END_PAGE + 1),   //! First page of SFI Table
-    SFI_JUMP_TABLE_END   = (CODEMEM_END_PAGE + 10),  //! Last page of SFI Table
-    SFI_KER_TABLE_0 = SFI_JUMP_TABLE_START,      
-    SFI_KER_TABLE_1,
-    SFI_DOM0_TABLE, 
+    SFI_JUMP_TABLE_START = 1,   //! First page of SFI Table
+    SFI_JUMP_TABLE_END   = 8,  //! Last page of SFI Table
+    SFI_DOM0_TABLE = SFI_JUMP_TABLE_START, 
     SFI_DOM1_TABLE,
     SFI_DOM2_TABLE,
     SFI_DOM3_TABLE,
     SFI_DOM4_TABLE,
     SFI_DOM5_TABLE,
     SFI_DOM6_TABLE,
-    SFI_PAD_TABLE, //!< Page for padding: Makes SFI table end on an odd page
+    SFI_SYS_TABLE,      
   };
 
 /**
@@ -70,10 +50,16 @@ enum sfi_domain_id_t
     SFI_DOM6,     //! Domain 6
   };
 
-
 #define WORDS_PER_PAGE 128L
 #define SIZE_OF_JMP_INSTR 2 // 2 word instruction
 
+#define CONV_DOMAINID_TO_PAGENUM(x) (uint16_t)(SFI_DOM0_TABLE + (uint16_t)x)
+#define CONV_DOMAINID_TO_ADDRESS(x) (uint32_t)((SFI_DOM0_TABLE + (uint32_t)x) * 256)
+// x is domain id
+#define SFI_MOD_TABLE_ENTRY_LOC(x, fnidx) (((uint16_t)(SFI_DOM0_TABLE + (uint16_t)x) * WORDS_PER_PAGE) + (SIZE_OF_JMP_INSTR * fnidx))
+
+
+#ifndef _MODULE_
 /**
  * Initialize the module jump table
  */
@@ -98,6 +84,7 @@ void sfi_jmptbl_exception();
  * \param errcode Error code indicates type of SFI exception
  */
 void sfi_exception(uint8_t errcode);
+#endif//_MODULE_
 
 
 #endif// _SFI_JUMPTABLE_H_

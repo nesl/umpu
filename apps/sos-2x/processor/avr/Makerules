@@ -36,11 +36,13 @@ endif
 #AS_DEBUG = --gdwarf2
 
 ##############################################################
-#  SYSTEM JUMPTABLE SETUP
+#  SYS JUMPTABLE SETUP
 ##############################################################
-SYS_JUMP_TBL_ADDR = 0x60
+ifeq ($(MODE),)
+SYS_JUMP_TBL_ADDR = 0x8c
 DEFS += -DSYS_JUMP_TBL_START=$(SYS_JUMP_TBL_ADDR)
 DEFS += -DSYS_JUMP_TBL_SIZE=4
+endif
 
 #===============================================================================================
 # KERNEL BUILD OPTIONS
@@ -51,30 +53,18 @@ SRCS += uart_hal.c uart.c uart_system.c
 SRCS += crc.c timer.c
 ASMSRCS += sos_fnptr_call.S
 ASMSRCS += sys_jmptable.S
-#LDFLAGS +=  -Wl,--section-start=.sos_sysjmptbl=$(SYS_JUMP_TBL_ADDR)
-
-
-VPATH += $(ROOTDIR)/tools/elfloader/minielf
-VPATH += $(ROOTDIR)/tools/elfloader/soslib
-INCDIR += -I$(ROOTDIR)/tools/elfloader/soslib
-INCDIR += -I$(ROOTDIR)/tools/elfloader/minielf
 
 ###############################################################
 # MEMORY PROTECTION OPTIONS
 ###############################################################
 ifeq ($(MODE), sfi)
-SRCS += memmap_checker_const.c sfi_jumptable.c
-#SRCS += memmap_checker_proc.c 
-ASMSRCS += memmap_checker_proc_asm.S cross_domain_cf_asm.S sfi_jumptable_proc.S
+SRCS += sfi_jumptable.c
 CFLAGS += -ffixed-r2 -ffixed-r3 -ffixed-r4
-#-fnew-ra
 LDSCRIPT = -Wl,-T $(ROOTDIR)/processor/avr/sos_sfi_avr5.x
-SFIJMPTBL_START = -Wl,--section-start=.sfijmptbl=0x1D600
 else
 LDSCRIPT = -Wl,-T $(ROOTDIR)/processor/avr/sos_avr5.x
 endif
 
-#OBJS += flash.o
 
 CFLAGS += -Os $(CC_DEBUG) -fshort-enums -fpack-struct -Wno-cast-qual -Wall -Wa,-adhlmsn=$(notdir $(<:.c=.lst))
 SFLAGS += -Wa,$(MCUFLAG),$(AS_DEBUG),-ahlms=$(notdir $(<:.S=.lst)) $(DEFS)

@@ -1,10 +1,9 @@
-
 .section .sos_sysjmptbl,"ax"
 .global  sos_sysjmptbl
 sos_sysjmptbl:
 jmp ker_sys_fnptr_call     ; 0
 jmp ker_sys_malloc         ; 1
-jmp ker_sys_realloc        ; 2
+jmp 0       		   ; 2
 jmp ker_sys_free           ; 3
 jmp ker_sys_msg_take_data  ; 4
 jmp ker_sys_timer_start    ; 5
@@ -16,17 +15,13 @@ jmp ker_sys_post_value     ; 10
 jmp ker_hw_type            ; 11
 jmp ker_id                 ; 12
 jmp ker_rand               ; 13
-jmp 0			   ;  14
-jmp ker_sys_sensor_get_data 	; 15
-jmp ker_led                ; 16
-jmp ker_sys_get_module_state ; 17
+jmp 0			   ; 14
+jmp ker_sys_sensor_get_data   ; 15
+jmp ker_led                   ; 16
+jmp ker_sys_get_module_state  ; 17
 jmp ker_sys_fntable_subscribe ; 18
 jmp ker_sys_change_own     ; 19
-#ifdef SOS_SFI	
-jmp ker_sys_fnptr_from_ker_call ; 20
-#else
-jmp 0	                   	; 20
-#endif		
+jmp 0	                   ; 20
 jmp 0                      ; 21
 jmp 0                      ; 22
 jmp 0                      ; 23

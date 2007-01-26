@@ -117,9 +117,6 @@ int sos_main(uint8_t cond){
     //! initialize hardware
     hardware_init();
 
-	//! starting memory module
-	mem_start();
-
     //! enable interrupt
 	ENABLE_GLOBAL_INTERRUPTS();
 

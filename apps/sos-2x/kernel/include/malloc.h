@@ -62,16 +62,16 @@ extern void mem_start(void);
  * @brief Allocate a chunk of blocks from the heap
  */
 #ifdef SOS_SFI
-extern void* sos_blk_mem_alloc(uint16_t size, sos_pid_t id, uint8_t calleedomid)
+extern void* sos_blk_mem_alloc(uint16_t size, sos_pid_t id, uint8_t calleedomid);
 #else
-extern void* sos_blk_mem_alloc(uint16_t size, sos_pid_t id)
+extern void* sos_blk_mem_alloc(uint16_t size, sos_pid_t id);
 #endif
 
 /**
  * @brief Free a block back into the heap
  */
 #ifdef SOS_SFI
-extern void sos_blk_mem_free(void* pntr, uint8_t calleedomid)
+extern void sos_blk_mem_free(void* pntr, uint8_t calleedomid);
 #else
 extern void sos_blk_mem_free(void* ptr);
 #endif
@@ -80,15 +80,19 @@ extern void sos_blk_mem_free(void* ptr);
 /**
  * @brief Change memory ownership of a segment of memory
  */
-extern int8_t sos_blk_mem_change_own(void* ptr, sos_pid_t id, bool bCallFromModule);
+#ifdef SOS_SFI
+extern int8_t sos_blk_mem_change_own(void* ptr, sos_pid_t id, uint8_t calleedomid) ;
+#else
+extern int8_t sos_blk_mem_change_own(void* ptr, sos_pid_t id); 
+#endif
 
 /**
  * @brief Allocate a block of memory for long term usage
  */
 #ifdef SOS_SFI
-extern void* sos_blk_mem_longterm_alloc(uint16_t size, sos_pid_t id, uint8_t calleedomid)
+extern void* sos_blk_mem_longterm_alloc(uint16_t size, sos_pid_t id, uint8_t calleedomid);
 #else
-extern void* sos_blk_mem_longterm_alloc(uint16_t size, sos_pid_t id)
+extern void* sos_blk_mem_longterm_alloc(uint16_t size, sos_pid_t id);
 #endif
 
 /**

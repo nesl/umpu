@@ -209,10 +209,6 @@ void fntable_fix_address(
 		addr = (func_addr_t) hdr->module_handler;
 		addr += base_addr;
 		hdr->module_handler = (void*)addr;
-#ifdef SOS_SFI
-		// Module Handler is changed by this call
-		sfi_modtable_register(hdr);
-#endif
 	}
 
 	for( n = 0; n < num_funcs; n++ ) {
@@ -223,12 +219,7 @@ void fntable_fix_address(
 			dummy_func *f = (dummy_func*)(buf + func_loc - offset);
 			addr = (func_addr_t) *f;
 			addr += base_addr;
-#ifdef SOS_SFI
-			*f = (dummy_func)sfi_modtable_add((func_addr_t)addr);
-			//			*f = (dummy_func) addr;
-#else
 			*f = (dummy_func) addr;
-#endif
 		}
 	}
 }
@@ -295,11 +286,7 @@ void fntable_unfix_address(
 	if( offset == 0 && nbytes >= offsetof(mod_header_t, funct) ) {
 		// patch module handler
 		mod_header_t *hdr = (mod_header_t *) buf;
-#ifdef SOS_SFI
-		addr = (func_addr_t)sfi_modtable_get_real_addr((func_addr_t) hdr->module_handler);
-#else
 		addr = (func_addr_t) hdr->module_handler;
-#endif
 		addr -= base_addr;
 		hdr->module_handler = (void*)addr;
 	}
@@ -311,11 +298,7 @@ void fntable_unfix_address(
 		if( func_loc >= offset && 
 			((func_loc + sizeof(dummy_func) - 1) < (offset + nbytes)) ) {
 			dummy_func *f = (dummy_func*)(buf + func_loc - offset);
-#ifdef SOS_SFI
-			addr = (func_addr_t)sfi_modtable_get_real_addr((func_addr_t) (*f));
-#else
 			addr = (func_addr_t) *f;
-#endif
 			addr -= base_addr;
 			*f = (dummy_func) addr;
 		}

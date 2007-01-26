@@ -9,14 +9,9 @@
 #include <sos_module_types.h>
 #include <sos_sched.h>
 #include <malloc.h>
-#include <avrinstr.h>
-#include <hardware.h>
+#include <led.h>
 #include <memmap.h>
 #include <umpu.h>
-
-#define CONV_DOMAINID_TO_PAGENUM(x) (uint16_t)(SFI_DOM0_TABLE + (uint16_t)x)
-#define CONV_DOMAINID_TO_ADDRESS(x) (uint32_t)((SFI_DOM0_TABLE + (uint32_t)x) * 256)
-#define SFI_MOD_TABLE_ENTRY_LOC(page, fnidx) ((page * WORDS_PER_PAGE) + (SIZE_OF_JMP_INSTR * fnidx))
 
 extern char __heap_start;
 

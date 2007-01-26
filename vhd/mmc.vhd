@@ -32,11 +32,15 @@ entity mmc is
     mmc_write_cycle : out std_logic;
 
     -- MMC-pm_fetch_decoder interface
-    fet_dec_pc_stop    : out std_logic;  -- Stop increment of pc
-    fet_dec_nop_insert : out std_logic;  -- Insert nop in the processor
-    fet_dec_str_addr   : in  std_logic_vector(15 downto 0);  -- str addr
-    fet_dec_run_mmc    : in  std_logic;
-    fet_dec_data       : in  std_logic_vector(7 downto 0);
+    fet_dec_run_mmc    : in  std_logic;  -- Signal asserted by fetch decoder
+                                         -- when store instr. is decoded
+    fet_dec_str_addr   : in  std_logic_vector(15 downto 0);  -- Store address
+    fet_dec_data       : in  std_logic_vector(7 downto 0);  -- Store data
+    fet_dec_pc_stop    : out std_logic;  -- Stop inc. of prog. counter
+    fet_dec_nop_insert : out std_logic;  -- Stall processor (insert NOP)
+
+
+
 
     -- MMC-io_adr_dec interface to allow local registers to be read in SW
     mem_map_pointer_low_out  : out std_logic_vector(7 downto 0);

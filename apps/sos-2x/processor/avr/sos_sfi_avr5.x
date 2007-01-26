@@ -70,8 +70,25 @@ SECTIONS
   .text :
   {
     *(.vectors)
+    . = ALIGN(256);
+    *(.sfidomtable0)
+    . = ALIGN(256*2);
+    *(.sfidomtable1)
+    . = ALIGN(256*3);
+    *(.sfidomtable2)
+    . = ALIGN(256*4);
+    *(.sfidomtable3)
+    . = ALIGN(256*5);
+    *(.sfidomtable4)
+    . = ALIGN(256*6);
+    *(.sfidomtable5)
+    . = ALIGN(256*7);
+    *(.sfidomtable6)
+    . = ALIGN(256*8);
+    *(.sos_sysjmptbl)
+    . = ALIGN(256*9);
+    /*
 	*(.sos_sysjmptbl)
-		/*
      __ctors_start = . ;
      *(.ctors)
      __ctors_end = . ;

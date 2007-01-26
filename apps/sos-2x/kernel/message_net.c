@@ -42,7 +42,7 @@
  * @brief General Message Dispatcher (Handles diverse links)
  * @author Ram Kumar {ram@ee.ucla.edu}
  */
-
+#include <string.h>
 #include <message_queue.h>
 #include <monitor.h>
 #include <sos_info.h>

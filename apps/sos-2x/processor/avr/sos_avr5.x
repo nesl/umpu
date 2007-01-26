@@ -70,8 +70,8 @@ SECTIONS
   .text :
   {
     *(.vectors)
+    /*
 	*(.sos_sysjmptbl)
-		/*
      __ctors_start = . ;
      *(.ctors)
      __ctors_end = . ;
