@@ -151,22 +151,6 @@ uint8_t *ker_msg_take_data(sos_pid_t pid, Message *msg_in)
 	msg = msg_in;
   }
   if(flag_msg_release(msg->flag)) {
-#ifdef FAULT_TOLERANT_SOS
-	if (pid >= APP_MOD_MIN_PID){
-	  if (mem_check_module_domain(msg->data) == false){
-		DEBUG("Copying payload of message to the module domain\n");
-		ret = (uint8_t*)module_domain_alloc(msg->len, pid);
-		if (NULL == ret) return NULL;
-		memcpy(ret, msg->data, msg->len);
-		msg->len = 0;
-		ker_free(msg->data);
-		msg->data = NULL;
-		msg->flag &= ~(SOS_MSG_RELEASE);
-		return ret;
-	  }
-	}
-#endif // FAULT_TOLERANT_SOS
-
 	ker_change_own((void*)msg->data, pid);
 	ret = msg->data;
 	msg->len = 0;

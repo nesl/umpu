@@ -31,7 +31,11 @@
  */
 
 /// \cond NOTYPEDEF
+#ifdef SOS_SFI
+typedef void *  (* sys_malloc_ker_func_t)(uint16_t size, uint8_t calleedomid);
+#else
 typedef void *  (* sys_malloc_ker_func_t)( uint16_t size );
+#endif
 /// \endcond
 
 /**
@@ -54,11 +58,19 @@ typedef void *  (* sys_malloc_ker_func_t)( uint16_t size );
  */
 static inline void * sys_malloc( uint16_t size)
 {
-  return ((sys_malloc_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*1))(size); 
+#ifdef SOS_SFI
+  return ((sys_malloc_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*1))(size, GET_MSR_DOM_ID());
+#else 
+  return ((sys_malloc_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*1))(size);
+#endif 
 }
 
-/// \cond NOTYPEDEF                                             
-typedef void (* sys_free_ker_func_t)( void *  ptr );            
+/// \cond NOTYPEDEF
+#ifdef SOS_SFI
+typedef void (* sys_free_ker_func_t)(void * ptr, uint8_t calleedomid);
+#else                                             
+typedef void (* sys_free_ker_func_t)(void * ptr);
+#endif            
 /// \endcond  
 
 /**
@@ -70,7 +82,11 @@ typedef void (* sys_free_ker_func_t)( void *  ptr );
  */
 static inline void sys_free( void *  ptr )                      
 {                                          
-  ((sys_free_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*3))( ptr );  
+#ifdef SOS_SFI
+  ((sys_free_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*3))(ptr, GET_MSR_DOM_ID());
+#else
+  ((sys_free_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*3))( ptr );
+#endif  
 }   
 
 /// \cond NOTYPEDEF                                             
@@ -545,11 +561,19 @@ static inline int8_t sys_fntable_subscribe( sos_pid_t pub_pid, uint8_t fid, uint
 }
 /* @} */
 
+#ifdef SOS_SFI
+typedef int8_t (* sys_change_own_func_t)( void* ptr, uint8_t calleedomid);
+#else
 typedef int8_t (* sys_change_own_func_t)( void* ptr );
+#endif
 
 static inline int8_t sys_change_own( void* ptr )
 {
+#ifdef SOS_SFI
+  return ((sys_change_own_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*19))(ptr, GET_MSR_DOM_ID());
+#else
   return ((sys_change_own_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*19))(ptr);
+#endif
 }
 
 #endif

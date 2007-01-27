@@ -130,11 +130,7 @@ static Block            malloc_heap[(MALLOC_HEAP_SIZE + (BLOCK_SIZE - 1))/BLOCK_
 // Return a pointer to an area of memory that is at least the right size.
 // SFI Mode: Allocate domain ID based upon requestor pid.
 //-----------------------------------------------------------------------------
-#ifdef SOS_SFI
-void* sos_blk_mem_longterm_alloc(uint16_t size, sos_pid_t id, uint8_t calleedomid)
-#else
 void* sos_blk_mem_longterm_alloc(uint16_t size, sos_pid_t id)
-#endif
 {
   HAS_CRITICAL_SECTION;
   uint16_t reqBlocks;
@@ -185,6 +181,8 @@ void* sos_blk_mem_longterm_alloc(uint16_t size, sos_pid_t id)
   newBlock->blockhdr.owner = id;
 
 #ifdef SOS_SFI
+  uint8_t calleedomid;
+  calleedomid = sfi_get_domain_id(id);
   memmap_set_perms((void*) newBlock, sizeof(Block), DOM_SEG_START(calleedomid));
   memmap_set_perms((void*) ((Block*)(newBlock + 1)), sizeof(Block) * (reqBlocks - 1), DOM_SEG_LATER(calleedomid));
 #else
@@ -261,8 +259,13 @@ void* sos_blk_mem_alloc(uint16_t size, sos_pid_t id)
   block->blockhdr.owner = id;
 
 #ifdef SOS_SFI
-  memmap_set_perms((void*) block, sizeof(Block), DOM_SEG_START(calleedomid));
-  memmap_set_perms((void*) ((Block*)(block + 1)), sizeof(Block) * (reqBlocks - 1), DOM_SEG_LATER(calleedomid));
+  uint8_t newdomid;
+  if (KER_DOM_ID == calleedomid)
+    newdomid = sfi_get_domain_id(id);
+  else
+    newdomid = calleedomid;
+  memmap_set_perms((void*) block, sizeof(Block), DOM_SEG_START(newdomid));
+  memmap_set_perms((void*) ((Block*)(block + 1)), sizeof(Block) * (reqBlocks - 1), DOM_SEG_LATER(newdomid));
 #else                           
   BLOCK_GUARD_BYTE(block) = id; 
 #endif
@@ -379,7 +382,6 @@ int8_t sos_blk_mem_change_own(void* ptr, sos_pid_t id)
 #endif
 
   Block* blockptr = TO_BLOCK_PTR(ptr); // Convert to a block address         
-  sos_pid_t old_owner;
   // Check for errors                                          
   if (NULL_PID == id || NULL == ptr) return -EINVAL;           
 
@@ -436,10 +438,8 @@ int8_t sos_blk_mem_change_own(void* ptr, sos_pid_t id)
   }
   BLOCK_GUARD_BYTE(blockptr) = id; 
 #endif
-  old_owner =  blockptr->blockhdr.owner;
   // Set the new block ID                                      
   blockptr->blockhdr.owner = id;        
-  //ker_log( SOS_LOG_CHANGE_OWN, id, old_owner);  
   return SOS_OK;
 }
 
@@ -640,9 +640,10 @@ void ker_sys_free(void *pntr, uint8_t calleedomid)
 #ifdef SOS_SFI
   sos_blk_mem_free(pntr, calleedomid);
 #else
-  sos_blk_mem_free(pntr, true);
+  sos_blk_mem_free(pntr);
 #endif
 }	
+
 
 int8_t ker_sys_change_own(void* ptr, uint8_t calleedomid)
 {

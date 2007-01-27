@@ -365,12 +365,6 @@ static int8_t sched_register_module(sos_module_t *h, mod_header_ptr p,
 		  sos_read_header_byte(h, offsetof(mod_header_t, mod_id)),
 		  (unsigned int)h);
 
-#ifdef FAULT_TOLERANT_SOS
-  //! Set the checksum of the state of the module before invoking its init method
-  if ((((h->flag) & SOS_KER_STATIC_MODULE) == 0) &&
-      (h->handler_state != NULL))
-	mem_block_set_checksum(h->handler_state);
-#endif
 
   // send an init message to application
   // XXX : need to check the failure
@@ -388,11 +382,7 @@ sos_pid_t ker_spawn_module(mod_header_ptr h, void *init, uint8_t init_size, uint
 	if(h == 0) return NULL_PID;
 	// Allocate a memory block to hold the module list entry
 	//handle = (sos_module_t*)ker_malloc(sizeof(sos_module_t), KER_SCHED_PID);
-#ifdef SOS_SFI
-	handle = (sos_module_t*)malloc_longterm(sizeof(sos_module_t), KER_SCHED_PID, KER_DOM_ID);
-#else
 	handle = (sos_module_t*)malloc_longterm(sizeof(sos_module_t), KER_SCHED_PID);
-#endif
 	if (handle == NULL) {
 		return NULL_PID;
 	}
@@ -416,11 +406,7 @@ int8_t ker_register_module(mod_header_ptr h)
 	sos_module_t *handle;
 	int8_t ret;
 	if(h == 0) return -EINVAL;
-#ifdef SOS_SFI
-	handle = (sos_module_t*)malloc_longterm(sizeof(sos_module_t), KER_SCHED_PID, KER_DOM_ID);
-#else
 	handle = (sos_module_t*)malloc_longterm(sizeof(sos_module_t), KER_SCHED_PID);
-#endif
 	if (handle == NULL) {
 		return -ENOMEM;
 	}
@@ -428,6 +414,7 @@ int8_t ker_register_module(mod_header_ptr h)
 	if(ret != SOS_OK) {
 		ker_free(handle);
 	}
+	ker_change_own(handle->handler_state, handle->pid);
 	return ret;
 }
 
@@ -481,11 +468,7 @@ static int8_t do_register_module(mod_header_ptr h,
 	//DEBUG("registering module pid %d with size %d\n", pid, st_size);
   if (st_size){
 		//handle->handler_state = (uint8_t*)ker_malloc(st_size, pid);
-#ifdef SOS_SFI
-		handle->handler_state = (uint8_t*)malloc_longterm(st_size, pid, sos_read_header_byte(h, offsetof(mod_header_t, mod_id)));
-#else
 		handle->handler_state = (uint8_t*)malloc_longterm(st_size, KER_SCHED_PID);
-#endif
 	// If there is no memory to store the state of the module
 		if (handle->handler_state == NULL){
 			return -ENOMEM;

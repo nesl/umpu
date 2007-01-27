@@ -56,8 +56,8 @@ static mod_header_t blink_mod_header SOS_MODULE_HEADER = {
 	.platform_type  = HW_TYPE /* or PLATFORM_ANY */,
 	.processor_type = MCU_TYPE,
 	.code_id        = ehtons(DFLT_APP_ID0),
-	.dom_id         = BLINK_DOM_ID,
 #ifdef SOS_SFI
+	.dom_id         = BLINK_DOM_ID,
 	.module_handler = (msg_handler_t)SFI_MOD_TABLE_ENTRY_LOC(BLINK_DOM_ID, 0),
 #else
 	.module_handler = blink_msg_handler,

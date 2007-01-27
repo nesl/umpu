@@ -89,11 +89,8 @@ extern int8_t sos_blk_mem_change_own(void* ptr, sos_pid_t id);
 /**
  * @brief Allocate a block of memory for long term usage
  */
-#ifdef SOS_SFI
-extern void* sos_blk_mem_longterm_alloc(uint16_t size, sos_pid_t id, uint8_t calleedomid);
-#else
 extern void* sos_blk_mem_longterm_alloc(uint16_t size, sos_pid_t id);
-#endif
+
 
 /**
  * @brief Allocate dynamic memory
@@ -153,17 +150,9 @@ extern int8_t mem_remove_all(sos_pid_t id);
  * @brief malloc for long term usage
  * @warning this is used to allocate the memory for long time usage
  */
-#ifdef SOS_SFI
-static inline void* malloc_longterm(uint16_t size, sos_pid_t id, uint8_t domid)
-#else
 static inline void* malloc_longterm(uint16_t size, sos_pid_t id)
-#endif
 {
-#ifdef SOS_SFI
-  return sos_blk_mem_longterm_alloc(size, id, domid);
-#else
   return sos_blk_mem_longterm_alloc(size, id);
-#endif
 }
 
 

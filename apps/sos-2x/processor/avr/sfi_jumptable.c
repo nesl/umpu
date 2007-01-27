@@ -37,6 +37,8 @@ int8_t sfi_get_domain_id(sos_pid_t pid)
   return MOD_DOM_ID;
 #endif
 #ifdef SFI_DOMS_8
+  // Ram - For the time being assign all kernel PIDs to be
+  // KER_DOM_ID
   sos_module_t* handle;
   if (pid < APP_MOD_MIN_PID)
     return KER_DOM_ID;
