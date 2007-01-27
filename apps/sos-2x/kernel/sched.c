@@ -421,6 +421,7 @@ int8_t ker_register_module(mod_header_ptr h)
 	if(ret != SOS_OK) {
 		ker_free(handle);
 	}
+	ker_change_own(handle->handler_state, handle->pid);
 	return ret;
 }
 
@@ -474,7 +475,7 @@ static int8_t do_register_module(mod_header_ptr h,
 	//DEBUG("registering module pid %d with size %d\n", pid, st_size);
   if (st_size){
 		//handle->handler_state = (uint8_t*)ker_malloc(st_size, pid);
-		handle->handler_state = (uint8_t*)malloc_longterm(st_size, pid);
+		handle->handler_state = (uint8_t*)malloc_longterm(st_size, KER_SCHED_PID);
 	// If there is no memory to store the state of the module
 		if (handle->handler_state == NULL){
 			return -ENOMEM;
