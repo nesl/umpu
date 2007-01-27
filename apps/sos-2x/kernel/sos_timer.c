@@ -103,7 +103,11 @@ int8_t timer_preallocate(sos_pid_t pid, uint8_t num_timers)
   
   //! First try to safely allocate memory blocks for all the pre-allocated timers
   for (i = 0; i < num_timers; i++){
+#ifdef SOS_SFI
+	tt[i] = (sos_timer_t*)malloc_longterm(sizeof(sos_timer_t), TIMER_PID, KER_DOM_ID);
+#else
 	tt[i] = (sos_timer_t*)malloc_longterm(sizeof(sos_timer_t), TIMER_PID);
+#endif
 	if (tt[i] == NULL){
 	  for (j = 0; j < i; j++){
 		ker_free(tt[j]);
@@ -560,8 +564,13 @@ int8_t ker_timer_init(sos_pid_t pid, uint8_t tid, uint8_t type)
   //! Look for pre-allocated timers or try to get dynamic memory
   if (tt == NULL){
 	tt = alloc_from_preallocated_timer_pool(pid);
-	if (tt == NULL)
+	if (tt == NULL){
+#ifdef SOS_SFI
+	  tt = (sos_timer_t*)malloc_longterm(sizeof(sos_timer_t), TIMER_PID, KER_DOM_ID);
+#else
 	  tt = (sos_timer_t*)malloc_longterm(sizeof(sos_timer_t), TIMER_PID);
+#endif
+	}
 	//! Init will fail if the system does not have sufficient resources
 	if (tt == NULL)
 	  return -ENOMEM;

@@ -153,10 +153,14 @@ extern int8_t mem_remove_all(sos_pid_t id);
  * @brief malloc for long term usage
  * @warning this is used to allocate the memory for long time usage
  */
+#ifdef SOS_SFI
+static inline void* malloc_longterm(uint16_t size, sos_pid_t id, uint8_t domid)
+#else
 static inline void* malloc_longterm(uint16_t size, sos_pid_t id)
+#endif
 {
 #ifdef SOS_SFI
-  return sos_blk_mem_longterm_alloc(size, id, GET_MSR_DOM_ID());
+  return sos_blk_mem_longterm_alloc(size, id, domid);
 #else
   return sos_blk_mem_longterm_alloc(size, id);
 #endif
