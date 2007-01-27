@@ -38,6 +38,8 @@ int8_t sfi_get_domain_id(sos_pid_t pid)
 #endif
 #ifdef SFI_DOMS_8
   sos_module_t* handle;
+  if (pid < APP_MOD_MIN_PID)
+    return KER_DOM_ID;
   handle = ker_get_module(pid);
   if (NULL == pid)
     return -EINVAL;

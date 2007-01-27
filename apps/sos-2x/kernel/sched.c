@@ -85,7 +85,6 @@ enum
 //----------------------------------------------------------------------------
 //  STATIC FUNCTION DECLARATIONS
 //----------------------------------------------------------------------------
-#ifndef QUALNET_PLATFORM
 static inline bool sched_message_filtered(sos_module_t *h, Message *m);
 static int8_t sched_handler(void *state, Message *msg);
 static int8_t sched_register_module(sos_module_t *h, mod_header_ptr p,
@@ -94,15 +93,12 @@ static int8_t do_register_module(mod_header_ptr h,
 		sos_module_t *handle, void *init, uint8_t init_size,
 		uint8_t flag);
 static sos_pid_t sched_get_pid_from_pool();
-#ifdef FAULT_TOLERANT_SOS
-static int8_t ker_micro_reboot_module(sos_module_t* handle);
-#endif //FAULT_TOLERANT_SOS
-#endif //QUALNET_PLATFORM
+
 
 //----------------------------------------------------------------------------
 //  GLOBAL DATA DECLARATIONS
 //----------------------------------------------------------------------------
-static mod_header_t mod_header SOS_MODULE_HEADER =
+static mod_header_t sched_mod_header SOS_MODULE_HEADER =
   {
 	.mod_id = KER_SCHED_PID,
 	.state_size = 0,
@@ -113,6 +109,7 @@ static mod_header_t mod_header SOS_MODULE_HEADER =
 #endif
 	.module_handler = sched_handler, 	
   };
+
 
 //! priority queue
 static mq_t schedpq NOINIT_VAR;
@@ -179,7 +176,7 @@ void sched_init(uint8_t cond)
   for(i = 0; i < SCHED_PID_SLOTS; i++) {
 		pid_pool[i] = 0;
   }
-  sched_register_kernel_module(&sched_module, sos_get_header_address(mod_header), mod_bin);
+  sched_register_kernel_module(&sched_module, sos_get_header_address(sched_mod_header), mod_bin);
 
 	for(i = 0; i < SCHED_NUM_INTS; i++) {
 		int_array[i] = NULL;
@@ -582,7 +579,7 @@ int8_t ker_deregister_module(sos_pid_t pid)
 
   // remove system services
   timer_remove_all(pid);
-  sensor_remove_all(pid);
+	//  sensor_remove_all(pid);
 	//  ker_timestamp_deregister(pid);
   fntable_remove_all(handle);
 
@@ -693,65 +690,15 @@ static void do_dispatch()
 				ker_change_own(e->data, e->did);
 			}
 
-#ifdef FAULT_TOLERANT_SOS		
-			// Check for memory corruption in dynamic modules
-			if (((handle->flag) & SOS_KER_STATIC_MODULE) == 0){
-				int8_t mem_verify_status;
-				// Check the integrity of all memory owned by the module
-				mem_verify_status = mod_mem_verify_checksum(handle);
-				// Check the integrity of the message payload being delivered to the module
-				if (!flag_msg_release(e->flag)){
-					if (mem_check_module_domain(e->data) == true){
-						DEBUG("Checking CRC of the incoming message payload\n");
-						if (mem_block_verify_checksum(e->data) != SOS_OK){
-							// We cannot deliver corrupt message
-							DEBUG("Message payload is corrupted\n");
-							// We simply skip handling of this message for the time being
-							ret = -EINVAL;
-							goto skip_handler;
-						}
-					}
-				}
-				DEBUG("Message payload is verified corrent\n");
-				// Micro-reboot the module if the memory integrity check failed
-				if (mem_verify_status != SOS_OK){
-					// XXX - Not checking if micro-reboot was a success or a failure
-					LED_DBG(LED_RED_ON);
-					ker_micro_reboot_module(handle);
-					LED_DBG(LED_GREEN_ON);
-					ret = -EINVAL;
-					goto skip_handler;
-				}
-			}
-			DEBUG("Memory integrity for the destination module is verified\n");
-			// Everything is fine !! Ready to rock n roll
-#endif
-
-	  DEBUG("RUNNING HANDLER OF MODULE %d \n", handle->pid);
-		curr_pid = handle->pid;
-		ker_log( SOS_LOG_HANDLE_MSG, curr_pid, e->type );
-	  ret = handler(handler_state, e);
-		ker_log( SOS_LOG_HANDLE_MSG_END, curr_pid, e->type );
-	  DEBUG("FINISHED HANDLER OF MODULE %d \n", handle->pid);
-
-#ifdef FAULT_TOLERANT_SOS
-	  //! Set new checksum value for dynamic modules
-	  if (((handle->flag) & SOS_KER_STATIC_MODULE) == 0)
-		mod_mem_set_checksum(handle);
-skip_handler:
-#endif
-		if (ret == SOS_OK) senddone_flag = 0;
+			DEBUG("RUNNING HANDLER OF MODULE %d \n", handle->pid);
+			curr_pid = handle->pid;
+			ker_log( SOS_LOG_HANDLE_MSG, curr_pid, e->type );
+			ret = handler(handler_state, e);
+			ker_log( SOS_LOG_HANDLE_MSG_END, curr_pid, e->type );
+			DEBUG("FINISHED HANDLER OF MODULE %d \n", handle->pid);
+			if (ret == SOS_OK) senddone_flag = 0;
 		}
 	} else {
-#if 0
-		// TODO...
-		//! take care MSG_FETCHER_DONE
-		//! need to make sure that fetcher has completed its request
-		if(e->type == MSG_FETCHER_DONE) {
-			fetcher_state_t *fstat = (fetcher_state_t*)e->data;
-			fetcher_commit(fstat, false);
-		}
-#endif
 		//XXX no error notification for now.
 		DEBUG("Scheduler: Unable to find module\n");
 	}
@@ -794,16 +741,7 @@ int8_t ker_query_task(uint8_t pid)
 void sched_msg_alloc(Message *m)
 {
   if(flag_msg_release(m->flag)){
-#ifdef FAULT_TOLERANT_SOS
-	// Set the checksum before ownership transfer
-	// Checksum will be checked only if the
-	// destination module is dynamic
-	if (m->did >= APP_MOD_MIN_PID){
-	  DEBUG("Setting the CRC prior to posting message\n");
-	  mem_block_set_checksum(m->data);
-	}
-#endif
-	ker_change_own(m->data, KER_SCHED_PID);
+		ker_change_own(m->data, KER_SCHED_PID);
   }	
 	DEBUG("sched_msg_alloc\n");
   mq_enqueue(&schedpq, m);	
@@ -850,37 +788,6 @@ int8_t sched_get_msg_rule(sos_pid_t pid, sos_ker_flag_t *rules)
 }
 
 /**
- * @brief post crash check up
- */
-#if 0
-void sched_post_crash_checkup()
-{
-  sos_pid_t failed_pid;
-  mod_handle_t h;
-
-  while((failed_pid = mem_check_memory()) != NULL_PID) {
-	// we probably need to report failure here
-	h = sched_get_mod_handle(failed_pid);
-	if(h >= 0) {
-	  module_list[h].flag |= SOS_KER_MEM_FAILED;
-
-	}
-  }
-  // Other crash testing goes here
-}
-#endif
-
-#if 0
-static void sched_send_crash_report()
-{
-  if(crash_report != NULL) {
-	post_net(KER_SCHED_PID, KER_SCHED_PID, MSG_SCHED_CRASH_REPORT,
-			 crash_report_len, crash_report, SOS_MSG_RELEASE, BCAST_ADDRESS);
-  }
-}
-#endif
-
-/**
  * @brief Message filter.
  * Check for promiscuous mode request in the destination module
  * @return true for message shoud be filtered out, false for message is valid
@@ -920,12 +827,7 @@ void sched(void)
 			do_dispatch();
 		} else {
 			SOS_MEASUREMENT_IDLE_START();
-			/**
-			 * ENABLE_INTERRUPT() is done inside atomic_hardware_sleep()
-			 */
-			//ker_log_flush();
-			//atomic_hardware_sleep();
-			sei();
+			ENABLE_GLOBAL_INTERRUPTS();
 		}
 		//watchdog_reset();
 	}

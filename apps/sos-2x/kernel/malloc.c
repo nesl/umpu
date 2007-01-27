@@ -397,7 +397,7 @@ int8_t sos_blk_mem_change_own(void* ptr, sos_pid_t id)
   }
 
 
-    if (((calleedomid != KER_DOM_ID) && ((perms & MEMMAP_DOM_MASK) != calleedomid)) || (calleedomid == KER_DOM_ID))
+  if (((perms & MEMMAP_DOM_MASK) == calleedomid) || (calleedomid == KER_DOM_ID))
     {
       // Call has come from trusted domain OR
       // Call has come from block owner

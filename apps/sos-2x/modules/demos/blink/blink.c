@@ -48,7 +48,7 @@ int8_t blink_msg_handler(void *start, Message *e);
 /**
  * This is the only global variable one can have.
  */
-static mod_header_t mod_header SOS_MODULE_HEADER = {
+static mod_header_t blink_mod_header SOS_MODULE_HEADER = {
 	.mod_id         = DFLT_APP_ID0,
 	.state_size     = sizeof(app_state_t),
 	.num_sub_func   = 0,
@@ -148,7 +148,7 @@ int8_t blink_msg_handler(void *state, Message *msg)
 #ifndef _MODULE_
 mod_header_ptr blink_get_header()
 {
-  return sos_get_header_address(mod_header);
+  return sos_get_header_address(blink_mod_header);
 }
 #endif
 

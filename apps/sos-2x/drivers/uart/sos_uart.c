@@ -18,6 +18,10 @@
 #include <sos_uart_mgr.h>
 #include <sos_uart.h>
 
+#ifdef SOS_SFI
+#include <memmap.h>
+#endif
+
 //#define LED_DEBUG
 #include <led_dbg.h>
 
@@ -43,12 +47,15 @@ static sos_uart_state_t s;
 static int8_t sos_uart_msg_handler(void *state, Message *e);
 static void sos_uart_msg_senddone( bool failed );
 
-static mod_header_t mod_header SOS_MODULE_HEADER = {
+static mod_header_t uart_mod_header SOS_MODULE_HEADER = {
 	.mod_id         = KER_UART_PID,
 	.state_size     = 0,  // need to keep state localy
 	.num_timers     = 1,
 	.num_sub_func   = 0,
 	.num_prov_func  = 0,
+#ifdef SOS_SFI
+	.dom_id        = KER_DOM_ID,
+#endif
 	.module_handler = sos_uart_msg_handler,
 };
 
@@ -60,7 +67,7 @@ void sos_uart_init()
 
 	// set uart_address 
 	set_uart_address(ker_id());
-	ker_register_module(sos_get_header_address(mod_header));
+	ker_register_module(sos_get_header_address(uart_mod_header));
 
 	mq_init(&uartpq);
 }

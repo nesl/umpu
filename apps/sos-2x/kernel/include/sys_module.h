@@ -485,10 +485,12 @@ typedef int8_t (* sys_sensor_get_data_ker_func_t)( uint8_t sensor_id );
  * Get sensor readings
  * \return SOS_OK for success.  The reading will appear as message typed MSG_DATA_READY.
  */
+/*
 static inline int8_t sys_sensor_get_data( uint8_t sensor_id )
 {
   return ((sys_sensor_get_data_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*15))( sensor_id );
 }
+*/
 /* @} */
 
 /**

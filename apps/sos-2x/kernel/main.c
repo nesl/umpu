@@ -106,7 +106,7 @@ int sos_main(uint8_t cond){
     sched_init(cond);
 
 	//! initialize sensor manager
-	sensor_init();
+	//	sensor_init();
 
 	//! initialize the Function Table
 	fntable_init();
