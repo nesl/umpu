@@ -108,6 +108,9 @@ static mod_header_t mod_header SOS_MODULE_HEADER =
 	.state_size = 0,
 	.num_sub_func = 0,
 	.num_prov_func = 0,
+#ifdef SOS_SFI
+	.dom_id = KER_DOM_ID,
+#endif
 	.module_handler = sched_handler, 	
   };
 

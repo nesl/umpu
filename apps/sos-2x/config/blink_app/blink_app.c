@@ -13,5 +13,5 @@ mod_header_ptr blink_get_header();
  */
 void sos_start(void)
 {
-ker_register_module(blink_get_header());
+  ker_register_module(blink_get_header());
 }
