@@ -39,7 +39,7 @@ endif
 #  SYS JUMPTABLE SETUP
 ##############################################################
 ifeq ($(MODE),)
-SYS_JUMP_TBL_ADDR = 0x8c
+SYS_JUMP_TBL_ADDR = 0x60
 DEFS += -DSYS_JUMP_TBL_START=$(SYS_JUMP_TBL_ADDR)
 DEFS += -DSYS_JUMP_TBL_SIZE=4
 endif
@@ -95,7 +95,7 @@ endif # _MODULE_
 
 
 
-avr: $(PROJ).elf $(PROJ).elf.lst $(PROJ).srec $(OBJS) $(PROJ).vhd $(PROJ).ihex
+avr: $(PROJ).elf $(PROJ).elf.lst $(PROJ).srec $(OBJS) $(PROJ).ihex
 
 
 
