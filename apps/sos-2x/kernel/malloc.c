@@ -117,6 +117,13 @@ static Block* MergeBlocksQuick(Block *block, uint16_t req_blocks);
 static void SplitBlock(Block* block, uint16_t reqBlocks);
 
 //-----------------------------------------------------------------------------
+// GLOBAL VARIABLES
+//-----------------------------------------------------------------------------
+#ifdef SOS_SFI
+uint8_t* mem_prot_bottom;
+#endif
+
+//-----------------------------------------------------------------------------
 // LOCAL GLOBAL VARIABLES
 //-----------------------------------------------------------------------------
 static Block*           mPool;
@@ -181,10 +188,10 @@ void* sos_blk_mem_longterm_alloc(uint16_t size, sos_pid_t id)
   newBlock->blockhdr.owner = id;
 
 #ifdef SOS_SFI
-  uint8_t calleedomid;
-  calleedomid = sfi_get_domain_id(id);
-  memmap_set_perms((void*) newBlock, sizeof(Block), DOM_SEG_START(calleedomid));
-  memmap_set_perms((void*) ((Block*)(newBlock + 1)), sizeof(Block) * (reqBlocks - 1), DOM_SEG_LATER(calleedomid));
+  uint8_t newdomid;
+  newdomid = sfi_get_domain_id(id);
+  memmap_set_perms((void*) newBlock, sizeof(Block), DOM_SEG_START(newdomid));
+  memmap_set_perms((void*) ((Block*)(newBlock + 1)), sizeof(Block) * (reqBlocks - 1), DOM_SEG_LATER(newdomid));
 #else
   BLOCK_GUARD_BYTE(newBlock) = id;
 #endif
@@ -495,6 +502,7 @@ void mem_init(void)
 #ifdef SOS_SFI
   memmap_init(); // Initialize all the memory to be owned by the kernel
   memmap_set_perms((void*) mPool, mNumberOfBlocks * sizeof(Block), MEMMAP_SEG_START|BLOCK_FREE); // Init heap to unallocated
+  mem_prot_bottom = (uint8_t*)heapStart;
   SET_MSR_BLK_SIZE(8);
   SET_MSR_DOMS_8();
   MMBL = (uint8_t)((uint16_t)heapStart & 0x00FF);

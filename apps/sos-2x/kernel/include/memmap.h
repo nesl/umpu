@@ -11,6 +11,8 @@
 #include <malloc_conf.h>
 #include <memmap_conf.h>
 
+extern uint8_t* mem_prot_bottom;
+
 // Macro to generate log2 of a number that is 2^n
 #define LOG2BASE(x) ((((x & 0xF0)!=0)<<2) + (((x & 0xCC)!=0)<<1) + ((x & 0xAA)!=0))
 
@@ -126,7 +128,7 @@ extern uint8_t memmap[MEMMAP_TABLE_SIZE];
 /**
  * Get block number for a given address
  */
-#define MEMMAP_GET_BLK_NUM(addr)  (blk_num_t)((data_addr_t)addr >> MEMMAP_BLK_NUM_LSB)	
+#define MEMMAP_GET_BLK_NUM(addr)  (blk_num_t)((data_addr_t)((uint8_t*)addr - mem_prot_bottom) >> MEMMAP_BLK_NUM_LSB)	
 
 /**
  * Get memory map table index
