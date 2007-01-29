@@ -87,6 +87,8 @@ int8_t blink_msg_handler(void *state, Message *msg)
 	 */
   case MSG_INIT:
   {
+	uint16_t temp;
+	temp = (uint16_t)s;
 	  s->pid = msg->did;
 	  s->state = 0;
 	  sys_led(LED_RED_TOGGLE);

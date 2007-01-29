@@ -18,7 +18,7 @@ entity domain_tracker is
     clock  : in std_logic;
 
     -- dt-umpu_panic interface
-    dt_error            : out std_logic;
+    dt_error : out std_logic;
 
     -- Bus signals
     adr     : in std_logic_vector(5 downto 0);
@@ -37,11 +37,11 @@ entity domain_tracker is
     dom_bnd_data_out   : out std_logic_vector(7 downto 0);
 
     -- status register from mmc
-    mmc_status_reg : in  std_logic_vector(7 downto 0);
+    mmc_status_reg   : in  std_logic_vector(7 downto 0);
     -- calculated domain id to mmc
-    dt_new_dom_id     : out std_logic_vector(2 downto 0);
+    dt_new_dom_id    : out std_logic_vector(2 downto 0);
     -- signal to update domain id to mmc
-    dt_update_dom_id  : out std_logic
+    dt_update_dom_id : out std_logic
     );
 
 end domain_tracker;
@@ -69,6 +69,9 @@ architecture Beh of domain_tracker is
       );
   end component;
 
+  constant JUMP_TABLE_SIZE : std_logic_vector(15 downto 0) := x"0400";
+
+
   -- Local register maintaining the jump table
   signal dt_jmp_table : std_logic_vector(15 downto 0);
   -- Local registers to maintain the dom_bnd_data and ctl
@@ -76,9 +79,9 @@ architecture Beh of domain_tracker is
   signal dom_bnd_data : std_logic_vector(7 downto 0);
 
   -- to calculate new domain id
-  signal difference  : std_logic_vector(15 downto 0);
-  signal is_positive : std_logic;
-  signal not_bit_ten : std_logic;
+  signal difference : std_logic_vector(15 downto 0);
+  --signal is_positive : std_logic;
+  --signal not_bit_ten : std_logic;
 
   -- Different regions in the mmc_status_reg
   -- Protection bit
@@ -96,6 +99,11 @@ architecture Beh of domain_tracker is
 
   signal lb_err : std_logic;
   signal ub_err : std_logic;
+
+  signal call_in_jmp_table : std_logic;
+  signal call_addr_greater : std_logic;
+  signal call_addr_lesser  : std_logic;
+
 begin
 
   -- Extract different regions from the mmc_status_reg
@@ -107,36 +115,52 @@ begin
 
   -- Subtract jump table from pc
   -- This is used to figure out the offset from the beginning of the jump table
-  difference  <= fet_dec_pc - dt_jmp_table;
+  difference <= fet_dec_pc - dt_jmp_table;
   -- is the result positive
   -- If the result is not positive, then the call address is below the jump table
-  is_positive <= '1' when dt_jmp_table <= fet_dec_pc
-                 else '0';
+  --is_positive <= '1' when dt_jmp_table <= fet_dec_pc
+  --else '0';
 
   -- Each domain in the jump table has one flash page amount of space so it
   -- has 256 bytes of space. There are eight possible domains so the size of
   -- the jump table is 8 * 256 bytes. Therefore if the tenth bit of the
   -- difference is positive, then the call address is outside the jump table
-  not_bit_ten <= not difference(10);
+  --not_bit_ten <= not difference(10);
+
+  call_addr_greater <= '1' when fet_dec_pc >= dt_jmp_table
+                       else '0';
+  call_addr_lesser  <= '1' when fet_dec_pc < (dt_jmp_table + JUMP_TABLE_SIZE)
+                      else '0';
+  call_in_jmp_table <= call_addr_lesser and call_addr_greater;
+
+  dt_update_dom_id <= fet_dec_call_instr and call_in_jmp_table and umpu_en;
+
+
 
   -- Decide if we have a new domain id
-  dt_new_dom_id    <= difference(9 downto 7);
+  dt_new_dom_id <= difference(9 downto 7);
   -- A cross domain call is only permitted if protection is enabled
-  dt_update_dom_id <= is_positive and fet_dec_call_instr and not_bit_ten and umpu_en;
+  --dt_update_dom_id <= is_positive and fet_dec_call_instr and not_bit_ten and umpu_en;
 
   -- There is an error in cross domain call if
   -- We are not in the trusted domain
   -- This is a call instruction and
   -- The jump address is outside the bounds and
   -- The jump address is outside the jump table
-  lb_err <= '1' when fet_dec_pc < lower_bound
-            else '0';
-  ub_err <= '1' when fet_dec_pc > upper_bound
-            else '0';
+
+  -----------------------------------------------------------------------------
+  -- DISABLED BOUNDS CHECKS
+  -----------------------------------------------------------------------------
+
+  lb_err   <= '1' when fet_dec_pc < lower_bound
+              else '0';
+  ub_err   <= '1' when fet_dec_pc > upper_bound
+              else '0';
   dt_error <= '1' when
-            (not in_trusted_domain and fet_dec_call_instr and (lb_err or ub_err)
-             and (not is_positive or not not_bit_ten)) = '1'
-            else '0';
+              ((not in_trusted_domain) and fet_dec_call_instr  --and (lb_err or ub_err)
+               and (not call_in_jmp_table)) = '1'
+              --and (not is_positive or not not_bit_ten)) = '1'
+              else '0';
 
   -- This component will update the bound information whenever the dom_bnd_ctl
   -- register is written to. This component also makes available the lower and
@@ -171,7 +195,7 @@ begin
       if (adr = DOM_BND_CTL_Address and iowe = '1' and in_trusted_domain = '1' and reg_bus(0) = '1') then
         dom_bnd_ctl(0)          <= '1';
       else
-      --elsif updated_domain_bounds = '1' then
+        --elsif updated_domain_bounds = '1' then
         dom_bnd_ctl(0)          <= '0';
       end if;
     end if;

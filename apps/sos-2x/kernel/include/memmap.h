@@ -167,6 +167,10 @@ extern uint8_t memmap[MEMMAP_TABLE_SIZE];
     __curr_perms = memmap[__memmap_table_index];			\
     __curr_perms &= ~(MEMMAP_REC_MASK << __memmap_byte_offset);		\
     __curr_perms |= (perms << __memmap_byte_offset);			\
+    PORTA = 0xCC; \
+    PORTA = __curr_perms; \
+    PORTA = (uint8_t)__memmap_table_index; \
+    PORTA = (uint8_t)(__memmap_table_index >> 8); \
     memmap[__memmap_table_index] = __curr_perms;			\
   }
 

@@ -1,5 +1,11 @@
 Journal Paper TODO:
 
+From reading the Xtensa Paper:
+1. Xtensa has many "popular" embedded benchmarks. They are using the memory safe versions of that. We can run them on umpu and see the comparison.
+3. What is the approximate overhead involved in protecting reads also
+4. Estimate the overhead of having protection on a 32bits processor.
+5. Pipelining the checks
+
 Deadline: 1/10/07
 1. Run SOS on this
 	- Timer peripheral
@@ -24,6 +30,8 @@ New things to do:
 2. Figure out how to deal with compiler generated routines such as multiplication and division
 3. Ensure that the priority of the umpu_irq is high as we think it is
 	- This can be accessed by writing a test program using the 'when' thing in HW similar to the way priority is maintained in interrupts
+4. Jump into interrupt routine regardless of sei
+5. On a soft reset, panic should be taken low
 
 Work Done:
 1. MMC is not actually using the stack bound to check the stores to the stack

@@ -19,7 +19,7 @@ include $(ROOTDIR)/platform/$(PLATFORM)/Makerules
 #DEFS += -D'DEBUG(arg...)='
 #DEFS += -D'DEBUG_SHORT(arg...)='
 
-CFLAGS += $(MCUFLAG) -Wall $(DEFS)
+CFLAGS += $(MCUFLAG) -Wall $(DEFS) -Werror
 
 LDFLAGS += $(MCUFLAG)
 

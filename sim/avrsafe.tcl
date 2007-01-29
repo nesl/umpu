@@ -98,6 +98,9 @@ proc mmc_status_reg {} {
     add wave -hex -label record_size sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_status_reg(1)
     add wave -hex -label dom_id sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_status_reg(4:2)
     add wave -hex -label block_size sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_status_reg(7:5)
+    add wave -hex -label mem_map_pointer sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mem_map_pointer
+    add wave -hex -label mem_prot_bottom sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mem_prot_bottom
+    add wave -hex -label mem_prot_top sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mem_prot_top
 }    
 
 proc stack_bound {} {
@@ -236,6 +239,18 @@ proc cross_dom_call {} {
     add wave -hex -label cross_dom_ret_addr sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/SAFE_STK/cross_dom_ret_addr
 }
 
+proc mmc_addr_calc {} {
+    add wave -divider MMC_ADDR_CALC
+    add wave -hex -label mem_map_pointer sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_addr_calc/mem_map_pointer
+    add wave -hex -label mem_prot_bottom sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_addr_calc/mem_prot_bottom
+    add wave -hex -label mem_prot_top sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_addr_calc/mem_prot_top
+    add wave -hex -label fet_dec_str_addr sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_addr_calc/fet_dec_str_addr
+    add wave -hex -label mmc_rd_addr sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_addr_calc/mmc_rd_addr
+    add wave -hex -label mem_map_offset sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_addr_calc/mem_map_offset
+    add wave -hex -label shift_amount sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_addr_calc/shift_amount
+    add wave -hex -label mem_prot_offset sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_addr_calc/mem_prot_offset
+}
+
 proc mmc_complete {} {
     echo -- Analyzing MMC
     
@@ -265,8 +280,9 @@ proc dt_error {} {
     add wave -hex -label call_instr sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/DOMAIN_UPDATE/fet_dec_call_instr
     add wave -hex -label lb_err sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/DOMAIN_UPDATE/lb_err
     add wave -hex -label ub_err sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/DOMAIN_UPDATE/ub_err
-    add wave -hex -label is_positive sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/DOMAIN_UPDATE/is_positive
-    add wave -hex -label not_bit_ten sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/DOMAIN_UPDATE/not_bit_ten
+    add wave -hex -label call_in_jmp_table sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/DOMAIN_UPDATE/call_in_jmp_table
+    add wave -hex -label call_addr_greater sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/DOMAIN_UPDATE/call_addr_greater
+    add wave -hex -label call_addr_lesser sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/DOMAIN_UPDATE/call_addr_lesser
     add wave -hex -label PC sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/DOMAIN_UPDATE/fet_dec_pc
     add wave -hex -label lower_bound sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/DOMAIN_UPDATE/lower_bound
     add wave -hex -label upper_bound sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/DOMAIN_UPDATE/upper_bound
@@ -281,8 +297,9 @@ proc mmc_error {} {
     add wave -hex -label err_dom_id sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_error_calc/err_dom_id
     add wave -hex -label stack_write sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_error_calc/stack_write
     add wave -hex -label stack_bound_err sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_error_calc/stack_bound_err
-    add wave -hex -label fet_dec_str_addr sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_error_calc/fet_dec_str_addr
     add wave -hex -label ssp_stack_bound sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_error_calc/ssp_stack_bound
+    add wave -hex -label fet_dec_str_addr sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_error_calc/fet_dec_str_addr
+    add wave -hex -label mmc_ram_data sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_error_calc/mmc_ram_data
 }
 
 proc sos_packet {} {
@@ -298,25 +315,31 @@ proc test_bench {} {
     echo -- Analyzing the test bench
     echo -- Adding the test bench signals
 
+    add wave -divider PORTS
     add wave -label PORT_A -hex sim:/tb_umpu/tbPorta
+    add wave -label PORT_B -hex sim:/tb_umpu/tbPortb
+
+    add wave -divider PC_STUFF
     add wave -hex -label PC sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/pc
     add wave -label instr_code_reg -hex sim:/tb_umpu/umpu1/top_avr/testing_core/main/instruction_code_reg
     add wave -label instr_reg -hex sim:/tb_umpu/umpu1/top_avr/testing_core/main/instruction_reg
-    add wave -label Proc_Addr -hex sim:/tb_umpu/tbProcAddress
     add wave -label Proc_Data -hex sim:/tb_umpu/tbProcData
 
+    add wave -divider INTERRUPTS
     add wave -label IRQLines  sim:/tb_umpu/umpu1/top_avr/testing_core/main/irqlines(22:0)
     add wave -label sreg  sim:/tb_umpu/umpu1/top_avr/testing_core/main/sreg_out
 
-
+    add wave -divider DATA_RAM
     add wave -label Ram_Addr -hex sim:/tb_umpu/tbRamAddress
     add wave -label Ram_Data_Out -hex sim:/tb_umpu/tbRamDataOut
     add wave -label Ram_Data_In -hex sim:/tb_umpu/tbRamDataIn
     add wave -label Ram_Wr_En -hex sim:/tb_umpu/tbRamWrEn
 
+    add wave -divider UART
     add wave -label rxd -hex sim:/tb_umpu/tbRxd
     add wave -label txd -hex sim:/tb_umpu/tbTxd
 
+    add wave -divider REG_BUS
     add wave -label reg_bus_addr -hex sim:/tb_umpu/umpu1/top_avr/testing_core/adr
     add wave -label read_en -hex sim:/tb_umpu/umpu1/top_avr/testing_core/iore
     add wave -label read_bus -hex sim:/tb_umpu/umpu1/top_avr/testing_core/dbusin

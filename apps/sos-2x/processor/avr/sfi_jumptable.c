@@ -37,15 +37,20 @@ int8_t sfi_get_domain_id(sos_pid_t pid)
   return MOD_DOM_ID;
 #endif
 #ifdef SFI_DOMS_8
+  int8_t retdomid;
   // Ram - For the time being assign all kernel PIDs to be
   // KER_DOM_ID
   sos_module_t* handle;
-  if (pid < APP_MOD_MIN_PID)
-    return KER_DOM_ID;
-  handle = ker_get_module(pid);
-  if (NULL == pid)
-    return -EINVAL;
-  return sos_read_header_byte(handle->header, offsetof(mod_header_t, dom_id));
+  if (pid < APP_MOD_MIN_PID){
+    retdomid = KER_DOM_ID;
+  }
+  else{
+    handle = ker_get_module(pid);
+    if (NULL == handle)
+      return -EINVAL;
+    retdomid = sos_read_header_byte(handle->header, offsetof(mod_header_t, dom_id));
+  }
+  return retdomid;
 #endif
 }
 
@@ -128,4 +133,12 @@ void sfi_exception(uint8_t errcode)
     val--;
   }
   return;
+}
+
+SIGNAL(SIG_ADC) {
+  PORTA = 0x33;
+  uint8_t x = 0x22;
+  UMPU_PANIC = 0xF0;
+  PORTA = x;
+  while(1);
 }

@@ -48,7 +48,7 @@ void memmap_set_perms(void* baseaddr, uint16_t length, uint8_t seg_perms)
   memmap_table_index = MEMMAP_GET_TABLE_NDX(blknum);
   memmap_byte_offset = MEMMAP_GET_BYTE_OFFSET(blknum);
 
-  
+
   perms = memmap[memmap_table_index];
 
   lperms_bm = (MEMMAP_REC_MASK << memmap_byte_offset);
@@ -86,7 +86,6 @@ uint16_t memmap_change_perms(void* baseaddr, uint8_t perm_mask, uint8_t perm_che
   blknum = MEMMAP_GET_BLK_NUM(baseaddr);
   memmap_table_index = MEMMAP_GET_TABLE_NDX(blknum);
   memmap_byte_offset = MEMMAP_GET_BYTE_OFFSET(blknum);
-
   perms = memmap[memmap_table_index];
 
   lperm_mask = (perm_mask << memmap_byte_offset);

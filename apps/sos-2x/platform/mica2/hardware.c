@@ -67,6 +67,7 @@
 // FUNCTION DECLARATION
 //-------------------------------------------------------------------------
 void hardware_init(void){
+  
   // LEDS
   led_init();
 

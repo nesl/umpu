@@ -38,6 +38,8 @@ void dom0_realmain()
   uint8_t i;
   uint8_t* buffer;
   DDRA = 0xFF;
+  DDRB = 0xFF;
+  PORTB = 0x11;
   // Request for memory
   buffer = mmc_malloc(BUFF_SIZE);
 
@@ -52,6 +54,7 @@ void dom0_realmain()
 
   PORTA = buffer[5];
 
+  PORTB = 0x33;
   // This will cause a panic
   
   buffer = buffer + 2*BUFF_SIZE;
