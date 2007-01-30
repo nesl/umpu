@@ -41,6 +41,7 @@ entity safe_stack is
     ss_addr_sel    : out std_logic;
     ss_dbusout     : out std_logic_vector(7 downto 0);
     ss_dbusout_sel : out std_logic;
+    ss_wr_en       : out std_logic;
 
     -- Signals from pm_fetch_decoder
     fet_dec_pc              : in  std_logic_vector(15 downto 0);
@@ -72,6 +73,9 @@ architecture Beh of safe_stack is
 
   -- safe stack pointer register
   signal ssp : std_logic_vector(15 downto 0);
+
+  -- temp signals for outputs
+  signal ss_dbusout_sel_int : std_logic;
 
   -- stack pointer from io_adr_dec
   signal stack_pointer : std_logic_vector(15 downto 0);
@@ -229,7 +233,7 @@ begin
   -----------------------------------------------------------------------------
   -- CROSS DOMAIN CHANGE PUSH
   -----------------------------------------------------------------------------
-  ss_dbusout_sel <= dt_update_dom_id or fet_dec_call_dom_change(0) or fet_dec_call_dom_change(1) or fet_dec_call_dom_change(2) or fet_dec_call_dom_change(3)
+  ss_dbusout_sel_int <= dt_update_dom_id or fet_dec_call_dom_change(0) or fet_dec_call_dom_change(1) or fet_dec_call_dom_change(2) or fet_dec_call_dom_change(3)
                     or fet_dec_call_dom_change(4) or (fet_dec_retL_wr and cross_dom_call_in_progress);
   ss_dbusout     <= "00000"&dom_id                  when (dt_update_dom_id = '1')                                     else
                     stack_bound(7 downto 0)         when (fet_dec_call_dom_change(0) = '1')                           else
@@ -239,6 +243,19 @@ begin
                     call_addr(7 downto 0)           when fet_dec_call_dom_change(4) = '1'                             else
                     call_addr(15 downto 8)          when (fet_dec_retL_wr = '1' and cross_dom_call_in_progress = '1') else
                     "00000000";
+
+  ss_dbusout_sel <= ss_dbusout_sel_int;
+  
+  -- Setting the wr en for safe stack, it is just the dbusout sel latched
+  -- because of the latch in the data ram
+  SS_WR_EN_LATCH : process(ireset,clock)
+  begin
+    if (ireset = '0') then
+      ss_wr_en <= '0';
+    elsif (clock = '1' and clock'event) then
+      ss_wr_en <= ss_dbusout_sel_int;
+    end if;
+  end process;
 
   -------------------------------------------------------------------------------
   -- CROSS DOMAIN CHANGE POP 
@@ -258,7 +275,7 @@ begin
                          (others => '0');
 
   ret_cmp_result        <= '1' when (ret_cmp = cross_dom_ret_addr) else
-                               '0';
+                           '0';
   -- Signal is high on return match => Goes high only for one clock cycle
   -- fet_dec_retL_rd is ret_st2 of the return state machine, so this goes high
   -- when that goes high
@@ -275,17 +292,17 @@ begin
     elsif (clock'event and clock = '1') then
 
       if (fet_dec_call_dom_change(3) = '1') then
-        cross_dom_ret_addr(7 downto 0)  <= call_addr(7 downto 0);
+        cross_dom_ret_addr(7 downto 0) <= call_addr(7 downto 0);
       elsif (fet_dec_ret_dom_change(1) = '1') then
-        cross_dom_ret_addr(7 downto 0)  <= ram_bus;
+        cross_dom_ret_addr(7 downto 0) <= ram_bus;
       end if;
-      
+
       -- Input signal corresponds to retL even though we are reading in retH
       -- This is because data on RamDataBus is put one clock cycle before write
       if (fet_dec_call_dom_change(3) = '1') then
         cross_dom_ret_addr(15 downto 8) <= call_addr(15 downto 8);
       elsif (fet_dec_ret_dom_change(0) = '1') then
-        cross_dom_ret_addr(15 downto 8)  <= ram_bus;
+        cross_dom_ret_addr(15 downto 8) <= ram_bus;
       end if;
     end if;
   end process;
@@ -294,8 +311,8 @@ begin
   -- stack_bound points to the address where the high byte of the return
   -- address is stored in the run time stack.
   -- RUN TIME STACK
-  -- |      | <-- SP (Run-Time Stack Pointer after Cross Domain Call)
-  -- | RetH | <-- Stack Bound for new domain (All writes to stack strictly
+  -- |      | <                         -- SP (Run-Time Stack Pointer after Cross Domain Call)
+  -- | RetH | <                         -- Stack Bound for new domain (All writes to stack strictly
   -- | RetL |     lesser than this address is valid.
   STACK_BOUND_REGISTER : process(ireset, clock)
   begin

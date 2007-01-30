@@ -47,11 +47,11 @@ void dom1_realmain(uint8_t* buffer)
 void dom0_realmain()
 {
   uint8_t i;  // This will cause a panic
-  
+  /*  
   buffer = buffer + 2*BUFF_SIZE;
   *buffer = 10;
   PORTA = 0xFF;
-  
+  */
 
   uint8_t* buffer;
   DDRA = 0xFF;

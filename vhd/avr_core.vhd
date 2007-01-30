@@ -111,6 +111,7 @@ architecture struct of avr_core is
       ss_addr_sel    : out std_logic;
       ss_dbusout     : out std_logic_vector(7 downto 0);
       ss_dbusout_sel : out std_logic;
+      ss_wr_en : out std_logic;
 
       -- Signals from pm_fetch_decoder
       fet_dec_pc                : in  std_logic_vector(15 downto 0);
@@ -197,7 +198,8 @@ architecture struct of avr_core is
       ss_addr         : in  std_logic_vector(15 downto 0);
       ss_addr_sel     : in  std_logic;
       ss_dbusout      : in  std_logic_vector(7 downto 0);
-      ss_dbusout_sel  : in  std_logic
+      ss_dbusout_sel  : in  std_logic;
+      ss_wr_en : in std_logic
       );
 
   end component;
@@ -760,6 +762,7 @@ architecture struct of avr_core is
   signal sg_ss_addr_sel    : std_logic;
   signal sg_ss_dbusout     : std_logic_vector(7 downto 0);
   signal sg_ss_dbusout_sel : std_logic;
+  signal sg_ss_wr_en : std_logic;
 
   -- signals between safe stack and pm_fetch_dec
   signal sg_fet_dec_pc                : std_logic_vector(15 downto 0);
@@ -838,6 +841,7 @@ begin
     ss_addr_sel    => sg_ss_addr_sel,
     ss_dbusout     => sg_ss_dbusout,
     ss_dbusout_sel => sg_ss_dbusout_sel,
+    ss_wr_en => sg_ss_wr_en,
 
     fet_dec_pc                => sg_fet_dec_pc,
     fet_dec_retL_wr       => sg_fet_dec_retL_wr,
@@ -902,7 +906,8 @@ begin
     ss_addr        => sg_ss_addr,
     ss_addr_sel    => sg_ss_addr_sel,
     ss_dbusout     => sg_ss_dbusout,
-    ss_dbusout_sel => sg_ss_dbusout_sel
+    ss_dbusout_sel => sg_ss_dbusout_sel,
+    ss_wr_en => sg_ss_wr_en
     );
 
   MEM_MAP_CHECK : component mmc port map(

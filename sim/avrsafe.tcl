@@ -220,16 +220,16 @@ proc cross_dom_call {} {
     add wave -hex -label PC sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/pc
     add wave -hex -label stack_pointer sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/SAFE_STK/stack_pointer
 
-    add wave -hex sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/ncall_st0
-    add wave -hex sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/idc_call
-    add wave -hex sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/call_st1
-    add wave -hex sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/call_dom_change_0
-    add wave -hex sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/call_dom_change_1
-    add wave -hex sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/call_dom_change_2
-    add wave -hex sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/call_dom_change_3
-    add wave -hex sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/call_dom_change_4
-    add wave -hex sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/call_st2
-    add wave -hex sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/call_st3
+    add wave -hex -label ncall_st0 sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/ncall_st0
+    add wave -hex -label idc_call sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/idc_call
+    add wave -hex -label call_st1 sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/call_st1
+    add wave -hex -label call_dom_change_0 sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/call_dom_change_0
+    add wave -hex -label call_dom_change_1 sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/call_dom_change_1
+    add wave -hex -label call_dom_change_2 sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/call_dom_change_2
+    add wave -hex -label call_dom_change_3 sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/call_dom_change_3
+    add wave -hex -label call_dom_change_4 sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/call_dom_change_4
+    add wave -hex -label call_st2 sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/call_st2
+    add wave -hex -label call_st3 sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/call_st3
 
     add wave -hex -label fet_dec_retL_wr sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/SAFE_STK/fet_dec_retL_wr
     add wave -hex -label fet_dec_retH_wr sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/SAFE_STK/fet_dec_retH_wr
@@ -237,6 +237,13 @@ proc cross_dom_call {} {
     add wave -hex -label call_dom_change sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/SAFE_STK/call_dom_change
     add wave -hex -label ret_addr_wr sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/SAFE_STK/ret_addr_wr
     add wave -hex -label cross_dom_ret_addr sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/SAFE_STK/cross_dom_ret_addr
+
+    add wave -hex -label update_dom_id sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/SAFE_STK/dt_update_dom_id
+    add wave -hex -label ss_dbusout_sel sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/SAFE_STK/ss_dbusout_sel
+    add wave -hex -label ss_wr_en sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/SAFE_STK/ss_wr_en
+    add wave -hex -label ss_dbusout sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/SAFE_STK/ss_dbusout
+    add wave -hex -label ss_addr_sel sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/SAFE_STK/ss_addr_sel
+    add wave -hex -label ss_addr sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/SAFE_STK/ss_addr
 }
 
 proc mmc_addr_calc {} {
