@@ -4,7 +4,7 @@ From reading the Xtensa Paper:
 1. Xtensa has many "popular" embedded benchmarks. They are using the memory safe versions of that. We can run them on umpu and see the comparison.
 3. What is the approximate overhead involved in protecting reads also
 4. Estimate the overhead of having protection on a 32bits processor.
-5. Pipelining the checks
+5. Pipelining the checks, we have found out that it is possible to do this but will require a lot of changes.
 
 Deadline: 1/10/07
 1. Run SOS on this

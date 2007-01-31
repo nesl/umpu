@@ -55,7 +55,7 @@ entity safe_stack is
     fet_dec_write_ram_data  : in  std_logic_vector(7 downto 0);
     fet_dec_ret_dom_start   : out std_logic;
 
-    -- Signals from pm_fetch_decoder only for interrupts
+    -- Signals from pm_fetch_decoder for interrupts only
     fet_dec_irq_st1  : in std_logic;
     fet_dec_irq_st2  : in std_logic;
     fet_dec_irq_st3  : in std_logic;

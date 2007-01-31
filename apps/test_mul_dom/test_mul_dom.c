@@ -16,7 +16,7 @@ int main(){
   SSPL = 0x68;
   SSPH = 0x09;
 
-  sei();
+  //sei();
   // Initialize memory
   mem_init();
   dom0_main();
