@@ -34,7 +34,9 @@ entity pm_fetch_dec is
       -- this is program_counter_in and the fet_dec_pc is just program_counter
       dt_pc         : out std_logic_vector(15 downto 0);
       -- set high on a call instr
-      dt_call_instr : out std_logic;
+      fet_dec_call_instr : out std_logic;
+      -- set high on a interrupt, tied to irq_start
+      dt_int : out std_logic;
 
       -- safe stack specific signals
       -- This is the actual program_counter
@@ -55,6 +57,13 @@ entity pm_fetch_dec is
       fet_dec_call_dom_change : out std_logic_vector(4 downto 0);
       -- Similar to cross domain call
       fet_dec_ret_dom_change  : out std_logic_vector(4 downto 0);
+      -- Signals from pm_fetch_decoder only for interrupts
+      fet_dec_irq_st1 : out std_logic;
+      fet_dec_irq_st2 : out std_logic;
+      fet_dec_irq_st3 : out std_logic;
+    fet_dec_reti_st1 : out std_logic;
+    fet_dec_reti_st2 : out std_logic;
+    fet_dec_reti_st3 : out std_logic;
 
       -- Signal from Domain Tracker (Pause Fet Dec Unit)
       dt_update_dom_id : in std_logic;
@@ -594,8 +603,20 @@ begin
   -- setting dt specific signals
   dt_pc <= program_counter_in;
   -- check for domain id change on call instrs
-  dt_call_instr <= call_st1 or idc_rcall or idc_icall;
+  fet_dec_call_instr <= call_st1 or idc_rcall or idc_icall;
 
+  -- indicate that an interupt is happening to domain_tracker
+  dt_int <= irq_start;
+
+  -- Exporting the irq state machine
+  fet_dec_irq_st1 <= irq_st1;
+  fet_dec_irq_st2 <= irq_st2;
+  fet_dec_irq_st3 <= irq_st3;
+
+  -- Exporting the reti state machine
+  fet_dec_reti_st1 <= reti_st1;
+  fet_dec_reti_st2 <= reti_st2;
+  fet_dec_reti_st3 <= reti_st3;
 
 -- INSTRUCTION FETCH
   instruction_reg_ena <= '1';           -- FOR TEST

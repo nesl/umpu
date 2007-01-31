@@ -115,6 +115,7 @@ architecture struct of avr_core is
 
       -- Signals from pm_fetch_decoder
       fet_dec_pc                : in  std_logic_vector(15 downto 0);
+      fet_dec_call_instr : in std_logic;
       fet_dec_retL_wr       : in  std_logic;
       fet_dec_retH_wr       : in  std_logic;
       fet_dec_retL_rd       : in  std_logic;
@@ -123,6 +124,13 @@ architecture struct of avr_core is
       fet_dec_ret_dom_change    : in  std_logic_vector(4 downto 0);
       fet_dec_write_ram_data    : in  std_logic_vector(7 downto 0);
       fet_dec_ret_dom_start : out std_logic;
+      -- Signals from pm_fetch_decoder only for interrupts
+      fet_dec_irq_st1 : in std_logic;
+      fet_dec_irq_st2 : in std_logic;
+      fet_dec_irq_st3 : in std_logic;
+      fet_dec_reti_st1 : in std_logic;
+      fet_dec_reti_st2 : in std_logic;
+      fet_dec_reti_st3 : in std_logic;
 
       -- Signals from Domain Tracker
       dt_update_dom_id : in std_logic;
@@ -157,6 +165,7 @@ architecture struct of avr_core is
       fet_dec_pc         : in std_logic_vector(15 downto 0);
       -- indication of call insrt from pm_fetch_decoder
       fet_dec_call_instr : in std_logic;
+      fet_dec_int : in std_logic;
 
       -- send the local registers to io_adr_dec so SW can read
       jmp_table_high_out : out std_logic_vector(7 downto 0);
@@ -277,7 +286,8 @@ architecture struct of avr_core is
 
       -- domain_tracker specific signals
       dt_pc         : out std_logic_vector(15 downto 0);
-      dt_call_instr : out std_logic;
+      fet_dec_call_instr : out std_logic;
+      dt_int : out std_logic;
 
       -- safe stack specific signals
       fet_dec_pc                : out std_logic_vector(15 downto 0);
@@ -288,6 +298,13 @@ architecture struct of avr_core is
       fet_dec_ret_dom_start : in  std_logic;
       fet_dec_call_dom_change   : out std_logic_vector(4 downto 0);
       fet_dec_ret_dom_change    : out std_logic_vector(4 downto 0);
+      -- Signals from pm_fetch_decoder only for interrupts
+      fet_dec_irq_st1 : out std_logic;
+      fet_dec_irq_st2 : out std_logic;
+      fet_dec_irq_st3 : out std_logic;
+    fet_dec_reti_st1 : out std_logic;
+    fet_dec_reti_st2 : out std_logic;
+    fet_dec_reti_st3 : out std_logic;
 
       -- Signal from Domain Tracker (Pause Fet Dec Unit)
       dt_update_dom_id : in std_logic;
@@ -743,9 +760,12 @@ architecture struct of avr_core is
   signal sg_fet_dec_pc_stop    : std_logic;
   signal sg_fet_dec_nop_insert : std_logic;
 
+  -- signals between pm_fetch_dec and (dt and ss)
+  signal sg_fet_dec_call_instr : std_logic;
+
   -- signals between domain_tracker and pm_fetch_dec
   signal sg_dt_pc         : std_logic_vector(15 downto 0);
-  signal sg_dt_call_instr : std_logic;
+  signal sg_dt_int : std_logic;
 
   -- signals between domain_tracker and mmc
   signal sg_dt_new_dom_id     : std_logic_vector(2 downto 0);
@@ -773,6 +793,12 @@ architecture struct of avr_core is
   signal sg_fet_dec_call_dom_change   : std_logic_vector(4 downto 0);
   signal sg_fet_dec_ret_dom_change    : std_logic_vector(4 downto 0);
   signal sg_fet_dec_ret_dom_start : std_logic;
+  signal sg_fet_dec_irq_st1 : std_logic;
+  signal sg_fet_dec_irq_st2 : std_logic;
+  signal sg_fet_dec_irq_st3 : std_logic;
+  signal sg_fet_dec_reti_st1 : std_logic;
+  signal sg_fet_dec_reti_st2 : std_logic;
+  signal sg_fet_dec_reti_st3 : std_logic;
 
   -- signals between safe stack and io_adr_dec
   signal sg_sspl_out : std_logic_vector(7 downto 0);
@@ -844,6 +870,7 @@ begin
     ss_wr_en => sg_ss_wr_en,
 
     fet_dec_pc                => sg_fet_dec_pc,
+    fet_dec_call_instr => sg_fet_dec_call_instr,
     fet_dec_retL_wr       => sg_fet_dec_retL_wr,
     fet_dec_retH_wr       => sg_fet_dec_retH_wr,
     fet_dec_retL_rd       => sg_fet_dec_retL_rd,
@@ -852,6 +879,12 @@ begin
     fet_dec_ret_dom_change    => sg_fet_dec_ret_dom_change,
     fet_dec_write_ram_data    => sg_fet_dec_data,
     fet_dec_ret_dom_start => sg_fet_dec_ret_dom_start,
+    fet_dec_irq_st1 => sg_fet_dec_irq_st1,
+    fet_dec_irq_st2 => sg_fet_dec_irq_st2,
+    fet_dec_irq_st3 => sg_fet_dec_irq_st3,
+    fet_dec_reti_st1 => sg_fet_dec_reti_st1,
+    fet_dec_reti_st2 => sg_fet_dec_reti_st2,
+    fet_dec_reti_st3 => sg_fet_dec_reti_st3,
 
     dt_update_dom_id => sg_dt_update_dom_id,
 
@@ -875,7 +908,8 @@ begin
     iowe    => sg_iowe,
 
     fet_dec_pc         => sg_dt_pc,
-    fet_dec_call_instr => sg_dt_call_instr,
+    fet_dec_call_instr => sg_fet_dec_call_instr,
+    fet_dec_int => sg_dt_int,
 
     jmp_table_low_out  => sg_jmp_table_low_out,
     jmp_table_high_out => sg_jmp_table_high_out,
@@ -966,7 +1000,8 @@ begin
 
     -- domain_tracker specific signals
     dt_pc            => sg_dt_pc,
-    dt_call_instr    => sg_dt_call_instr,
+    fet_dec_call_instr    => sg_fet_dec_call_instr,
+    dt_int => sg_dt_int,
     dt_update_dom_id => sg_dt_update_dom_id,
 
     -- safe_stack specific signals
@@ -978,6 +1013,12 @@ begin
     fet_dec_ret_dom_start => sg_fet_dec_ret_dom_start,
     fet_dec_call_dom_change   => sg_fet_dec_call_dom_change,
     fet_dec_ret_dom_change    => sg_fet_dec_ret_dom_change,
+    fet_dec_irq_st1 => sg_fet_dec_irq_st1,
+    fet_dec_irq_st2 => sg_fet_dec_irq_st2,
+    fet_dec_irq_st3 => sg_fet_dec_irq_st3,
+    fet_dec_reti_st1 => sg_fet_dec_reti_st1,
+    fet_dec_reti_st2 => sg_fet_dec_reti_st2,
+    fet_dec_reti_st3 => sg_fet_dec_reti_st3,
 
 
 -- EXTERNAL INTERFACES OF THE CORE

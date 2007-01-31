@@ -56,13 +56,11 @@ void dom0_realmain()
 
   PORTB = 0x33;
 
-  /*
   // This will cause a panic
   
   buffer = buffer + 2*BUFF_SIZE;
   *buffer = 10;
   PORTA = 0xFF;
-  */
 
   return;
 }

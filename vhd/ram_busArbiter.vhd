@@ -35,7 +35,7 @@ entity ram_busArbiter is
     ss_addr_sel     : in  std_logic;
     ss_dbusout      : in  std_logic_vector(7 downto 0);
     ss_dbusout_sel  : in  std_logic;
-    ss_wr_en : in std_logic
+    ss_wr_en        : in  std_logic
     );
 end ram_busArbiter;
 
@@ -63,17 +63,17 @@ begin
                         else fet_dec_dbusout;
 
   -- RAM Write Enable Select Logic
-  
+
   ram_wr_en_sel(1) <= ss_wr_en;
   ram_wr_en_sel(0) <= mmc_write_cycle or mmc_read_cycle;
   ram_wr_en        <= mmc_wr_en when ram_wr_en_sel = "01"
-               else '1'         when ram_wr_en_sel = "10"
-               else fet_dec_wr_en;
+                      else '1'  when ram_wr_en_sel = "10"
+                      else fet_dec_wr_en;
 
   -- RAM Read Enable Select Logic
   ram_rd_en_sel(1) <= ss_addr_sel and (not ss_dbusout_sel);
   ram_rd_en_sel(0) <= mmc_read_cycle;
   ram_rd_en        <= mmc_rd_en when ram_rd_en_sel = "01"
-               else '1'         when ram_rd_en_sel = "10"
-               else fet_dec_rd_en;
+                      else '1'  when ram_rd_en_sel = "10"
+                      else fet_dec_rd_en;
 end Beh;

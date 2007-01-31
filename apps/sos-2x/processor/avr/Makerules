@@ -95,7 +95,7 @@ endif # _MODULE_
 
 
 
-avr: $(PROJ).elf $(PROJ).elf.lst $(PROJ).srec $(OBJS) $(PROJ).ihex
+avr: $(PROJ).elf $(PROJ).elf.lst $(PROJ).srec $(OBJS) $(PROJ).ihex $(PROJ).vhd
 
 
 

@@ -244,6 +244,35 @@ proc cross_dom_call {} {
     add wave -hex -label ss_dbusout sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/SAFE_STK/ss_dbusout
     add wave -hex -label ss_addr_sel sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/SAFE_STK/ss_addr_sel
     add wave -hex -label ss_addr sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/SAFE_STK/ss_addr
+    add wave -hex -label call_addr sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/SAFE_STK/call_addr
+    add wave -hex -label cross_dom_call_in_progress sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/SAFE_STK/cross_dom_call_in_progress
+}
+
+proc int {} {
+    add wave -divider INTERRUPTS
+    add wave -divider INTERRUPT_STATE_MACHINE
+    add wave -hex -label nirq_st0 sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/nirq_st0
+    add wave -hex -label irq_start sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/irq_start
+    add wave -hex -label irq_st1 sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/irq_st1
+    add wave -hex -label irq_st2 sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/irq_st2
+    add wave -hex -label irq_st3 sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/irq_st3
+
+    add wave -divider INTERRUPTS_DT_SIGNALS
+    add wave -hex -label update_dom_id sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/DOMAIN_UPDATE/dt_update_dom_id
+    add wave -hex -label new_dom_id sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/DOMAIN_UPDATE/dt_new_dom_id
+}
+
+proc reti {} {
+    add wave -divider RETI
+    add wave -divider RETI_STATE_MACHINE
+    add wave -hex -label nreti_st0 sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/nreti_st0
+    add wave -hex -label idc_reti sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/idc_reti
+    add wave -hex -label reti_st1 sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/reti_st1
+    add wave -hex -label reti_st2 sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/reti_st2
+    add wave -hex -label reti_st3 sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/reti_st3
+
+    add wave -hex -label ssp sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/SAFE_STK/ssp_update_dom_id
+    add wave -hex -label ssp sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/SAFE_STK/ssp_new_dom_id
 }
 
 proc mmc_addr_calc {} {
@@ -341,6 +370,7 @@ proc test_bench {} {
     add wave -label Ram_Data_Out -hex sim:/tb_umpu/tbRamDataOut
     add wave -label Ram_Data_In -hex sim:/tb_umpu/tbRamDataIn
     add wave -label Ram_Wr_En -hex sim:/tb_umpu/tbRamWrEn
+    add wave -label Ram_Rd_En sim:/tb_umpu/umpu1/top_avr/testing_core/ramre
 
     add wave -divider UART
     add wave -label rxd -hex sim:/tb_umpu/tbRxd

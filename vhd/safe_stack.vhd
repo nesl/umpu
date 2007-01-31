@@ -43,8 +43,9 @@ entity safe_stack is
     ss_dbusout_sel : out std_logic;
     ss_wr_en       : out std_logic;
 
-    -- Signals from pm_fetch_decoder
+    -- Signals from pm_fetch_decoder probably all for call
     fet_dec_pc              : in  std_logic_vector(15 downto 0);
+    fet_dec_call_instr      : in  std_logic;
     fet_dec_retL_wr         : in  std_logic;
     fet_dec_retH_wr         : in  std_logic;
     fet_dec_retL_rd         : in  std_logic;
@@ -53,6 +54,14 @@ entity safe_stack is
     fet_dec_ret_dom_change  : in  std_logic_vector(4 downto 0);
     fet_dec_write_ram_data  : in  std_logic_vector(7 downto 0);
     fet_dec_ret_dom_start   : out std_logic;
+
+    -- Signals from pm_fetch_decoder only for interrupts
+    fet_dec_irq_st1  : in std_logic;
+    fet_dec_irq_st2  : in std_logic;
+    fet_dec_irq_st3  : in std_logic;
+    fet_dec_reti_st1 : in std_logic;
+    fet_dec_reti_st2 : in std_logic;
+    fet_dec_reti_st3 : in std_logic;
 
     -- Signals from Domain Tracker
     dt_update_dom_id : in std_logic;
@@ -125,7 +134,9 @@ begin
   -- will be '1' only when dom_id = "111" i.e. trusted domain
   in_trusted_domain <= dom_id(0) and dom_id(1) and dom_id(2);
 
-  -- receive the stack pointer from io_adr_dec
+-------------------------------------------------------------------------------
+-- receive the stack pointer from io_adr_dec
+-------------------------------------------------------------------------------
   stack_pointer(15 downto 8) <= stack_pointer_high;
   stack_pointer(7 downto 0)  <= stack_pointer_low;
 
@@ -136,6 +147,17 @@ begin
   -- Only checking for overflow if the protection bit is set
   ssp_stack_overflow <= stack_overflow and umpu_en;
 
+-- INTERRUPT_IN_PROGRESS_LATCH : process(ireset, clock)
+-- begin
+-- if (ireset = '0') then
+
+-- elsif (clock = '1' and clock'event) then
+-- if (dt_update_dom_id = '1' and fet_dec_call_instr = '0') then
+
+-- end if;
+-- end if;
+-- end process;
+
   -- This latches the cross_dom_call_in_progress signal.
   -- The signal goes high when domain_tracker reports that this is a cross
   -- domain call and then goes low at the end of writing the two bytes of
@@ -145,7 +167,7 @@ begin
     if (ireset = '0') then
       cross_dom_call_in_progress   <= '0';
     elsif (clock'event and clock = '1') then
-      if (dt_update_dom_id = '1') then
+      if (dt_update_dom_id = '1' and fet_dec_call_instr = '1') then
         cross_dom_call_in_progress <= '1';
       elsif (ret_addr_wr = '1') then
         cross_dom_call_in_progress <= '0';
@@ -172,12 +194,16 @@ begin
   -- this signal is not set.
   -- MADE CHANGES HERE: Now when a cross domain call happens into the trusted
   -- domain,the return addr is stored on the runtime stack and not on ssp. It
-  -- is also read from teh runtime stack. 
-  ss_addr_sel <= ((ret_addr_rd or ret_addr_wr) and not in_trusted_domain) or (call_dom_change or ret_dom_change);
+  -- is also read from the runtime stack.
+  -- FOR INTERRUPTS: Selecting the ss addr during the interrupt state machine
+  ss_addr_sel <= (((ret_addr_rd or ret_addr_wr) and not in_trusted_domain) or (call_dom_change or ret_dom_change)
+                  or (fet_dec_irq_st1 or fet_dec_irq_st2 or fet_dec_irq_st3)
+                  or (fet_dec_reti_st1 or fet_dec_reti_st2 or fet_dec_reti_st3)) and umpu_en;
 
   -- The address to read from in the ram is based on if the action is read or
   -- write. For read, the ssp_decremented is used, for write, the ssp is used 
-  ss_addr <= ssp_decremented when ret_addr_rd = '1' or ret_dom_change = '1'
+  ss_addr <= ssp_decremented when (ret_addr_rd = '1' or ret_dom_change = '1'
+                                   or fet_dec_reti_st1 = '1' or fet_dec_reti_st2 = '1' or fet_dec_reti_st3 = '1')
              else ssp;
 
   -----------------------------------------------------------------------------
@@ -191,16 +217,22 @@ begin
                           -- ssp is incremented when things are written to the
                           -- ssp, either the return addr or the different items
                           -- from a cross domain call
-                          else ssp_incremented(15 downto 8) when (ret_addr_wr = '1' or call_dom_change = '1')
+                          -- FOR INTERRUPTS: incremented when things written to
+                          -- it during the irq state machine
+                          else ssp_incremented(15 downto 8) when ((ret_addr_wr = '1' or call_dom_change = '1')
+                                                                  or (fet_dec_irq_st1 = '1' or fet_dec_irq_st2 = '1' or fet_dec_irq_st3 = '1'))
                           -- ssp is decremented when the return addr is read
                           -- from it or the different items for a cross domain
                           -- return
-                          else ssp_decremented(15 downto 8) when (ret_addr_rd = '1' or ret_dom_change = '1')
+                          else ssp_decremented(15 downto 8) when ((ret_addr_rd = '1' or ret_dom_change = '1')
+                                                                  or (fet_dec_reti_st1 = '1' or fet_dec_reti_st2 = '1' or fet_dec_reti_st3 = '1'))
                           else ssp(15 downto 8);
   -- The lower ssp set in the similar way as above
   ssp_int(7 downto 0)  <= reg_bus                           when (adr = SSP_LOW_Address and iowe = '1' and in_trusted_domain = '1')
-                          else ssp_incremented(7 downto 0)  when (ret_addr_wr = '1' or call_dom_change = '1')
-                          else ssp_decremented(7 downto 0)  when (ret_addr_rd = '1' or ret_dom_change = '1')
+                          else ssp_incremented(7 downto 0)  when ((ret_addr_wr = '1' or call_dom_change = '1')
+                                                                  or (fet_dec_irq_st1 = '1' or fet_dec_irq_st2 = '1' or fet_dec_irq_st3 = '1'))
+                          else ssp_decremented(7 downto 0)  when ((ret_addr_rd = '1' or ret_dom_change = '1')
+                                                                  or (fet_dec_reti_st1 = '1' or fet_dec_reti_st2 = '1' or fet_dec_reti_st3 = '1'))
                           else ssp(7 downto 0);
 
   -- Latch for ssp
@@ -233,22 +265,22 @@ begin
   -----------------------------------------------------------------------------
   -- CROSS DOMAIN CHANGE PUSH
   -----------------------------------------------------------------------------
-  ss_dbusout_sel_int <= dt_update_dom_id or fet_dec_call_dom_change(0) or fet_dec_call_dom_change(1) or fet_dec_call_dom_change(2) or fet_dec_call_dom_change(3)
-                    or fet_dec_call_dom_change(4) or (fet_dec_retL_wr and cross_dom_call_in_progress);
-  ss_dbusout     <= "00000"&dom_id                  when (dt_update_dom_id = '1')                                     else
-                    stack_bound(7 downto 0)         when (fet_dec_call_dom_change(0) = '1')                           else
-                    stack_bound(15 downto 8)        when (fet_dec_call_dom_change(1) = '1')                           else
-                    cross_dom_ret_addr(7 downto 0)  when (fet_dec_call_dom_change(2) = '1')                           else
-                    cross_dom_ret_addr(15 downto 8) when (fet_dec_call_dom_change(3) = '1')                           else
-                    call_addr(7 downto 0)           when fet_dec_call_dom_change(4) = '1'                             else
-                    call_addr(15 downto 8)          when (fet_dec_retL_wr = '1' and cross_dom_call_in_progress = '1') else
-                    "00000000";
+  ss_dbusout_sel_int <= (dt_update_dom_id or fet_dec_call_dom_change(0) or fet_dec_call_dom_change(1) or fet_dec_call_dom_change(2) or fet_dec_call_dom_change(3)
+                         or fet_dec_call_dom_change(4) or (fet_dec_retL_wr and cross_dom_call_in_progress)) and umpu_en;
+  ss_dbusout         <= "00000"&dom_id                  when (dt_update_dom_id = '1')                                     else
+                        stack_bound(7 downto 0)         when (fet_dec_call_dom_change(0) = '1')                           else
+                        stack_bound(15 downto 8)        when (fet_dec_call_dom_change(1) = '1')                           else
+                        cross_dom_ret_addr(7 downto 0)  when (fet_dec_call_dom_change(2) = '1')                           else
+                        cross_dom_ret_addr(15 downto 8) when (fet_dec_call_dom_change(3) = '1')                           else
+                        call_addr(7 downto 0)           when fet_dec_call_dom_change(4) = '1'                             else
+                        call_addr(15 downto 8)          when (fet_dec_retL_wr = '1' and cross_dom_call_in_progress = '1') else
+                        "00000000";
 
   ss_dbusout_sel <= ss_dbusout_sel_int;
-  
+
   -- Setting the wr en for safe stack, it is just the dbusout sel latched
   -- because of the latch in the data ram
-  SS_WR_EN_LATCH : process(ireset,clock)
+  SS_WR_EN_LATCH : process(ireset, clock)
   begin
     if (ireset = '0') then
       ss_wr_en <= '0';
@@ -335,6 +367,6 @@ begin
   end process;
 
   ssp_new_dom_id    <= ram_bus(2 downto 0);
-  ssp_update_dom_id <= fet_dec_ret_dom_change(4);
+  ssp_update_dom_id <= fet_dec_ret_dom_change(4) or (fet_dec_reti_st3 and umpu_en);
 
 end Beh;

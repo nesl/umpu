@@ -29,6 +29,8 @@ entity domain_tracker is
     fet_dec_pc         : in std_logic_vector(15 downto 0);
     -- indication of call insrt from pm_fetch_decoder
     fet_dec_call_instr : in std_logic;
+    -- indication of an interrupt from pm_fetch_decoder
+    fet_dec_int : in std_logic;
 
     -- send the local registers to io_adr_dec so SW can read
     jmp_table_high_out : out std_logic_vector(7 downto 0);
@@ -105,7 +107,6 @@ architecture Beh of domain_tracker is
   signal call_addr_lesser  : std_logic;
 
 begin
-
   -- Extract different regions from the mmc_status_reg
   umpu_en    <= mmc_status_reg(0);           -- Protection bit
   cur_dom_id <= mmc_status_reg(4 downto 2);  -- Current Domain ID
@@ -133,12 +134,16 @@ begin
                       else '0';
   call_in_jmp_table <= call_addr_lesser and call_addr_greater;
 
-  dt_update_dom_id <= fet_dec_call_instr and call_in_jmp_table and umpu_en;
+  -- update domain id if this is a cross domain call or there is an interrupt
+  -- but only if the protection is enabled
+  dt_update_dom_id <= ((fet_dec_call_instr and call_in_jmp_table)
+                       or (fet_dec_int)) and umpu_en;
 
-
-
-  -- Decide if we have a new domain id
-  dt_new_dom_id <= difference(9 downto 7);
+  -- The new domain id is trusted domain if this is an interrupt or else is the
+  -- calculated domain id from the cross domain call
+  dt_new_dom_id <= "111" when fet_dec_int = '1'
+                   else difference(9 downto 7);
+  
   -- A cross domain call is only permitted if protection is enabled
   --dt_update_dom_id <= is_positive and fet_dec_call_instr and not_bit_ten and umpu_en;
 
