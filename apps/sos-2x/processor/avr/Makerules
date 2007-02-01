@@ -49,11 +49,11 @@ endif
 #===============================================================================================
 ifeq ($(BUILD),_SOS_KERNEL_)
 BLS_START = -Wl,--section-start=.sos_bls=0x1fc00 
-SRCS += uart_hal.c uart.c uart_system.c 
 SRCS += crc.c timer.c
 ASMSRCS += sos_fnptr_call.S
 ASMSRCS += sys_jmptable.S
-
+UART_DRIVER_SRCS += uart_hal.c uart.c uart_system.c
+SRCS += $(UART_DRIVER_SRCS)
 ###############################################################
 # MEMORY PROTECTION OPTIONS
 ###############################################################
@@ -80,13 +80,6 @@ ifeq ($(BUILD),_MODULE_)
 CFLAGS += -Os -fno-unit-at-a-time -fshort-enums -fpack-struct -mno-tablejump -Wall -Wa,-adhlmsn=$(notdir $(<:.c=.lst)) -Wa,-mno-wrap 
 LDFLAGS += -Wl,-r,-i,--unresolved-symbols=ignore-in-object-files 
 
-###############################################################
-# MEMORY PROTECTION OPTIONS
-###############################################################
-#ifeq ($(MODE),sfi)
-#CFLAGS += -ffixed-r26 -ffixed-r27
-#CFLAGS += -ffixed-r2
-#endif
 
 LDFLAGS += -Wl,-T $(ROOTDIR)/processor/avr/mod.x -Wl,-Map=$(PROJ).map,--cref -nostartfiles -nodefaultlibs -nostdlib -lgcc -lc
 SFLAGS += $(STACK_START) -Wa,$(MCUFLAG),$(AS_DEBUG),-ahlms=$(notdir $(<:.S=.lst))
@@ -95,8 +88,4 @@ endif # _MODULE_
 
 
 
-avr: $(PROJ).elf $(PROJ).elf.lst $(PROJ).srec $(OBJS) $(PROJ).ihex $(PROJ).vhd
-
-
-
-
+avr: $(PROJ).elf $(PROJ).elf.lst

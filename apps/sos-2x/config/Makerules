@@ -8,7 +8,7 @@ VIRTPLATLIST = sim emu
 EMUPLATLIST = mica2 xyz
 DEFAULT_EMUPLAT = mica2
 
-PLATLIST = plat1281 802_15_4_sim cyclops mica2 micaz iBadge xyz avrora cricket tmote protosb imote2
+PLATLIST = mica2
 DEFAULT_PLAT = mica2
 
 VIRTGOALS = $(filter $(VIRTPLATLIST), $(MAKECMDGOALS))
@@ -42,10 +42,6 @@ BUILD = _SOS_KERNEL_
 
 DEFS += -D_SOS_KERNEL
 
-# NOTE: hardware.c has to be the first entry!
-SRCS_FIRST += hardware.c main.c
-OBJS_FIRST =
-
 ##################################################
 # MEMORY PROTECTION OPTIONS
 #################################################
@@ -65,6 +61,7 @@ endif
 #################################################
 
 SRCS += $(PROJ).c
+SRCS += hardware.c main.c
 SRCS += sched.c message.c message_queue.c message_net.c
 SRCS += fntable.c
 SRCS += sos_timer.c monitor.c
@@ -73,7 +70,7 @@ SRCS += random.c
 SRCS += sos_logging.c
 
 
-OBJS += $(SRCS_FIRST:.c=.o) $(OBJS_FIRST) $(SRCS:.c=.o) $(ASMSRCS:.S=.o)
+OBJS += $(SRCS:.c=.o) $(ASMSRCS:.S=.o)
 
 
 

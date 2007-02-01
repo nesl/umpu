@@ -32,7 +32,7 @@
 
 /// \cond NOTYPEDEF
 #ifdef SOS_SFI
-typedef void *  (* sys_malloc_ker_func_t)(uint16_t size, uint8_t calleedomid);
+typedef void *  (* sys_malloc_ker_func_t)(uint16_t size, uint8_t callerdomid);
 #else
 typedef void *  (* sys_malloc_ker_func_t)( uint16_t size );
 #endif
@@ -67,7 +67,7 @@ static inline void * sys_malloc( uint16_t size)
 
 /// \cond NOTYPEDEF
 #ifdef SOS_SFI
-typedef void (* sys_free_ker_func_t)(void * ptr, uint8_t calleedomid);
+typedef void (* sys_free_ker_func_t)(void * ptr, uint8_t callerdomid);
 #else                                             
 typedef void (* sys_free_ker_func_t)(void * ptr);
 #endif            
@@ -561,8 +561,13 @@ static inline int8_t sys_fntable_subscribe( sos_pid_t pub_pid, uint8_t fid, uint
 }
 /* @} */
 
+
+/**
+ * \brief Change Ownership of a memory segment
+ * \note Call will succeed only if ptr points to a segment that belongs to the owner
+ */
 #ifdef SOS_SFI
-typedef int8_t (* sys_change_own_func_t)( void* ptr, uint8_t calleedomid);
+typedef int8_t (* sys_change_own_func_t)( void* ptr, uint8_t callerdomid);
 #else
 typedef int8_t (* sys_change_own_func_t)( void* ptr );
 #endif
@@ -575,6 +580,26 @@ static inline int8_t sys_change_own( void* ptr )
   return ((sys_change_own_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*19))(ptr);
 #endif
 }
+
+/**
+ * \brief Create a message header
+ * \note Message header will be owned by the caller
+ */
+#ifdef SOS_SFI
+typedef Message* (*sys_msg_create_func_t)(uint8_t callerdomid);
+#else
+typedef Message* (*sys_msg_create_func_t)(void);
+#endif
+
+static inline sys_msg_create(void)
+{
+#ifdef SOS_SFI
+  return ((sys_msg_create_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*20))(GET_MSR_DOM_ID());
+#else
+  return ((sys_msg_create_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*20))();
+#endif  
+}
+
 
 #endif
 

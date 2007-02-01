@@ -207,7 +207,7 @@ void* sos_blk_mem_longterm_alloc(uint16_t size, sos_pid_t id)
 // SFI Mode: Allocate domain ID based upon requestor pid
 //-----------------------------------------------------------------------------
 #ifdef SOS_SFI
-void* sos_blk_mem_alloc(uint16_t size, sos_pid_t id, uint8_t calleedomid)
+void* sos_blk_mem_alloc(uint16_t size, sos_pid_t id, uint8_t callerdomid)
 #else
 void* sos_blk_mem_alloc(uint16_t size, sos_pid_t id)
 #endif
@@ -267,10 +267,10 @@ void* sos_blk_mem_alloc(uint16_t size, sos_pid_t id)
 
 #ifdef SOS_SFI
   uint8_t newdomid;
-  if (KER_DOM_ID == calleedomid)
+  if (KER_DOM_ID == callerdomid)
     newdomid = sfi_get_domain_id(id);
   else
-    newdomid = calleedomid;
+    newdomid = callerdomid;
   memmap_set_perms((void*) block, sizeof(Block), DOM_SEG_START(newdomid));
   memmap_set_perms((void*) ((Block*)(block + 1)), sizeof(Block) * (reqBlocks - 1), DOM_SEG_LATER(newdomid));
 #else                           
@@ -290,7 +290,7 @@ void* sos_blk_mem_alloc(uint16_t size, sos_pid_t id)
 //           2. Block being freed should be start of segment
 //-----------------------------------------------------------------------------
 #ifdef SOS_SFI
-void sos_blk_mem_free(void* pntr, uint8_t calleedomid)
+void sos_blk_mem_free(void* pntr, uint8_t callerdomid)
 #else
 void sos_blk_mem_free(void* pntr)
 #endif
@@ -331,7 +331,7 @@ void sos_blk_mem_free(void* pntr)
     return; 
   }
   // Check - Untrusted domain trying to free memory that it does not own or that is free.
-  if ((calleedomid != KER_DOM_ID) && ((perms & MEMMAP_DOM_MASK) != calleedomid))
+  if ((callerdomid != KER_DOM_ID) && ((perms & MEMMAP_DOM_MASK) != callerdomid))
     {
       LEAVE_CRITICAL_SECTION();
       sfi_exception(MALLOC_EXCEPTION);
@@ -377,7 +377,7 @@ void sos_blk_mem_free(void* pntr)
 //           2. If call from trusted domain, everything is fair !!
 //-----------------------------------------------------------------------------
 #ifdef SOS_SFI
-int8_t sos_blk_mem_change_own(void* ptr, sos_pid_t id, uint8_t calleedomid) 
+int8_t sos_blk_mem_change_own(void* ptr, sos_pid_t id, uint8_t callerdomid) 
 #else
 int8_t sos_blk_mem_change_own(void* ptr, sos_pid_t id) 
 #endif
@@ -406,7 +406,7 @@ int8_t sos_blk_mem_change_own(void* ptr, sos_pid_t id)
   }
 
 
-  if (((perms & MEMMAP_DOM_MASK) == calleedomid) || (calleedomid == KER_DOM_ID))
+  if (((perms & MEMMAP_DOM_MASK) == callerdomid) || (callerdomid == KER_DOM_ID))
     {
       // Call has come from trusted domain OR
       // Call has come from block owner
@@ -627,11 +627,11 @@ int8_t ker_panic(void)
   return -EINVAL;	
 }
 
-void* ker_sys_malloc(uint16_t size, uint8_t calleedomid)
+void* ker_sys_malloc(uint16_t size, uint8_t callerdomid)
 {    
   sos_pid_t my_id = ker_get_current_pid();
 #ifdef SOS_SFI    
-  void *ret = sos_blk_mem_alloc(size, my_id, calleedomid);
+  void *ret = sos_blk_mem_alloc(size, my_id, callerdomid);
 #else    
   void *ret = sos_blk_mem_alloc(size, my_id);
 #endif    
@@ -643,21 +643,21 @@ void* ker_sys_malloc(uint16_t size, uint8_t calleedomid)
 }
 
 
-void ker_sys_free(void *pntr, uint8_t calleedomid) 
+void ker_sys_free(void *pntr, uint8_t callerdomid) 
 {
 #ifdef SOS_SFI
-  sos_blk_mem_free(pntr, calleedomid);
+  sos_blk_mem_free(pntr, callerdomid);
 #else
   sos_blk_mem_free(pntr);
 #endif
 }	
 
 
-int8_t ker_sys_change_own(void* ptr, uint8_t calleedomid)
+int8_t ker_sys_change_own(void* ptr, uint8_t callerdomid)
 {
   sos_pid_t my_id = ker_get_current_pid();    
 #ifdef SOS_SFI
-  if( SOS_OK != sos_blk_mem_change_own( ptr, my_id, calleedomid)) {
+  if( SOS_OK != sos_blk_mem_change_own( ptr, my_id, callerdomid)) {
 #else
   if( SOS_OK != sos_blk_mem_change_own( ptr, my_id)) {
 #endif

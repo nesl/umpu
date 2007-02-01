@@ -62,7 +62,7 @@ extern void mem_start(void);
  * @brief Allocate a chunk of blocks from the heap
  */
 #ifdef SOS_SFI
-extern void* sos_blk_mem_alloc(uint16_t size, sos_pid_t id, uint8_t calleedomid);
+extern void* sos_blk_mem_alloc(uint16_t size, sos_pid_t id, uint8_t callerdomid);
 #else
 extern void* sos_blk_mem_alloc(uint16_t size, sos_pid_t id);
 #endif
@@ -71,7 +71,7 @@ extern void* sos_blk_mem_alloc(uint16_t size, sos_pid_t id);
  * @brief Free a block back into the heap
  */
 #ifdef SOS_SFI
-extern void sos_blk_mem_free(void* pntr, uint8_t calleedomid);
+extern void sos_blk_mem_free(void* pntr, uint8_t callerdomid);
 #else
 extern void sos_blk_mem_free(void* ptr);
 #endif
@@ -81,7 +81,7 @@ extern void sos_blk_mem_free(void* ptr);
  * @brief Change memory ownership of a segment of memory
  */
 #ifdef SOS_SFI
-extern int8_t sos_blk_mem_change_own(void* ptr, sos_pid_t id, uint8_t calleedomid) ;
+extern int8_t sos_blk_mem_change_own(void* ptr, sos_pid_t id, uint8_t callerdomid) ;
 #else
 extern int8_t sos_blk_mem_change_own(void* ptr, sos_pid_t id); 
 #endif
@@ -179,6 +179,18 @@ int8_t ker_panic(void);
  * further semantic
  */
 int8_t ker_mod_panic(sos_pid_t pid);
+
+
+#ifdef SOS_SFI
+// Malloc routines used by sys_ API
+// Malloc
+void* ker_sys_malloc(uint16_t size, uint8_t callerdomid);
+// Free
+void ker_sys_free(void *pntr, uint8_t callerdomid);
+// Change Ownership
+int8_t ker_sys_change_own(void* ptr, uint8_t callerdomid);
+#endif//SOS_SFI
+
 
 #endif
 

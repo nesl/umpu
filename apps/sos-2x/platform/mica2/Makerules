@@ -3,16 +3,12 @@
 # Makerules for Kernel image for Mica2 platform
 #
 
-#DEFS += -DMICA2_PLATFORM -DNO_SOS_I2C
+
 
 DEFS += -DMICA2_PLATFORM
 
-# if the node is being compiled to be used with cyclops, 
-# then its I2C drivers should also be enabled
-ifndef USE_SOS_I2C
-DEFS += -DNO_SOS_I2C
-endif
 
+DEFS += -DNO_SOS_I2C
 DEFS += -DNO_SOS_RADIO 
 #DEFS += -DNO_SOS_UART
 
@@ -27,17 +23,13 @@ INCDIR += -I$(ROOTDIR)/drivers/uart/include
 INCDIR += -I$(ROOTDIR)/drivers/i2c/include
 
 ifeq ($(BUILD),_SOS_KERNEL_)
-SRCS +=  sos_uart.c sos_uart_mgr.c 
+UART_DRIVER_SRCS +=  sos_uart.c sos_uart_mgr.c 
 SRCS += led.c
 endif
 
 include $(ROOTDIR)/processor/$(PROCESSOR)/Makerules
 
-ifneq ($(UISP),)
-UISP_PROG = $(UISP)
-else 
-UISP_PROG = uisp
-endif
+
 
 ####
 # Programer configuration
@@ -45,6 +37,13 @@ endif
 #   specify PORT if you want serial programming
 #   specify IP address if you are using ethernet programming
 ####
+
+ifneq ($(UISP),)
+UISP_PROG = $(UISP)
+else 
+UISP_PROG = uisp
+endif
+
 ifndef PROG
 PROG=dapa
 endif
@@ -74,29 +73,5 @@ endif
 # Make rules
 #######
 
-mica2_install: $(PROJ).srec
-	$(ROOTDIR)/tools/utils/set-mote-id $(PROJ).srec $(PROJ).srec.out.$(ADDRESS) $(ADDRESS)
-ifneq ($(PROG),jtag)
-# Can enable watchdog in software, but don't foce fuses.
-	$(INSTALLER) --wr_fuse_e=0xff
-	sleep 2
-	$(INSTALLER) --wr_fuse_h=0x9f
-	sleep 2
-	$(INSTALLER) --wr_fuse_l=0xbf
-	sleep 2
-	$(INSTALLER) --erase
-	sleep 2
-	$(INSTALLER) --upload if=$(PROJ).srec.out.$(ADDRESS)
-ifndef NO_VERIFY
-	sleep 2
-	$(INSTALLER) --verify if=$(PROJ).srec.out.$(ADDRESS)
-endif
-	rm -f $(PROJ).srec.out.$(ADDRESS)
-else
-	$(INSTALLER) --jtag $(PORT) --write-fuses ff9fbf
-	$(INSTALLER) --erase --program --jtag $(PORT) --file $(PROJ).srec.out.$(ADDRESS)
-ifndef NO_VERIFY
-	$(INSTALLER) --verify --jtag $(PORT) --file $(PROJ).srec.out.$(ADDRESS) && rm -f $(PROJ).srec.out.$(ADDRESS)
-endif
-endif
-
+mica2_install: $(PROJ).vhd
+	mv programToLoad.vhd $(ROOTDIR)/../../vhd/

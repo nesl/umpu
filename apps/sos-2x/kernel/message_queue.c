@@ -323,74 +323,6 @@ Message *msg_create()
   return tmp;
 }
 
-#ifdef FAULT_TOLERANT_SOS
-// Move a given message from the kernel to the module domain
-Message *msg_move_to_module_domain(Message *msg_ker_domain)
-{
-  Message *msg_mod_domain;
-  if  (mem_check_module_domain((uint8_t*)msg_ker_domain) == false){
-	DEBUG("Message header in kernel domain ... moving to module domain\n");
-	// Allocate space for the new message header
-	msg_mod_domain = (Message*)module_domain_alloc(sizeof(Message), MSG_QUEUE_PID);
-	if (NULL == msg_mod_domain){
-	  DEBUG("Out of memory in module domain ... failed to move message\n");
-	  return NULL;
-	}
-	// Copy the message header over
-	memcpy(msg_mod_domain, msg_ker_domain, sizeof(Message));
-	// Check if the original message was a short message
-	// Fix the data pointer, free the old message and return new message
-	if (msg_ker_domain->data == msg_ker_domain->payload){
-	  DEBUG("Internal payload ... message moved\n");
-	  msg_mod_domain->data = msg_mod_domain->payload;
-	  DEBUG("Freeing the header located in kernel domain\n");
-	  ker_free(msg_ker_domain);
-	  return msg_mod_domain;
-	}
-  }
-  else {
-	DEBUG("Message header in module domain\n");
-	if (msg_ker_domain->data == msg_ker_domain->payload){
-	  DEBUG("Internal payload ... message moved\n");
-	  return msg_ker_domain;
-	}
-	msg_mod_domain = msg_ker_domain;
-  }
-  // Check if the data lies in the module domain
-  // Copy message payload over to the module domain if it is in the kernel domain
-  if (mem_check_module_domain(msg_ker_domain->data) == false){
-	DEBUG("Message payload in kernel domain ... moving to module domain\n");
-	if (msg_ker_domain->len > 0){
-	  uint8_t* newdata = (uint8_t*)ker_malloc(msg_ker_domain->len, msg_ker_domain->did);
-	  if (NULL == newdata){
-		DEBUG("Out of memory in module domain ...failed to move message\n");
-		if (msg_mod_domain != msg_ker_domain){
-		  DEBUG("Free the header that was moved into the module domain\n");
-		  ker_free(msg_mod_domain);
-		  return NULL;
-		}
-	  }
-	  memcpy(newdata, msg_ker_domain->data, msg_ker_domain->len);
-	  if (flag_msg_release(msg_ker_domain->flag)){
-		DEBUG("Free the message payload located in kernel domain\n");
-		ker_free(msg_ker_domain->data);
-	  }
-	  msg_mod_domain->data = newdata;
-	  msg_mod_domain->flag |= SOS_MSG_RELEASE;
-	}
-	else{
-	  msg_mod_domain->data = NULL;
-	  ker_free(msg_ker_domain->data); // Just to be sure. This should be NULL anyway
-	}
-  }
-  if (msg_mod_domain != msg_ker_domain){
-	DEBUG("Free the header located in kernel domain\n");
-	ker_free(msg_ker_domain);
-  }
-  return msg_mod_domain;
-}
-#endif //FAULT_TOLERANT_SOS
-
 /**
  * @brief dispose message
  * return message header back to message repostitary
@@ -433,6 +365,9 @@ void msg_dispose(Message *m)
 	LEAVE_CRITICAL_SECTION();
 }
 
+
+
+
 /**
  * @brief handle the process of creating senddone message
  * @param msg_sent  the Message just sent or delivered
@@ -469,21 +404,55 @@ void msg_send_senddone(Message *msg_sent, bool succ, sos_pid_t msg_owner)
   } 
 }
 
-/*
-  void mq_print(mq_t *q)
-  {
-  Message *itr;
-  DEBUG("Message Queue\n");
-  for(itr = q->hq_head; itr != NULL; itr = itr->next)
-  {
-  msg_header_out("MQ H", itr);
-  }	
 
-  for(itr = q->lq_head; itr != NULL; itr = itr->next)
-  {
-  msg_header_out("MQ L", itr);
-  }	
+
+
+
+/**
+ * @brief create message
+ * @return pointer to message, or NULL for fail
+ * get new message header from message repositary
+ * msg->data is pointing to payload
+ */
+#ifdef SOS_SFI
+Message *ker_sys_msg_create(uint8_t callerdomid)
+#else
+Message *ker_sys_msg_create(void)
+#endif
+{
+  Message *tmp;
+#ifdef SOS_SFI
+  tmp = (Message*)ker_sys_malloc(sizeof(Message), callerdomid);
+#else
+  tmp = (Message*)ker_malloc(sizeof(Message), MSG_QUEUE_PID);
+#endif
+  if(tmp != NULL) {
+	tmp->data = tmp->payload;
+	tmp->flag = 0;
   }
-*/
+  return tmp;
+}
 
-
+/**
+ * @brief dispose message
+ * return message header back to message repostitary
+ */
+void ker_sys_msg_dispose(Message *m, uint8_t callerdomid)
+{
+	HAS_CRITICAL_SECTION;
+	uint8_t msgflag;
+	uint8_t* msgdata;
+	msgflag = m->flag;
+	msgdata = msg->data;
+#ifdef SOS_SFI
+	ker_sys_free(m, callerdomid);
+#else
+	ker_free(m);
+#endif
+	ENTER_CRITICAL_SECTION();
+	if(flag_msg_release(msgflag)) { 
+	  ker_free(msgdata); 
+	}
+	LEAVE_CRITICAL_SECTION();
+	return;
+}

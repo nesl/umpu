@@ -155,12 +155,12 @@ int8_t uart_startTransceiverRx( uint8_t rx_len, uint8_t flags) {
 
 	state[RX].flags = UART_SYS_SHARED_FLAGS_MSK & flags;  // get shared flags
 	if (flags & UART_SOS_MSG_FLAG) {
-		state[RX].msgHdr = msg_create();
+		state[RX].msgHdr = sys_msg_create();
 		if (state[RX].msgHdr == NULL) {
 			return -ENOMEM;
 		}
 	} else {
-		state[RX].buff = ker_malloc(rx_len, UART_PID);
+		state[RX].buff = sys_malloc(rx_len, UART_PID);
 		if (state[RX].buff == NULL) {
 			return -ENOMEM;
 		}
@@ -315,7 +315,7 @@ uart_send_interrupt() {
 static inline void uart_reset_recv() {
 
 	if(state[RX].msgHdr != NULL) {
-		msg_dispose(state[RX].msgHdr);
+		sys_msg_dispose(state[RX].msgHdr);
 		state[RX].msgHdr = NULL;
 	}
 	state[RX].state = UART_IDLE;
@@ -364,7 +364,7 @@ uart_recv_interrupt() {
 
 				case HDLC_SOS_MSG:
 					if(state[RX].msgHdr == NULL) {
-						state[RX].msgHdr = msg_create();
+						state[RX].msgHdr = sys_msg_create();
 					} else {
 						if((state[RX].msgHdr->data != NULL) &&
 								(flag_msg_release(state[RX].msgHdr->flag))){
@@ -386,7 +386,7 @@ uart_recv_interrupt() {
 					break;
 
 				case HDLC_RAW:
-					if ((state[RX].buff = ker_malloc(UART_MAX_MSG_LEN, UART_PID)) != NULL) {
+					if ((state[RX].buff = sys_malloc(UART_MAX_MSG_LEN, UART_PID)) != NULL) {
 						state[RX].msg_state = SOS_MSG_RX_RAW;
 						if (state[RX].flags & UART_CRC_FLAG) {
 							state[RX].crc = crcByte(0, byte_in);
@@ -458,7 +458,7 @@ uart_recv_interrupt() {
 
 							if (state[RX].msgLen < UART_MAX_MSG_LEN) {
 								if (state[RX].msgLen != 0) {
-									state[RX].buff = (uint8_t*)ker_malloc(state[RX].msgLen, UART_PID);
+									state[RX].buff = (uint8_t*)sys_malloc(state[RX].msgLen, UART_PID);
 									if (state[RX].buff != NULL) {
 										state[RX].msgHdr->data = state[RX].buff;
 										state[RX].msgHdr->flag = SOS_MSG_RELEASE;
@@ -531,7 +531,7 @@ uart_recv_interrupt() {
 						handle_incoming_msg(state[RX].msgHdr, SOS_MSG_UART_IO);
 						state[RX].msgHdr = NULL;
 					} else {
-						msg_dispose(state[RX].msgHdr);
+						sys_msg_dispose(state[RX].msgHdr);
 						state[RX].msgHdr = NULL;
 					}
 					state[RX].state = UART_IDLE;

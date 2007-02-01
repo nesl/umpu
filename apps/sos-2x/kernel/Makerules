@@ -198,7 +198,7 @@ build_info:
 
 %.vhd: %.ihex
 	$(ROOTDIR)/../../swlib/hex2vhd.exe $<
-	mv programToLoad.vhd $(ROOTDIR)/../../vhd/
+
 
 %.cof : %.elf
 	$(OBJCOPY) --debugging -O coff-ext-avr \

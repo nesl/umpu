@@ -62,8 +62,8 @@ static mod_header_t uart_mod_header SOS_MODULE_HEADER = {
 
 void sos_uart_init()
 {
-  s.state = SOS_UART_IDLE;
-	s.msg_ptr = NULL;
+  s->state = SOS_UART_IDLE;
+	s->msg_ptr = NULL;
 
 	// set uart_address 
 	set_uart_address(ker_id());
@@ -83,12 +83,12 @@ static void uart_try_reserve_and_send(Message *m) {
 	if (ker_uart_send_data((uint8_t*)m, m->len, KER_UART_PID) != SOS_OK) {
 		goto queue_and_backoff;
 	}
-	s.state = SOS_UART_TX_MSG;
+	s->state = SOS_UART_TX_MSG;
 	return;
 
 queue_and_backoff:
 	//DEBUG("UART backoff\n");
-	s.state = SOS_UART_BACKOFF;
+	s->state = SOS_UART_BACKOFF;
 	mq_enqueue(&uartpq, m);
 	ker_timer_restart(KER_UART_PID, SOS_UART_TID, SOS_UART_BACKOFF_TIME);
 }
@@ -98,13 +98,13 @@ static void uart_try_send_reserved_bus(Message *m)
 {
 	if (ker_uart_send_data((uint8_t*)m, m->len, KER_UART_PID) != SOS_OK) {
 		//DEBUG("UART backoff\n");
-		s.state = SOS_UART_BACKOFF;
+		s->state = SOS_UART_BACKOFF;
 		mq_enqueue(&uartpq, m);
 		ker_timer_restart(KER_UART_PID, SOS_UART_TID, SOS_UART_BACKOFF_TIME);
 		return;
 	} 
 	//DEBUG("end of try send reserved bus\n");
-	s.state = SOS_UART_TX_MSG;
+	s->state = SOS_UART_TX_MSG;
 }
 
 
@@ -117,14 +117,14 @@ void uart_msg_alloc(Message *m)
 	}
 
   ENTER_CRITICAL_SECTION();
-	//DEBUG("uart_msg_alloc %d\n", s.state);
-	if(s.state == SOS_UART_IDLE) {
-		s.msg_ptr = m;
-		uart_try_reserve_and_send(s.msg_ptr);
+	//DEBUG("uart_msg_alloc %d\n", s->state);
+	if(s->state == SOS_UART_IDLE) {
+		s->msg_ptr = m;
+		uart_try_reserve_and_send(s->msg_ptr);
 	} else {
 		mq_enqueue(&uartpq, m);
 	}
-	//DEBUG("end uart_msg_alloc %d\n", s.state);
+	//DEBUG("end uart_msg_alloc %d\n", s->state);
 	LEAVE_CRITICAL_SECTION();
 }
 
@@ -135,7 +135,7 @@ int8_t sos_uart_msg_handler(void *state, Message *msg)
   ENTER_CRITICAL_SECTION();
 	switch (msg->type) {
 		case MSG_INIT:
-				s.state = SOS_UART_IDLE;
+				s->state = SOS_UART_IDLE;
 				ker_timer_init(KER_UART_PID, SOS_UART_TID, TIMER_ONE_SHOT);
 				break;
 
@@ -145,8 +145,8 @@ int8_t sos_uart_msg_handler(void *state, Message *msg)
 
 		case MSG_UART_SEND_DONE:
 		{
-				//DEBUG("end uart_send_done %d\n", s.state);
-				//s.state = SOS_UART_IDLE;
+				//DEBUG("end uart_send_done %d\n", s->state);
+				//s->state = SOS_UART_IDLE;
 				sos_uart_msg_senddone(flag_send_fail(msg->flag));
 
 				break;
@@ -154,31 +154,31 @@ int8_t sos_uart_msg_handler(void *state, Message *msg)
 		case MSG_TIMER_TIMEOUT:
 		{
 				// if message in queue start transmission
-				//DEBUG("uart_timeout %d\n", s.state);
-				s.msg_ptr = mq_dequeue(&uartpq);
-				if (s.msg_ptr) {
-					uart_try_reserve_and_send(s.msg_ptr);
+				//DEBUG("uart_timeout %d\n", s->state);
+				s->msg_ptr = mq_dequeue(&uartpq);
+				if (s->msg_ptr) {
+					uart_try_reserve_and_send(s->msg_ptr);
 				} else { // else free bus
 					ker_uart_release_bus(KER_UART_PID);
-					s.state = SOS_UART_IDLE;
+					s->state = SOS_UART_IDLE;
 				}
-				//DEBUG("end uart_timeout %d\n", s.state);
+				//DEBUG("end uart_timeout %d\n", s->state);
 				break;
 		}
 		case MSG_ERROR:
 		{
 					Message *msg_txed;
-					//DEBUG("uart_error %d\n", s.state);
+					//DEBUG("uart_error %d\n", s->state);
 					// post error message to calling module
 					ker_uart_release_bus(KER_UART_PID);
 
-					msg_txed = s.msg_ptr;
-					s.msg_ptr = NULL;
+					msg_txed = s->msg_ptr;
+					s->msg_ptr = NULL;
 					msg_send_senddone(msg_txed, false, KER_UART_PID);
 
-					s.state = SOS_UART_BACKOFF;
+					s->state = SOS_UART_BACKOFF;
 					ker_timer_restart(KER_UART_PID, SOS_UART_TID, SOS_UART_BACKOFF_TIME);
-					//DEBUG("end uart_error %d\n", s.state);
+					//DEBUG("end uart_error %d\n", s->state);
 					break;
 		}
 
@@ -197,20 +197,20 @@ int8_t sos_uart_msg_handler(void *state, Message *msg)
 static void sos_uart_msg_senddone( bool failed )
 {
 	Message *msg_txed;   //! message just transmitted
-	msg_txed = s.msg_ptr;
-	s.msg_ptr = NULL;
-	//DEBUG("uart_send_done %d\n", s.state);
+	msg_txed = s->msg_ptr;
+	s->msg_ptr = NULL;
+	//DEBUG("uart_send_done %d\n", s->state);
 	LED_DBG(LED_GREEN_TOGGLE);
 	// post send done message to calling module
 	msg_send_senddone(msg_txed, !failed, KER_UART_PID);
-	s.msg_ptr = mq_dequeue(&uartpq);
-	if (s.msg_ptr) {
-		uart_try_send_reserved_bus(s.msg_ptr);
+	s->msg_ptr = mq_dequeue(&uartpq);
+	if (s->msg_ptr) {
+		uart_try_send_reserved_bus(s->msg_ptr);
 	} else {
 		ker_uart_release_bus(KER_UART_PID);
-		s.state = SOS_UART_IDLE;
+		s->state = SOS_UART_IDLE;
 	}
-	//DEBUG("end_uart_send_done %d\n", s.state);
+	//DEBUG("end_uart_send_done %d\n", s->state);
 }
 #endif
 

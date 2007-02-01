@@ -13,19 +13,14 @@
 #include <sos_types.h>
 
 void uart_init(void);
+
 uint8_t uart_getState(uint8_t flags);
 
-int8_t uart_initTransceiver(
-		uint8_t flags);
+int8_t uart_initTransceiver(uint8_t flags);
 
-int8_t uart_startTransceiverTx(
-		uint8_t *msg,
-		uint8_t msg_len,
-		uint8_t flags);
+int8_t uart_startTransceiverTx(uint8_t *msg, uint8_t msg_len, uint8_t flags);
 
-int8_t uart_startTransceiverRx(
-		uint8_t rx_len,
-		uint8_t flags);
+int8_t uart_startTransceiverRx(uint8_t rx_len, uint8_t flags);
 
 uint8_t *uart_getRecievedData(void);
 
