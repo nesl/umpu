@@ -574,6 +574,8 @@ architecture rtl of pm_fetch_dec is
   signal ret_dom_change_2   : std_logic;
   signal ret_dom_change_3   : std_logic;
   signal ret_dom_change_4   : std_logic;
+  -- signal for setting interrupts on a panic also
+  signal panic_sei : std_logic;
 
 begin
 
@@ -1519,7 +1521,20 @@ begin
   -- MADE CHANGES: Allowing the panic interrupt to start even if the sei bit is
   -- not set
   -----------------------------------------------------------------------------
-  irq_start   <= irq_int and not cpu_busy and (sreg_out(7) or irqlines(20));
+  ENABLE_PANIC_INTERRUPT : process(clk, nrst)
+  begin
+    if (nrst = '0') then
+      panic_sei <= '1';
+    elsif (clk = '1' and clk'event) then
+      if (irq_st1 = '1') then
+        panic_sei <= '0';
+      elsif (reti_st3 = '1') then
+        panic_sei <= '1';
+      end if;
+    end if;
+  end process;
+  
+  irq_start   <= irq_int and not cpu_busy and (sreg_out(7) or panic_sei);
 
   irq_state_machine : process(clk, nrst)
   begin

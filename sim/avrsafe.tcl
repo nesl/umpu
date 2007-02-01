@@ -257,6 +257,8 @@ proc int {} {
     add wave -hex -label irq_st2 sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/irq_st2
     add wave -hex -label irq_st3 sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/irq_st3
 
+    add wave -hex -label panic_sei sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/panic_sei
+
     add wave -divider INTERRUPTS_DT_SIGNALS
     add wave -hex -label update_dom_id sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/DOMAIN_UPDATE/dt_update_dom_id
     add wave -hex -label new_dom_id sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/DOMAIN_UPDATE/dt_new_dom_id
@@ -271,7 +273,7 @@ proc reti {} {
     add wave -hex -label reti_st2 sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/reti_st2
     add wave -hex -label reti_st3 sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/reti_st3
 
-    add wave -hex -label ssp sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/SAFE_STK/ssp_update_dom_id
+    add wave -hex -label ssp_update_dom_id sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/SAFE_STK/ssp_update_dom_id
     add wave -hex -label ssp sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/SAFE_STK/ssp_new_dom_id
 }
 

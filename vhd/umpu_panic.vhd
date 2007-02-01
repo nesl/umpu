@@ -23,10 +23,6 @@ entity umpu_panic is
     ssp_stack_overflow : in std_logic;
     dt_error           : in std_logic;
 
-    -- signals to update the domain id at the mmc module when a panic occurs
-    up_update_dom_id : out std_logic;
-    up_new_dom_id    : out std_logic_vector(2 downto 0);
-
     -- Interrupt port
     umpu_irq    : out std_logic;
     umpu_irqack : in  std_logic;
@@ -83,16 +79,8 @@ begin
     end if;
   end process;
 
-  panic_stage2 <= umpu_panic_reg(0);
-  
   -- The actual panic signal is ored between the latched panic signal and the errors
-  umpu_panic       <= ((mmc_error or ssp_stack_overflow or dt_error) and umpu_en) or panic_stage2;
-
-  -- Setting the signals for updating the dom_id on a panic
-  -- Need to update whenever a panic occurs
-  up_update_dom_id <= umpu_panic;
-  -- Always setting the dom_id to '111' on a panic
-  up_new_dom_id    <= "111";
+  umpu_panic       <= (mmc_error or ssp_stack_overflow or dt_error) and umpu_en;
 
   -- Process to set the interrupt and then receive the ack from the interrupt
   -- We are using the interrupt for the ADC to send the interrupt to the processor
@@ -101,7 +89,7 @@ begin
     if ireset = '0' then
       sg_umpu_irq <= '0';
     elsif clock = '1' and clock'event then
-      sg_umpu_irq <= (not sg_umpu_irq and umpu_panic) or(sg_umpu_irq and not umpu_irqack);
+      sg_umpu_irq <= (not sg_umpu_irq and umpu_panic) or (sg_umpu_irq and not umpu_irqack);
     end if;
   end process;
   umpu_irq        <= sg_umpu_irq;
@@ -152,30 +140,5 @@ begin
       umpu_panic_reg(6 downto 4) <= dom_id;
     end if;
   end process;
-
-  SET_PANIC_BIT : process(ireset, clock)
-  begin
-    if (ireset = '0') then
-      umpu_panic_reg(0)   <= '0';
-    elsif (clock = '1' and clock'event) then
-      if (adr = UMPU_PANIC_REG_Address and iowe = '1' and in_trusted_domain = '1' and reg_bus(0) = '0') then
-        umpu_panic_reg(0) <= '0';
-      elsif (umpu_panic = '1') then
-        umpu_panic_reg(0) <= '1';
-      end if;
-    end if;
-  end process;
-
-  UMPU_PANIC_REG_DFF : process(clock, ireset)
-  begin
-    if (ireset = '0') then
-      umpu_panic_reg(7)   <= '0';
-    elsif (clock = '1' and clock'event) then
-      if (adr = UMPU_PANIC_REG_Address and iowe = '1' and in_trusted_domain = '1') then
-        umpu_panic_reg(7) <= reg_bus(7);
-      end if;
-    end if;
-  end process;
-  umpu_panic_reg_out      <= umpu_panic_reg;
 
 end Beh;

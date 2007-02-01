@@ -70,5 +70,4 @@ SIGNAL(SIG_ADC) {
   uint8_t x = 0x22;
   UMPU_PANIC = 0xF0;
   PORTA = x;
-  while(1);
 }

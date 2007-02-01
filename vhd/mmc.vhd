@@ -19,9 +19,6 @@ entity mmc is
 
     -- MMC-umpu_panic interface to send the mmc error
     mmc_error : out std_logic;
-    -- MMC-umpu_panic interface to update the dom_id
-    up_update_dom_id : in std_logic;
-    up_new_dom_id : in std_logic_vector(2 downto 0);
  
     -- MMC-Bus arbiter interface
     mmc_addr        : out std_logic_vector(15 downto 0);  -- R/W addr
@@ -293,8 +290,6 @@ begin
         dom_id <= dt_new_dom_id;
       elsif (ssp_update_dom_id = '1') then
         dom_id <= ssp_new_dom_id;
-      elsif (up_update_dom_id = '1') then
-        dom_id <= up_new_dom_id;
       end if;
     end if;
   end process;

@@ -64,10 +64,6 @@ architecture struct of avr_core is
       ssp_stack_overflow : in std_logic;
       dt_error           : in std_logic;
 
-      -- signals to update the domain id at the mmc module when a panic occurs
-      up_update_dom_id : out std_logic;
-      up_new_dom_id    : out std_logic_vector(2 downto 0);
-
       -- Interrupt port
       umpu_irq    : out std_logic;
       umpu_irqack : in  std_logic;
@@ -221,9 +217,6 @@ architecture struct of avr_core is
 
       -- MMC-umpu_panic interface
       mmc_error        : out std_logic;
-      -- MMC-umpu_panic interface to update the dom_id
-      up_update_dom_id : in  std_logic;
-      up_new_dom_id    : in  std_logic_vector(2 downto 0);
 
       -- MMC-Bus arbiter interface
       mmc_addr        : out std_logic_vector(15 downto 0);  -- R/W addr
@@ -814,10 +807,6 @@ architecture struct of avr_core is
   signal sg_dt_error           : std_logic;
   signal sg_ssp_stack_overflow : std_logic;
 
-  -- signals between umpu_panic and MMC for updating the dom_id
-  signal sg_up_update_dom_id : std_logic;
-  signal sg_up_new_dom_id    : std_logic_vector(2 downto 0);
-
   -- signals between umpu_panic and io_adr_dec
   signal sg_umpu_panic_reg_out : std_logic_vector(7 downto 0);
 
@@ -833,9 +822,6 @@ begin
     mmc_error          => sg_mmc_error,
     ssp_stack_overflow => sg_ssp_stack_overflow,
     dt_error           => sg_dt_error,
-
-    up_update_dom_id => sg_up_update_dom_id,
-    up_new_dom_id    => sg_up_new_dom_id,
 
     umpu_irq    => umpu_irq,
     umpu_irqack => umpu_irqack,
@@ -949,8 +935,6 @@ begin
     clock  => cp2,
 
     mmc_error        => sg_mmc_error,
-    up_update_dom_id => sg_up_update_dom_id,
-    up_new_dom_id    => sg_up_new_dom_id,
 
     mmc_addr        => sg_mmc_addr,
     mmc_wr_en       => sg_mmc_wr_en,

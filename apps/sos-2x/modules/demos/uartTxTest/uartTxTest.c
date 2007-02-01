@@ -11,11 +11,17 @@
 //#undef _MODULE_
 
 #include <sys_module.h>
+#ifdef SOS_SFI
+#include <sfi_jumptable.h>
+#endif
 
 //#define LED_DEBUG
 #include <led_dbg.h>
-
 #include "uartTxTest.h"
+
+#ifdef SOS_SFI
+#define UART_TX_TEST_DOM_ID  SFI_DOM0
+#endif
 
 #define UART_TX_TIMER_INTERVAL	20L
 #define UART_TX_TID               0
@@ -46,12 +52,12 @@ typedef struct {
  * state, and a handler for MSG_FINAL to release module resources.
  */
 
-static int8_t uart_tx_msg_handler(void *start, Message *e);
+int8_t uartTxTest_msg_handler(void *start, Message *e);
 
 /**
  * This is the only global variable one can have.
  */
-static mod_header_t mod_header SOS_MODULE_HEADER = {
+static mod_header_t uartTxTest_mod_header SOS_MODULE_HEADER = {
 	.mod_id         = DFLT_APP_ID0,
 	.state_size     = sizeof(app_state_t),
 	.num_sub_func   = 0,
@@ -59,11 +65,16 @@ static mod_header_t mod_header SOS_MODULE_HEADER = {
 	.platform_type  = HW_TYPE /* or PLATFORM_ANY */,
 	.processor_type = MCU_TYPE,
 	.code_id        = ehtons(DFLT_APP_ID0),
-	.module_handler = uart_tx_msg_handler,
+#ifdef SOS_SFI
+	.dom_id         = UART_TX_TEST_DOM_ID,
+	.module_handler = (msg_handler_t)SFI_MOD_TABLE_ENTRY_LOC(UART_TX_TEST_DOM_ID, 0),
+#else
+	.module_handler = uartTxTest_msg_handler,
+#endif
 };
 
 
-static int8_t uart_tx_msg_handler(void *state, Message *msg)
+int8_t uartTxTest_msg_handler(void *state, Message *msg)
 {
   /**
    * The module is passed in a void* that contains its state.  For easy
@@ -153,7 +164,7 @@ static int8_t uart_tx_msg_handler(void *state, Message *msg)
 #ifndef _MODULE_
 mod_header_ptr uartTxTest_get_header()
 {
-  return sos_get_header_address(mod_header);
+  return sos_get_header_address(uartTxTest_mod_header);
 }
 #endif
 
