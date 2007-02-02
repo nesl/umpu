@@ -581,30 +581,16 @@ dummy_func ker_get_func_ptr(func_cb_ptr p, sos_pid_t *prev)
  */
 dummy_func ker_sys_enter_func( func_cb_ptr p )
 {
-	HAS_CRITICAL_SECTION;
-
-	ENTER_CRITICAL_SECTION();
-
-	*pid_sp =
-		ker_set_current_pid(sos_read_header_byte(p, offsetof(func_cb_t, pid)));
-
-	pid_sp++;
-	LEAVE_CRITICAL_SECTION();
-
-	return (dummy_func)sos_read_header_ptr( p, offsetof(func_cb_t, ptr));
+  ker_push_current_pid(sos_read_header_byte(p, offsetof(func_cb_t, pid)));
+  return (dummy_func)sos_read_header_ptr( p, offsetof(func_cb_t, ptr));
 }                                                               
 
 /**                                                             
  * Pop current_pid from the stack when func has finished execution
  */                                                             
 void ker_sys_leave_func( void )                                 
-{                                                               
-	HAS_CRITICAL_SECTION;                                       
-
-	ENTER_CRITICAL_SECTION();                                   
-	pid_sp--;                                                   
-	ker_set_current_pid( *pid_sp );                             
-	LEAVE_CRITICAL_SECTION();                                   
+{ 
+  return ker_pop_current_pid();
 }                    
 
 int8_t ker_sys_fntable_subscribe( sos_pid_t pub_pid, uint8_t fid, uint8_t table_index ) 

@@ -57,10 +57,6 @@
 #include <fntable.h>
 #include <sos_module_fetcher.h>
 #include <sos_logging.h>
-#ifdef FAULT_TOLERANT_SOS
-#define LED_DEBUG
-#include <led_dbg.h>
-#endif
 #ifdef SOS_SFI
 #include <sfi_jumptable.h>
 #endif
@@ -246,6 +242,17 @@ void* ker_get_module_state(sos_pid_t pid)
 	return m->handler_state;
 }
 
+
+#ifdef SOS_SF
+void ker_set_state_pointer(sos_pid_t pid, void** hdl_state)
+{
+	void* state = ker_get_module_state(pid);
+	*hdl_state = state; // Null check for *hdl_state will be done by the caller
+	return;
+}
+#endif
+
+
 void* ker_sys_get_module_state( void )
 {
 	sos_module_t *m = ker_get_module(curr_pid);
@@ -267,6 +274,29 @@ sos_pid_t ker_get_current_pid( void )
 {
 	return curr_pid;
 }
+
+void ker_push_current_pid(sos_pid_t pid)
+{
+	HAS_CRITICAL_SECTION;
+	sos_pid_t prev_pid;
+	ENTER_CRITICAL_SECTION();
+	prev_pid = ker_set_current_pid(pid);
+	*pid_sp = prev_pid;
+	pid_sp++;
+	LEAVE_CRITICAL_SECTION();
+	return;
+}
+
+void ker_pop_current_pid()
+{
+	HAS_CRITICAL_SECTION;
+	ENTER_CRITICAL_SECTION();
+	pid_sp--;
+	ker_set_current_pid(*pid_sp);
+	LEAVE_CRITICAL_SECTION();
+	return;
+}
+
 
 void ker_killall(sos_code_id_t code_id)
 {
@@ -442,24 +472,23 @@ int8_t sched_register_kernel_module(sos_module_t *handle, mod_header_ptr h, void
 }
 
 
-static int8_t do_register_module(mod_header_ptr h,
-		sos_module_t *handle, void *init, uint8_t init_size,
-		uint8_t flag)
+static int8_t do_register_module(mod_header_ptr h, sos_module_t *handle, 
+																 void *init, uint8_t init_size, uint8_t flag)
 {
   sos_pid_t pid;
   uint8_t st_size;
   int8_t ret;
 
   // Disallow usage of NULL_PID
-  if(flag == SOS_CREATE_THREAD) {
+  if (flag == SOS_CREATE_THREAD) {
 	  pid = sched_get_pid_from_pool();
-	  if(pid == NULL_PID) return -ENOMEM;
+	  if (pid == NULL_PID) return -ENOMEM;
   } else {
 	  pid = sos_read_header_byte(h, offsetof(mod_header_t, mod_id));
 	  /*
 	   * Disallow the usage of thread ID
 	   */
-	  if(pid > APP_MOD_MAX_PID) return -EINVAL;
+	  if (pid > APP_MOD_MAX_PID) return -EINVAL;
   }
 
 

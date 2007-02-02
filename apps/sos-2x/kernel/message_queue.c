@@ -52,33 +52,11 @@
 #undef DEBUG
 #define DEBUG(...)
 
-#define MSG_QUEUE_NUM_ITEMS  4    // NOTE: 
-#define MSG_POOL_EMPTY      0x0F  // bit vector that specifies the pool to be 
-                                  // empty.  This value corresponds to 
-                                  // MSG_QUEUE_NUM_ITEMS.  For 8, 
-                                  // the value is 0xFF.  For 7, it will be 0x7F
-//----------------------------------------------------------------------------
-//  Typedefs
-//----------------------------------------------------------------------------
-typedef struct msg_pool_item {
-	struct msg_pool_item *next;
-	Message pool[MSG_QUEUE_NUM_ITEMS];
-	uint8_t alloc;   //!< allocation vector
-} msg_pool_item;
-
-//----------------------------------------------------------------------------
-//  Global data declarations
-//----------------------------------------------------------------------------
-static msg_pool_item msg_pool;
-
 //----------------------------------------------------------------------------
 //  Funcation declarations
 //----------------------------------------------------------------------------
 int8_t msg_queue_init()
 {
-	msg_pool.next = NULL;
-	
-	msg_pool.alloc = 0;
     return 0;
 }
 
@@ -261,112 +239,6 @@ Message *mq_get(mq_t *q, Message *m)
   return ret;
 }
 
-/**
- * @brief create message
- * @return pointer to message, or NULL for fail
- * get new message header from message repositary
- * msg->data is pointing to payload
- */
-Message *msg_create()
-{
-	HAS_CRITICAL_SECTION;
-	msg_pool_item *prev = NULL;
-	msg_pool_item *itr;
-	Message *tmp = NULL;
-	//
-	// Get from msg_pool
-	//
-	ENTER_CRITICAL_SECTION();
-	itr = &msg_pool;
-	
-	while( itr != NULL ) {
-		if( itr->alloc != MSG_POOL_EMPTY) {
-			break;
-		}
-		prev = itr;
-		itr = itr->next;
-	}
-
-	if( itr == NULL ) {
-		DEBUG("MQ: itr == NULL, allocate new\n");
-		prev->next = ker_malloc(sizeof(msg_pool_item), MSG_QUEUE_PID);
-		if( prev->next == NULL ) {
-			LEAVE_CRITICAL_SECTION();
-			return NULL;
-		}
-		itr = prev->next;
-		itr->next = NULL;
-		itr->alloc = 0x01;
-		tmp = &(itr->pool[0]);
-	} else {
-		//
-		// Find empty block
-		//
-		uint8_t i = 0;
-		uint8_t mask = 0x01;
-
-		for( i = 0; i < MSG_QUEUE_NUM_ITEMS; i++, mask<<=1 ) {
-			if( (itr->alloc & mask) == 0 ) {
-				DEBUG("MQ: allocate %x of item %d\n", (unsigned int)itr, i);
-				itr->alloc |= mask;
-				tmp = &(itr->pool[i]);
-				break;
-			}
-		}
-	}
-	LEAVE_CRITICAL_SECTION();
-  //tmp = (Message*)ker_malloc(sizeof(Message), MSG_QUEUE_PID);
-  //if(tmp != NULL) {
-	tmp->data = tmp->payload;
-	tmp->flag = 0;
-  //}
-  return tmp;
-}
-
-/**
- * @brief dispose message
- * return message header back to message repostitary
- */
-void msg_dispose(Message *m)
-{
-	HAS_CRITICAL_SECTION;
-	msg_pool_item *prev = NULL;
-	msg_pool_item *itr;
-
-
-	if(flag_msg_release(m->flag)) { 
-		ker_free(m->data); 
-	}
-
-	ENTER_CRITICAL_SECTION();
-	itr = &msg_pool;
-	while( itr != NULL ) {
-		if( m >= itr->pool && m < (itr->pool + MSG_QUEUE_NUM_ITEMS) ) {
-			uint8_t mask = 1 << (m - itr->pool);
-			itr->alloc &= ~mask;	
-			DEBUG("MQ: free %x of item %d\n", (unsigned int)itr, m - itr->pool);
-			if( (itr->alloc == 0) && (itr != (&msg_pool))) {
-				DEBUG("MQ: free one pool\n");
-				ker_free(itr);
-				prev->next = NULL;
-			}
-			LEAVE_CRITICAL_SECTION();
-			return;
-		}
-		prev = itr;
-		itr = itr->next;
-	}
-	if( itr == NULL ) {
-		// 
-		// Cannot find the item in the pool, call ker_free().  
-		// this should never happen.
-		ker_free(m);
-	}
-	LEAVE_CRITICAL_SECTION();
-}
-
-
-
 
 /**
  * @brief handle the process of creating senddone message
@@ -402,6 +274,7 @@ void msg_send_senddone(Message *msg_sent, bool succ, sos_pid_t msg_owner)
 			   sizeof(Message), msg_sent, flag) < 0) {
 	msg_dispose(msg_sent);
   } 
+  return;
 }
 
 
@@ -415,9 +288,9 @@ void msg_send_senddone(Message *msg_sent, bool succ, sos_pid_t msg_owner)
  * msg->data is pointing to payload
  */
 #ifdef SOS_SFI
-Message *ker_sys_msg_create(uint8_t callerdomid)
+Message *sos_msg_create(uint8_t callerdomid)
 #else
-Message *ker_sys_msg_create(void)
+Message *sos_msg_create(void)
 #endif
 {
   Message *tmp;
@@ -437,7 +310,7 @@ Message *ker_sys_msg_create(void)
  * @brief dispose message
  * return message header back to message repostitary
  */
-void ker_sys_msg_dispose(Message *m, uint8_t callerdomid)
+void sos_msg_dispose(Message *m, uint8_t callerdomid)
 {
 	HAS_CRITICAL_SECTION;
 	uint8_t msgflag;

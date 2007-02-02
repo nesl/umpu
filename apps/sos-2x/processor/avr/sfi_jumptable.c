@@ -41,7 +41,7 @@ int8_t sfi_get_domain_id(sos_pid_t pid)
   // Ram - For the time being assign all kernel PIDs to be
   // KER_DOM_ID
   sos_module_t* handle;
-  if (pid < APP_MOD_MIN_PID){
+  if (pid <= KER_MOD_MAX_PID){
     retdomid = KER_DOM_ID;
   }
   else{

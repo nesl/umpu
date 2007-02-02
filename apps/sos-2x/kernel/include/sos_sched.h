@@ -72,8 +72,8 @@ extern int8_t ker_deregister_module(sos_pid_t pid);
  * 0 will register module with module ID
  * SOS_CREATE_THREAD will register module with internal ID allocated from ID pool
  */
-extern sos_pid_t  ker_spawn_module(mod_header_ptr h,
-		void *init, uint8_t init_size, uint8_t flag);
+extern sos_pid_t ker_spawn_module(mod_header_ptr h, void *init, 
+				  uint8_t init_size, uint8_t flag);
 
 /**
  * @brief get pointer to module data structure from pid
@@ -86,6 +86,13 @@ extern sos_module_t* ker_get_module(sos_pid_t pid);
  * @return pointer to module's state
  */
 extern void* ker_get_module_state(sos_pid_t pid);
+
+
+/**
+ * @brief Set the state pointer for
+ */
+
+
 
 /**
  * @brief kill all instances of modules with code_id
@@ -111,11 +118,24 @@ extern sos_pid_t ker_set_current_pid( sos_pid_t pid );
  * @return executing module ID
  */
 extern sos_pid_t ker_get_current_pid( void );
-/**                                                           
+
+
+/**
+ * @brief Set current executing module ID and push previous to pid_stack
+ * @note This is currently being used for driver isolation
+ */
+extern void ker_push_current_pid(sos_pid_t pid);
+
+/**
+ * @brief Pop from pid_stack and set current pid
+ * @note This is currently being used in driver isolation
+ */
+extern void ker_pop_current_pid(void);
+
+/**
  * @brief Message filtering rules interface                   
  * @param rules  new rule                                     
  */                                                           
-
 extern int8_t ker_msg_change_rules(sos_pid_t sid, uint8_t rules);
 
 /**
@@ -163,15 +183,12 @@ extern void sched_dispatch_short_message(sos_pid_t dst, sos_pid_t src,
  */
 extern int8_t sched_register_kernel_module(sos_module_t *handle, mod_header_ptr h, void *state_ptr);
 
-extern uint8_t sched_stalled;
-
 extern sos_pid_t    curr_pid;                      //!< current executing pid
 extern sos_pid_t*   pid_sp;                        //!< pid stack pointer
 
 
-#define SCHED_STALL() {sched_stalled = true;}
 
-#define SCHED_RESUME() {sched_stalled = false;}
+
 
 #endif
 
