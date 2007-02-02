@@ -118,7 +118,7 @@ static void uart_try_send_reserved_bus(Message *m)
 		//DEBUG("UART backoff\n");
 		s->state = SOS_UART_BACKOFF;
 		mq_enqueue(&s->uartpq, m);
-		sys_timer_restart(KER_UART_PID, SOS_UART_TID, SOS_UART_BACKOFF_TIME);
+		sys_timer_restart(SOS_UART_TID, SOS_UART_BACKOFF_TIME);
 		return;
 	} 
 	//DEBUG("end of try send reserved bus\n");
