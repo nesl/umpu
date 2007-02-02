@@ -128,6 +128,7 @@ void mq_enqueue(mq_t *q, Message *m)
   }
   q->msg_cnt++;
   LEAVE_CRITICAL_SECTION();
+  return;
 }
 
 /**
@@ -286,6 +287,8 @@ void msg_send_senddone(Message *msg_sent, bool succ, sos_pid_t msg_owner)
  * @return pointer to message, or NULL for fail
  * get new message header from message repositary
  * msg->data is pointing to payload
+ * @note In SFI mode, the message header will be
+ * allocated in the caller domain
  */
 #ifdef SOS_SFI
 Message *sos_msg_create(uint8_t callerdomid)
@@ -309,8 +312,15 @@ Message *sos_msg_create(void)
 /**
  * @brief dispose message
  * return message header back to message repostitary
+ * @note In the SFI mode, the msg. header will be freed iff
+ * the caller owns the memory.
+ * If the header is freed, the payload is freed automatically
  */
+#ifdef SOS_SFI
 void sos_msg_dispose(Message *m, uint8_t callerdomid)
+#else
+void sos_msg_dispose(Message *m)
+#endif
 {
 	HAS_CRITICAL_SECTION;
 	uint8_t msgflag;

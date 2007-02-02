@@ -243,15 +243,12 @@ void* ker_get_module_state(sos_pid_t pid)
 }
 
 
-#ifdef SOS_SF
 void ker_set_state_pointer(sos_pid_t pid, void** hdl_state)
 {
 	void* state = ker_get_module_state(pid);
 	*hdl_state = state; // Null check for *hdl_state will be done by the caller
 	return;
 }
-#endif
-
 
 void* ker_sys_get_module_state( void )
 {
@@ -813,11 +810,11 @@ static inline bool sched_message_filtered(sos_module_t *h, Message *m)
 
   // check for promiscuous mode
   if((rules & SOS_MSG_RULES_PROMISCUOUS) == 0){
-	// module request to have no promiscuous message
-	if(m->daddr != node_address && m->daddr != BCAST_ADDRESS){
-	  DEBUG("filtered\n");
-	  return true;
-	}
+		// module request to have no promiscuous message
+		if(m->daddr != node_address && m->daddr != BCAST_ADDRESS){
+			DEBUG("filtered\n");
+			return true;
+		}
   }
   return false;
 }

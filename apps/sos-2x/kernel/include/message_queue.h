@@ -68,7 +68,6 @@ typedef struct {
   Message *lq_tail;
 } mq_t;
 
-#ifndef QUALNET_PLATFORM
 extern int8_t msg_queue_init(void);
 
 /**
@@ -98,13 +97,44 @@ extern Message *mq_get(mq_t *q, Message *m);
  * @return pointer to message, or NULL for fail
  * get new message header from message repositary
  */
-extern Message *msg_create(void);
+#ifdef SOS_SFI
+Message *sos_msg_create(uint8_t callerdomid);
+#else
+Message *sos_msg_create(void);
+#endif
+
+static inline Message *msg_create(void)
+{
+#ifdef SOS_SFI
+  return sos_msg_create(MSR_GET_DOM_ID());
+#else
+  return sos_msg_create();
+#endif
+}
+
+
+
 /**
  * @brief dispose message
  * return message header back to message repostitary
  * this function always succeed
  */
-extern void msg_dispose(Message *m);
+#ifdef SOS_SFI
+void sos_msg_dispose(Message *m, uint8_t callerdomid);
+#else
+void sos_msg_dispose(Message *m);
+#endif
+static inline void msg_dispose(Message *m)
+{
+#ifdef SOS_SFI
+  return sos_msg_dispose(m, MSR_GET_DOM_ID());
+#else
+  return sos_msg_dispose(m);
+#endif
+}
+
+
+
 /**
  * @brief handle the process of creating senddone message
  * @param msg_sent  the Message just sent or delivered
@@ -113,13 +143,6 @@ extern void msg_dispose(Message *m);
  * NOTE the implementation will need to improve
  */
 extern void msg_send_senddone(Message *msg_sent, bool succ, sos_pid_t msg_owner);
-#ifdef FAULT_TOLERANT_SOS
-/**
- * @brief Move a message (header and payload) to the module domain
- * @param msg_ker_domain Message that needs to be duplicated
- * @return Pointer to the moved message or NULL
- */
-Message *msg_move_to_module_domain(Message *msg_ker_domain);
-#endif//FAULT_TOLERANT_SOS
-#endif //QUALNET_PLATFORM
+
+
 #endif //_MESSAGE_QUEUE_H

@@ -11,8 +11,8 @@ jmp ker_sys_change_own     ; 2
 ;;; MESSAGING
 ;;; ==========================	
 jmp ker_sys_msg_take_data  ; 3
-jmp ker_sys_msg_create     ; 4
-jmp ker_sys_msg_dispose    ; 5
+jmp sos_msg_create         ; 4
+jmp sos_msg_dispose    	   ; 5
 jmp ker_sys_msg_send_senddone 	; 6
 jmp ker_sys_post           ; 7
 jmp ker_sys_post_link      ; 8
@@ -20,11 +20,11 @@ jmp ker_sys_post_value     ; 9
 ;;; ==========================
 ;;; MODULE STATE
 ;;; ==========================
-jmp ker_sys_get_module_state 	; 10
+jmp ker_sys_get_module_state ; 10
 jmp ker_set_state_pointer  ; 11
 jmp ker_register_module    ; 12
 ;;; ==========================
-;;; FUNCTION POINTER
+;;; FUNCTION PTR PTR
 ;;; ==========================	
 jmp ker_sys_fnptr_call     ; 13
 jmp ker_sys_fntable_subscribe 	; 14
@@ -41,6 +41,9 @@ jmp ker_hw_type            ; 18
 jmp ker_id                 ; 19
 jmp ker_rand               ; 20
 jmp ker_led                ; 21
+;;; ==========================
+;;; UNUSED
+;;; ==========================	
 jmp 0			   ; 22
 jmp 0			   ; 23
 jmp 0			   ; 24
