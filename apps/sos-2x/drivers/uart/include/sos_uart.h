@@ -7,26 +7,56 @@
 #ifndef _SOS_UART_H_
 #define _SOS_UART_H_
 
-#ifndef _MODULE_
 #include <message_types.h>
 #include <sos_types.h>
+#ifdef SOS_SFI
+#include <sfi_jumptable.h>
+#endif
 
 #if ((!defined DISABLE_UART) && (!defined NO_SOS_UART))
+//------------------------------------
+// UART ENABLED
+//------------------------------------
+#ifdef SOS_SFI
+#define UART_DOM_ID SFI_DOM0
+#endif
+// Prototypes of the acutal function implementations
+void sos_uart_init_real();
+void uart_msg_alloc_real(Message *m);
 
 /**
  * @brief Init function
  */
-extern void sos_uart_init(void);
+#ifdef SOS_SFI
+typedef void (*sos_uart_init_func_t)(void);
+static inline void sos_uart_init(void){
+  return ((sos_uart_init_func_t)(SFI_JMP_TABLE_FUNC(UART_DOM_ID, 1)))();
+}
+#else
+#define sos_uart_init()  sos_uart_init_real()
+#endif//SOS_SFI
 
 /**
  * @brief allocate uart message
  * @return Message poiner or NULL for failure
  */
-extern void uart_msg_alloc(Message *e);
+#ifdef SOS_SFI
+typedef void (*uart_msg_alloc_func_t)(Message *e);
+static inline void uart_msg_alloc(Message *e){
+  return ((uart_msg_alloc_func_t)(SFI_JMP_TABLE_FUNC(UART_DOM_ID, 2)))(e);
+}
 #else
+#define uart_msg_alloc(e) uart_msg_alloc_real(e)
+#endif//SOS_SFI
+
+#else
+//------------------------------------
+// UART DISABLED
+//------------------------------------
 #define sos_uart_init()
 #define uart_msg_alloc(e) 
-#endif
 
-#endif /* _MODULE_ */
-#endif
+#endif//((!defined DISABLE_UART) && (!defined NO_SOS_UART))
+
+
+#endif//_SOS_UART_H_

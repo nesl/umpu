@@ -39,7 +39,9 @@
 #define _MESSAGE_QUEUE_H
 #include <sos_types.h>
 #include <message_types.h>
-
+#ifdef SOS_SFI
+#include <umpu.h>
+#endif
 /*
  * WARNING:
  *   These functions are meant for SOS kernel
@@ -106,7 +108,7 @@ Message *sos_msg_create(void);
 static inline Message *msg_create(void)
 {
 #ifdef SOS_SFI
-  return sos_msg_create(MSR_GET_DOM_ID());
+  return sos_msg_create(GET_MSR_DOM_ID());
 #else
   return sos_msg_create();
 #endif
@@ -127,7 +129,7 @@ void sos_msg_dispose(Message *m);
 static inline void msg_dispose(Message *m)
 {
 #ifdef SOS_SFI
-  return sos_msg_dispose(m, MSR_GET_DOM_ID());
+  return sos_msg_dispose(m, GET_MSR_DOM_ID());
 #else
   return sos_msg_dispose(m);
 #endif

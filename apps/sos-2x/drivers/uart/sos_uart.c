@@ -7,18 +7,19 @@
 //-----------------------------------------------------------------------
 // INCLUDES
 //-----------------------------------------------------------------------
-#include <hardware.h>
+//#include <hardware.h>
 #include <message_queue.h>
-#include <net_stack.h>
-#include <sos_info.h>
-#include <crc.h>
-#include <measurement.h>
-#include <malloc.h>
+//#include <net_stack.h>
+//#include <sos_info.h>
+//#include <crc.h>
+//#include <measurement.h>
+//#include <malloc.h>
 #include <sos_timer.h>
 #include <uart_system.h>
 #include <sos_uart.h>
+#include <sys_module.h>
 #ifdef SOS_SFI
-#include <memmap.h>
+//#include <memmap.h>
 #endif
 //#define LED_DEBUG
 #include <led_dbg.h>
@@ -51,7 +52,7 @@ typedef struct sos_uart_state {
 //! priority queue
 //static mq_t uartpq;
 //static sos_uart_state_t s;
-static sos_uart_state* s;
+static sos_uart_state_t* s;
 
 //-----------------------------------------------------------------------
 // STATIC FUNCTION PROTOTYPES
@@ -64,28 +65,29 @@ static void sos_uart_msg_senddone( bool failed );
 //-----------------------------------------------------------------------
 static mod_header_t uart_mod_header SOS_MODULE_HEADER = {
 	.mod_id         = KER_UART_PID,
-	.state_size     = sizeof(sos_uart_state),
+	.state_size     = sizeof(sos_uart_state_t),
 	.num_timers     = 1,
 	.num_sub_func   = 0,
 	.num_prov_func  = 0,
 #ifdef SOS_SFI
 	.dom_id        = UART_DOM_ID,
-#endif
+	.module_handler = (msg_handler_t)SFI_JMP_TABLE_FUNC(UART_DOM_ID, 0),
+#else
 	.module_handler = sos_uart_msg_handler,
+#endif
 };
 
 
 //-----------------------------------------------------------------------
 // FUNCTION DEFINITIONS
 //-----------------------------------------------------------------------
-// Ram - This function will be executed in the trusted domain
-void sos_uart_init()
+void sos_uart_init_real()
 {
 	sys_register_module(sos_get_header_address(uart_mod_header));
-	sys_set_state_pointer(KER_UART_PID, &s);
+	sys_set_state_pointer(KER_UART_PID, (void**)&s);
   s->state = SOS_UART_IDLE;
 	s->msg_ptr = NULL;
-	sys_uart_address(ker_id()); 	// set uart_address 
+	sys_set_uart_address(sys_id()); 	// set uart_address 
 	mq_init(&(s->uartpq));
 	return;
 }
@@ -124,7 +126,7 @@ static void uart_try_send_reserved_bus(Message *m)
 	s->state = SOS_UART_TX_MSG;
 }
 //-----------------------------------------------------------------------
-void uart_msg_alloc(Message *m)
+void uart_msg_alloc_real(Message *m)
 {
 	HAS_CRITICAL_SECTION;
 	//! change ownership
@@ -151,7 +153,7 @@ int8_t sos_uart_msg_handler(void *state, Message *msg)
 	switch (msg->type) {
 		case MSG_INIT:
 				s->state = SOS_UART_IDLE;
-				//				sys_timer_init(KER_UART_PID, SOS_UART_TID, TIMER_ONE_SHOT);
+				sys_timer_init(SOS_UART_TID, TIMER_ONE_SHOT);
 				break;
 
 		case MSG_FINAL:
@@ -192,7 +194,7 @@ int8_t sos_uart_msg_handler(void *state, Message *msg)
 					msg_send_senddone(msg_txed, false, KER_UART_PID);
 
 					s->state = SOS_UART_BACKOFF;
-					sys_timer_restart(KER_UART_PID, SOS_UART_TID, SOS_UART_BACKOFF_TIME);
+					sys_timer_restart(SOS_UART_TID, SOS_UART_BACKOFF_TIME);
 					//DEBUG("end uart_error %d\n", s->state);
 					break;
 		}

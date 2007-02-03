@@ -30,22 +30,22 @@ jmp ker_sys_fnptr_call     ; 13
 jmp ker_sys_fntable_subscribe 	; 14
 ;;; ==========================
 ;;; TIMER
-;;; ==========================	
-jmp ker_sys_timer_start    ; 15
-jmp ker_sys_timer_restart  ; 16
-jmp ker_sys_timer_stop     ; 17
+;;; ==========================
+jmp ker_sys_timer_init     ; 15
+jmp ker_sys_timer_start    ; 16
+jmp ker_sys_timer_restart  ; 17
+jmp ker_sys_timer_stop     ; 18
 ;;; ==========================
 ;;; MISC.
 ;;; ==========================
-jmp ker_hw_type            ; 18
-jmp ker_id                 ; 19
-jmp ker_rand               ; 20
-jmp ker_led                ; 21
-jmp set_uart_address       ; 22
+jmp ker_hw_type            ; 19
+jmp ker_id                 ; 20
+jmp ker_rand               ; 21
+jmp ker_led                ; 22
+jmp set_uart_address       ; 23
 ;;; ==========================
 ;;; UNUSED
 ;;; ==========================	
-jmp 0			   ; 23
 jmp 0			   ; 24
 jmp 0			   ; 25
 jmp 0			   ; 26

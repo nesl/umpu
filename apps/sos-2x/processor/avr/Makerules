@@ -21,7 +21,7 @@ INCDIR += -I$(ROOTDIR)/drivers/adc/include
 
 # Kernel Build Options
 KER_SRCS += crc.c timer.c
-KER_ASMSRCS += sos_fnptr_call.S sys_jmptable.S
+KER_ASM_SRCS += sos_fnptr_call.S sys_jmptable.S
 
 # Uart Sources
 UART_DRV_SRCS += uart_hal.c uart.c uart_system.c

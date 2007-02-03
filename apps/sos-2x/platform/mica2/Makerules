@@ -20,7 +20,7 @@ INCDIR += -I$(ROOTDIR)/drivers/i2c/include
 
 KER_SRCS += led.c
 
-UART_DRIVER_SRCS +=  sos_uart.c sos_uart_mgr.c 
+UART_DRV_SRCS +=  sos_uart.c sos_uart_mgr.c 
 
 
 

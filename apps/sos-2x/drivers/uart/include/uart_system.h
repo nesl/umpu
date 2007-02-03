@@ -30,7 +30,7 @@ int8_t uart_system_init();
 void uart_read_done(uint8_t len, uint8_t status);
 void uart_send_done(uint8_t status);
 
-#ifndef _MODULE_
+
 /**
  * @brief UART HPL Related Functions
  */
@@ -44,6 +44,6 @@ int8_t ker_uart_send_data(
 int8_t ker_uart_read_data(
         uint8_t read_size, 
         uint8_t calling_id);
-#endif
+
 #endif // _UART_SYSTEM_H
 

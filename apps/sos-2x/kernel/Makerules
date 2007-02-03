@@ -16,7 +16,7 @@ INCDIR += -I$(ROOTDIR)/drivers/i2c/include
 # platform must be specified first
 include $(ROOTDIR)/platform/$(PLATFORM)/Makerules
 
-CFLAGS += $(MCUFLAG) -Wall $(DEFS) -Werror
+CFLAGS += $(MCUFLAG) -Wall $(DEFS)
 
 LDFLAGS += $(MCUFLAG)
 
@@ -146,13 +146,9 @@ build_info:
 	@echo "PROJ = $(PROJ)"
 	@echo "PLATFORM = $(PLATFORM)"
 	@echo "PROCESSOR = $(PROCESSOR)"
-	@echo "SB = $(SB)"
+	@echo "KER_SRCS = $(KER_SRCS)"
 	@echo ""
-	@echo "SRCS_FIRST = $(SRCS_FIRST)"
-	@echo ""
-	@echo "SRCS = $(SRCS)"
-	@echo ""
-	@echo "ASMSRCS = $(ASMSRCS)"
+	@echo "UART_DRV_SRCS = $(UART_DRV_SRCS)"
 	@echo
 	@echo "OBJS = $(OBJS)"
 	@echo ""

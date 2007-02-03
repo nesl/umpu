@@ -70,17 +70,17 @@ static inline void sys_free( void *  ptr )
 // 2: ker_sys_change_own
 //--------------------------------------------------------------------------------
 #ifdef SOS_SFI
-typedef int8_t (* sys_change_own_func_t)( void* ptr, uint8_t callerdomid);
+typedef int8_t (* sys_change_own_func_t)( void* ptr, sos_pid_t id, uint8_t callerdomid);
 #else
-typedef int8_t (* sys_change_own_func_t)( void* ptr );
+typedef int8_t (* sys_change_own_func_t)( void* ptr, sos_pid_t id);
 #endif
 
-static inline int8_t sys_change_own( void* ptr )
+static inline int8_t sys_change_own(void* ptr, sos_pid_t id)
 {
 #ifdef SOS_SFI
-  return ((sys_change_own_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*2))(ptr, GET_MSR_DOM_ID());
+  return ((sys_change_own_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*2))(ptr, id, GET_MSR_DOM_ID());
 #else
-  return ((sys_change_own_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*2))(ptr);
+  return ((sys_change_own_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*2))(ptr, id);
 #endif
 }
 //===============================================================================
@@ -104,7 +104,7 @@ typedef Message* (*sys_msg_create_func_t)(uint8_t callerdomid);
 typedef Message* (*sys_msg_create_func_t)(void);
 #endif
 
-static inline sys_msg_create(void)
+static inline Message* sys_msg_create(void)
 {
 #ifdef SOS_SFI
   return ((sys_msg_create_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*4))(GET_MSR_DOM_ID());
@@ -116,17 +116,17 @@ static inline sys_msg_create(void)
 // 5: ker_sys_msg_dispose
 //--------------------------------------------------------------------------------
 #ifdef SOS_SFI
-typedef Message* (*sos_msg_dispose_func_t)(Message* m, uint8_t callerdomid);
+typedef void (*sos_msg_dispose_func_t)(Message* m, uint8_t callerdomid);
 #else
-typedef Message* (*sos_msg_dispose_func_t)(Message* m);
+typedef void (*sos_msg_dispose_func_t)(Message* m);
 #endif
 
-static inline sys_msg_dispose(Message* m)
+static inline void sys_msg_dispose(Message* m)
 {
 #ifdef SOS_SFI
-  return ((sos_msg_dispose_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*5)(m, GET_MSR_DOM_ID()));
+  return ((sos_msg_dispose_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*5))(m, GET_MSR_DOM_ID());
 #else
-  return ((sos_msg_dispose_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*5)(m));	  
+  return ((sos_msg_dispose_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*5))(m);	  
 #endif
 }
 //--------------------------------------------------------------------------------
@@ -136,7 +136,7 @@ typedef void (*msg_send_senddone_func_t)(Message* msg_sent, bool succ, sos_pid_t
 
 static inline void sys_msg_send_senddone(Message *msg_sent, bool succ, sos_pid_t msg_owner)
 {
-  return ((msg_send_senddone_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*6)(msg_sent, succ, msg_owner));
+  return ((msg_send_senddone_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*6))(msg_sent, succ, msg_owner);
 }
 
 //--------------------------------------------------------------------------------
@@ -216,80 +216,92 @@ static inline int8_t sys_fntable_subscribe( sos_pid_t pub_pid, uint8_t fid, uint
 {
   return ((sys_fntable_subscribe_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*14))(pub_pid, fid, table_index);
 }
+//===============================================================================
+// TIMER
+//===============================================================================
 //--------------------------------------------------------------------------------
-// 15: ker_sys_timer_start
+// 15: ker_sys_timer_init
+//--------------------------------------------------------------------------------
+typedef int8_t (*sys_timer_init_func_t)(uint8_t tid, uint8_t type);
+
+static inline int8_t sys_timer_init(uint8_t tid, uint8_t type)
+{
+  return ((sys_timer_init_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*15))(tid, type);
+}
+//--------------------------------------------------------------------------------
+// 16: ker_sys_timer_start
 //--------------------------------------------------------------------------------
 typedef int8_t (*sys_timer_start_ker_func_t)( uint8_t tid, int32_t interval, uint8_t type );
 
 static inline int8_t sys_timer_start( uint8_t tid, int32_t interval, uint8_t type )
 {
-  return ((sys_timer_start_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*15))( tid, interval, type );
+  return ((sys_timer_start_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*16))( tid, interval, type );
 }
 //--------------------------------------------------------------------------------
-// 16: ker_sys_timer_restart
+// 17: ker_sys_timer_restart
 //--------------------------------------------------------------------------------
 typedef int8_t (* sys_timer_restart_ker_func_t)( uint8_t tid, int32_t interval );
 
 static inline int8_t sys_timer_restart( uint8_t tid, int32_t interval )
 {    
-  return ((sys_timer_restart_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*16))( tid, interval );
+  return ((sys_timer_restart_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*17))( tid, interval );
 }
 //--------------------------------------------------------------------------------
-// 17: ker_sys_timer_stop
+// 18: ker_sys_timer_stop
 //--------------------------------------------------------------------------------
 typedef int8_t (* sys_timer_stop_ker_func_t)( uint8_t tid );    
 
 static inline int8_t sys_timer_stop( uint8_t tid ) 
 {
-  return ((sys_timer_stop_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*17))( tid );
+  return ((sys_timer_stop_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*18))( tid );
 }
 //===============================================================================
 // MISC.
 //===============================================================================
 //--------------------------------------------------------------------------------   
-// 18: ker_hw_type
+// 19: ker_hw_type
 //--------------------------------------------------------------------------------   
 typedef uint16_t (* sys_hw_type_ker_func_t)( void );             
 
 static inline uint16_t sys_hw_type( void )                       
 {
-  return ((sys_hw_type_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*18))( );                                             
+  return ((sys_hw_type_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*19))( );                                             
 }     
 //--------------------------------------------------------------------------------   
-// 19: ker_id
+// 20: ker_id
 //--------------------------------------------------------------------------------   
 typedef uint16_t (* sys_id_ker_func_t)( void );                  
 
 static inline uint16_t sys_id( void )
 {
-  return ((sys_id_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*19))( );
+  return ((sys_id_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*20))( );
 }
 //--------------------------------------------------------------------------------   
-// 20: ker_rand
+// 21: ker_rand
 //--------------------------------------------------------------------------------   
 typedef uint16_t (* sys_rand_ker_func_t)( void );
 
 static inline uint16_t sys_rand( void )
 {
-  return ((sys_rand_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*20))();
+  return ((sys_rand_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*21))();
 }
 //--------------------------------------------------------------------------------   
-// 21: ker_led
+// 22: ker_led
 //--------------------------------------------------------------------------------   
 typedef void (* sys_led_ker_func_t)( uint8_t op );
 
 static inline void sys_led( uint8_t op )
 {
-  ((sys_led_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*21))( op );
+  ((sys_led_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*22))( op );
 }
 //--------------------------------------------------------------------------------   
-// 22: set_uart_address
+// 23: set_uart_address
 //--------------------------------------------------------------------------------   
 typedef void (*set_uart_address_func_t)(uint16_t addr);
 
 static inline void sys_set_uart_address(uint16_t addr)
 {
- ((set_uart_address_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*22))(addr);
+ ((set_uart_address_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*23))(addr);
 }
 #endif//__SYS_MODULE_H__
 

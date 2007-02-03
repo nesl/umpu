@@ -650,16 +650,17 @@ void ker_sys_free(void *pntr, uint8_t callerdomid)
 #else
   sos_blk_mem_free(pntr);
 #endif
+  return;
 }	
 
 
-int8_t ker_sys_change_own(void* ptr, uint8_t callerdomid)
+int8_t ker_sys_change_own(void* ptr, sos_pid_t id, uint8_t callerdomid)
 {
-  sos_pid_t my_id = ker_get_current_pid();    
+  sos_pid_t my_id = ker_get_current_pid();
 #ifdef SOS_SFI
-  if( SOS_OK != sos_blk_mem_change_own( ptr, my_id, callerdomid)) {
+  if( SOS_OK != sos_blk_mem_change_own( ptr, id, callerdomid)) {
 #else
-  if( SOS_OK != sos_blk_mem_change_own( ptr, my_id)) {
+  if( SOS_OK != sos_blk_mem_change_own( ptr, id)) {
 #endif
     ker_mod_panic(my_id);
   }

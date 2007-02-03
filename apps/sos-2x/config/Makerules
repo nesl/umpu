@@ -21,7 +21,7 @@ endif
 # Kernel Build Definitions
 KER_DEFS += -D_SOS_KERNEL
 KER_OBJS += $(KER_SRCS:.c=.o) 
-KER_ASM_OBJS += $(ASMSRCS:.S=.o)
+KER_ASM_OBJS += $(KER_ASM_SRCS:.S=.o)
 
 # UART Driver Build Definitions
 UART_DRV_DEFS +=  -D_MODULE_

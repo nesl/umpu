@@ -56,7 +56,7 @@ enum sfi_domain_id_t
 #define CONV_DOMAINID_TO_PAGENUM(x) (uint16_t)(SFI_DOM0_TABLE + (uint16_t)x)
 #define CONV_DOMAINID_TO_ADDRESS(x) (uint32_t)((SFI_DOM0_TABLE + (uint32_t)x) * 256)
 // x is domain id
-#define SFI_MOD_TABLE_ENTRY_LOC(x, fnidx) (((uint16_t)(SFI_DOM0_TABLE + (uint16_t)x) * WORDS_PER_PAGE) + (SIZE_OF_JMP_INSTR * fnidx))
+#define SFI_JMP_TABLE_FUNC(x, fnidx) (((uint16_t)(SFI_DOM0_TABLE + (uint16_t)x) * WORDS_PER_PAGE) + (SIZE_OF_JMP_INSTR * fnidx))
 
 
 #ifndef _MODULE_
