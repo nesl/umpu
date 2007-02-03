@@ -16,9 +16,6 @@ INCDIR += -I$(ROOTDIR)/drivers/i2c/include
 # platform must be specified first
 include $(ROOTDIR)/platform/$(PLATFORM)/Makerules
 
-#DEFS += -D'DEBUG(arg...)='
-#DEFS += -D'DEBUG_SHORT(arg...)='
-
 CFLAGS += $(MCUFLAG) -Wall $(DEFS) -Werror
 
 LDFLAGS += $(MCUFLAG)
@@ -172,16 +169,23 @@ build_info:
 %.s : %.c
 	$(CC) -c $(CFLAGS) $(INCDIR) $< -o $@
 
-%.o : %.c
-	$(CC) -c $(CFLAGS) $(INCDIR) $< -o $@
+$(KER_OBJS) : $(KER_SRCS)
+	@echo === BUILDING KERNEL: $@ =======
+	$(CC) -c $(CFLAGS) $(KER_DEFS) $(INCDIR) $< -o $@
+
+$(KER_ASM_OBJS) : $(KER_ASM_SRCS)
+	@echo === BUILDING KERNEL: $@ =======
+	$(AS) -c $(SFLAGS) $(KER_DEFS) $(INCDIR) $< -o $@
+
+$(UART_DRV_OBJS): $(UART_DRV_SRCS)
+	@echo === BUILDING UART DRIVER: $@ ======
+	$(CC) -c $(CFLAGS) $(UART_DRV_DEFS) $(INCDIR) $< -o $@
 
 %.o : %.s
+	@echo === <<<<<<<<<<>>>>>>>>>>>>> =======
 	$(AS) -c $(INCDIR) $(SFLAGS) $<
 
-%.o : %.S
-	$(AS) -c $(SFLAGS) $(INCDIR) $< -o $@
-
-%.elf: $(OBJS)
+%.elf: $(KER_OBJS) $(KER_ASM_OBJS) $(UART_DRV_OBJS)
 	@echo === LINKING =====================
 	$(CC) $(OBJS) $(LIBS) $(LDFLAGS) -o $@
 	@echo === SIZE ========================

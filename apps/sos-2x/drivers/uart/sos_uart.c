@@ -16,7 +16,6 @@
 #include <malloc.h>
 #include <sos_timer.h>
 #include <uart_system.h>
-#include <sos_uart_mgr.h>
 #include <sos_uart.h>
 #ifdef SOS_SFI
 #include <memmap.h>
@@ -82,11 +81,11 @@ static mod_header_t uart_mod_header SOS_MODULE_HEADER = {
 // Ram - This function will be executed in the trusted domain
 void sos_uart_init()
 {
-	ker_register_module(sos_get_header_address(uart_mod_header));
-	ker_set_state_pointer(KER_UART_PID, &s);
+	sys_register_module(sos_get_header_address(uart_mod_header));
+	sys_set_state_pointer(KER_UART_PID, &s);
   s->state = SOS_UART_IDLE;
 	s->msg_ptr = NULL;
-	set_uart_address(ker_id()); 	// set uart_address 
+	sys_uart_address(ker_id()); 	// set uart_address 
 	mq_init(&(s->uartpq));
 	return;
 }

@@ -3,31 +3,9 @@
 # Generel Makerules for Kernel image
 #
 
-VIRTPLATLIST = sim emu
-
-EMUPLATLIST = mica2 xyz
-DEFAULT_EMUPLAT = mica2
-
 PLATLIST = mica2
 DEFAULT_PLAT = mica2
-
-VIRTGOALS = $(filter $(VIRTPLATLIST), $(MAKECMDGOALS))
-EMUGOALS = $(filter $(EMUPLATLIST), $(MAKECMDGOALS))
 PLATGOALS = $(filter $(PLATLIST), $(MAKECMDGOALS))
-
-# no sanity checks!!
-ifeq ($(PLATFORM),)
-# user defined VIRTUAL PLATFORM
-ifneq ($(VIRTGOALS),)
-PLATFORM = $(VIRTGOALS)
-ifeq ($(EMU_PLATFORM),)
-ifneq ($(EMUGOALS),)
-EMU_PLATFORM = $(EMUGOALS)
-else
-EMU_PLATFORM = $(DEFAULT_EMUPLAT)
-endif
-endif
-endif
 
 ifeq ($(PLATFORM),)
 PLATFORM = $(filter $(PLATLIST), $(PLATGOALS))
@@ -36,18 +14,26 @@ endif
 ifeq ($(PLATFORM),)
 PLATFORM = $(DEFAULT_PLAT)
 endif
-endif
 
-BUILD = _SOS_KERNEL_
+################################################
+# BUILD CONFIGURATIONS
+################################################
+# Kernel Build Definitions
+KER_DEFS += -D_SOS_KERNEL
+KER_OBJS += $(KER_SRCS:.c=.o) 
+KER_ASM_OBJS += $(ASMSRCS:.S=.o)
 
-DEFS += -D_SOS_KERNEL
+# UART Driver Build Definitions
+UART_DRV_DEFS +=  -D_MODULE_
+UART_DRV_OBJS += $(UART_DRV_SRCS:.c=.o)
+
 
 ##################################################
 # MEMORY PROTECTION OPTIONS
 #################################################
 ifeq ($(MODE), sfi)
 DEFS += -DSOS_SFI
-SRCS += malloc.c memmap.c
+KER_SRCS += memmap.c
 ifeq ($(DOMS),2)
 DEFS += -DSFI_DOMS_2
 else
@@ -55,23 +41,27 @@ DEFS += -DSFI_DOMS_8
 endif
 endif
 
-ifeq ($(MODE),)
-SRCS += malloc.c
-endif
+
 #################################################
+# KERNEL SOURCES AND OBJECTS
+#################################################
+KER_SRCS += $(PROJ).c
+KER_SRCS += hardware.c main.c
+KER_SRCS += sched.c message.c message_queue.c message_net.c
+KER_SRCS += fntable.c
+KER_SRCS += sos_timer.c monitor.c
+KER_SRCS += sos_list.c sos_info.c 
+KER_SRCS += random.c
+KER_SRCS += sos_logging.c
 
-SRCS += $(PROJ).c
-SRCS += hardware.c main.c
-SRCS += sched.c message.c message_queue.c message_net.c
-SRCS += fntable.c
-SRCS += sos_timer.c monitor.c
-SRCS += sos_list.c sos_info.c 
-SRCS += random.c
-SRCS += sos_logging.c
 
 
-OBJS += $(SRCS:.c=.o) $(ASMSRCS:.S=.o)
 
+####
+# Make rules
+####
+all:
+	@echo Specify build platform {mica2}
 
 
 ifneq ($(PLATFORM),)
@@ -79,19 +69,12 @@ include $(ROOTDIR)/kernel/Makerules
 endif
 
 
-####
-# Make rules
-####
+
 $(PLATFORM): $(PROCESSOR)
 
 
 install: $(PLATFORM)_install
 
-check: $(SRCS:.c=.i)
-	for i in `ls *.i`; do \
-        echo "# Warnings for file $$i:"; \
-        $(ROOTDIR)/tools/verify/check $$i $(ROOTDIR) $(QUIET); \
-    done
  
 clean:
 	rm -f *.o *.srec *.ihex *.elf *.lst $(PROJ).map $(PROJ).exe
@@ -99,8 +82,4 @@ clean:
 	rm -f $(PROJ).bd $(PROJ).bin.out xflash.log
 	rm -f *.i *.check
 	rm -f sfi_jumptable_proc.S	
-
-.PHONY: $(EMU_PLATFORM)
-$(EMU_PLATFORM):
-	@echo $(PLATFORM) binary built for $(EMU_PLATFORM) platform
 

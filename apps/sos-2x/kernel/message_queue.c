@@ -246,7 +246,9 @@ Message *mq_get(mq_t *q, Message *m)
  * @param msg_sent  the Message just sent or delivered
  * @param succ      is the delivery successful?
  * @param msg_owner the owner of the message 
- * NOTE the implementation will need to improve
+ * NOTE the implementation will need to improve.
+ * @warning In the SFI mode, there is no way to ensure that the value of msg_sent pointer
+ * is not corrupted
  */
 void msg_send_senddone(Message *msg_sent, bool succ, sos_pid_t msg_owner)
 {

@@ -132,7 +132,12 @@ static inline sys_msg_dispose(Message* m)
 //--------------------------------------------------------------------------------
 // 6: ker_sys_msg_send_senddone
 //--------------------------------------------------------------------------------
+typedef void (*msg_send_senddone_func_t)(Message* msg_sent, bool succ, sos_pid_t msg_owner);
 
+static inline void sys_msg_send_senddone(Message *msg_sent, bool succ, sos_pid_t msg_owner)
+{
+  return ((msg_send_senddone_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*6)(msg_sent, succ, msg_owner));
+}
 
 //--------------------------------------------------------------------------------
 // 7: ker_sys_post
@@ -277,7 +282,15 @@ static inline void sys_led( uint8_t op )
 {
   ((sys_led_ker_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*21))( op );
 }
+//--------------------------------------------------------------------------------   
+// 22: set_uart_address
+//--------------------------------------------------------------------------------   
+typedef void (*set_uart_address_func_t)(uint16_t addr);
 
+static inline void sys_set_uart_address(uint16_t addr)
+{
+ ((set_uart_address_func_t)(SYS_JUMP_TBL_START+SYS_JUMP_TBL_SIZE*22))(addr);
+}
 #endif//__SYS_MODULE_H__
 
 

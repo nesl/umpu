@@ -13,7 +13,7 @@ jmp ker_sys_change_own     ; 2
 jmp ker_sys_msg_take_data  ; 3
 jmp sos_msg_create         ; 4
 jmp sos_msg_dispose    	   ; 5
-jmp ker_sys_msg_send_senddone 	; 6
+jmp msg_send_senddone 	   ; 6
 jmp ker_sys_post           ; 7
 jmp ker_sys_post_link      ; 8
 jmp ker_sys_post_value     ; 9
@@ -41,10 +41,10 @@ jmp ker_hw_type            ; 18
 jmp ker_id                 ; 19
 jmp ker_rand               ; 20
 jmp ker_led                ; 21
+jmp set_uart_address       ; 22
 ;;; ==========================
 ;;; UNUSED
 ;;; ==========================	
-jmp 0			   ; 22
 jmp 0			   ; 23
 jmp 0			   ; 24
 jmp 0			   ; 25

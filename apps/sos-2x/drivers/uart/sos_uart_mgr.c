@@ -19,4 +19,5 @@ int8_t check_uart_address(uint16_t addr) {
 
 void set_uart_address(uint16_t addr) {
 	uart_address = addr;
+	return;
 }

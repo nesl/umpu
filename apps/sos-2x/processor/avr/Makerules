@@ -19,6 +19,18 @@ INCDIR += -I$(ROOTDIR)/drivers/i2c/include
 INCDIR += -I$(ROOTDIR)/processor/$(PROCESSOR)/include
 INCDIR += -I$(ROOTDIR)/drivers/adc/include
 
+# Kernel Build Options
+KER_SRCS += crc.c timer.c
+KER_ASMSRCS += sos_fnptr_call.S sys_jmptable.S
+
+# Uart Sources
+UART_DRV_SRCS += uart_hal.c uart.c uart_system.c
+
+
+
+
+
+
 ###############################################################
 # DEBUG OPTIONS
 ###############################################################
@@ -28,12 +40,6 @@ endif
 ifeq ($(AS_DEBUG),)
   AS_DEBUG=-Wa,-gstabs
 endif
-#CC_DEBUG=-gstabs
-#AS_DEBUG=--gstabs
-#CC_DEBUG = -gstabs+
-#AS_DEBUG = --gstabs+
-#CC_DEBUG = -gdwarf-2 -feliminate-dwarf2-dup
-#AS_DEBUG = --gdwarf2
 
 ##############################################################
 #  SYS JUMPTABLE SETUP
@@ -44,46 +50,29 @@ DEFS += -DSYS_JUMP_TBL_START=$(SYS_JUMP_TBL_ADDR)
 DEFS += -DSYS_JUMP_TBL_SIZE=4
 endif
 
-#===============================================================================================
-# KERNEL BUILD OPTIONS
-#===============================================================================================
-ifeq ($(BUILD),_SOS_KERNEL_)
-BLS_START = -Wl,--section-start=.sos_bls=0x1fc00 
-SRCS += crc.c timer.c
-ASMSRCS += sos_fnptr_call.S
-ASMSRCS += sys_jmptable.S
-UART_DRIVER_SRCS += uart_hal.c uart.c uart_system.c
-SRCS += $(UART_DRIVER_SRCS)
+
 ###############################################################
 # MEMORY PROTECTION OPTIONS
 ###############################################################
 ifeq ($(MODE), sfi)
-SRCS += sfi_jumptable.c
-CFLAGS += -ffixed-r2 -ffixed-r3 -ffixed-r4
+KER_SRCS += sfi_jumptable.c
+#CFLAGS += -ffixed-r2 -ffixed-r3 -ffixed-r4
 LDSCRIPT = -Wl,-T $(ROOTDIR)/processor/avr/sos_sfi_avr5.x
 else
 LDSCRIPT = -Wl,-T $(ROOTDIR)/processor/avr/sos_avr5.x
 endif
 
+###############################################################
+# BOOT LOADER SETUP
+###############################################################
+BLS_START = -Wl,--section-start=.sos_bls=0x1fc00 
+
 
 CFLAGS += -Os $(CC_DEBUG) -fshort-enums -fpack-struct -Wno-cast-qual -Wall -Wa,-adhlmsn=$(notdir $(<:.c=.lst))
 SFLAGS += -Wa,$(MCUFLAG),$(AS_DEBUG),-ahlms=$(notdir $(<:.S=.lst)) $(DEFS)
 LDFLAGS += -Wl,-Map=$(PROJ).map,--cref $(SFIJMPTBL_START) $(BLS_START) $(LDSCRIPT)
-endif # _SOS_KERNEL_
 
 
-#===============================================================================================
-# MODULE OPTIONS
-#===============================================================================================
-ifeq ($(BUILD),_MODULE_)
-
-CFLAGS += -Os -fno-unit-at-a-time -fshort-enums -fpack-struct -mno-tablejump -Wall -Wa,-adhlmsn=$(notdir $(<:.c=.lst)) -Wa,-mno-wrap 
-LDFLAGS += -Wl,-r,-i,--unresolved-symbols=ignore-in-object-files 
-
-
-LDFLAGS += -Wl,-T $(ROOTDIR)/processor/avr/mod.x -Wl,-Map=$(PROJ).map,--cref -nostartfiles -nodefaultlibs -nostdlib -lgcc -lc
-SFLAGS += $(STACK_START) -Wa,$(MCUFLAG),$(AS_DEBUG),-ahlms=$(notdir $(<:.S=.lst))
-endif # _MODULE_
 
 
 
