@@ -11,7 +11,9 @@
 #define _UART_SYSTEM_H
 #include <proc_msg_types.h>
 
-// flags for uart_system
+//------------------------------------------------------------
+// UART SYSTEM FLAGS
+//------------------------------------------------------------
 #define UART_SYS_SOS_MSG_FLAG 0x80 // shared with i2c driver
 #define UART_SYS_TX_FLAG      0x40 // shared with i2c driver
 #define UART_SYS_RSVRD_4_FLAG 0x20
@@ -25,25 +27,20 @@
 
 #define UART_SYS_SHARED_FLAGS_MSK 0xD1
 
+//------------------------------------------------------------
+// UART SYSTEM FUNCTIONS
+//------------------------------------------------------------
 int8_t uart_system_init();
-
 void uart_read_done(uint8_t len, uint8_t status);
 void uart_send_done(uint8_t status);
 
-
-/**
- * @brief UART HPL Related Functions
- */
+//------------------------------------------------------------
+// UART SYSTEM API
+//------------------------------------------------------------
 int8_t ker_uart_reserve_bus(uint8_t calling_id, uint8_t flags);
 int8_t ker_uart_release_bus(uint8_t calling_id);
-
-int8_t ker_uart_send_data(
-        uint8_t *buff, 
-        uint8_t msg_size, 
-        uint8_t calling_id);
-int8_t ker_uart_read_data(
-        uint8_t read_size, 
-        uint8_t calling_id);
+int8_t ker_uart_send_data(uint8_t *buff, uint8_t msg_size, uint8_t calling_id);
+int8_t ker_uart_read_data(uint8_t read_size, uint8_t calling_id);
 
 #endif // _UART_SYSTEM_H
 

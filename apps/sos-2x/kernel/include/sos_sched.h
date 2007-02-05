@@ -191,7 +191,7 @@ extern sos_pid_t*   pid_sp;                        //!< pid stack pointer
 /**
  * @brief Set state pointer
  */
-extern void ker_set_state_pointer(sos_pid_t pid, void** hdl_state);
+extern void ker_set_state_pointer(void* state, void** hdl_state);
 
 
 

@@ -60,8 +60,13 @@
 #define uart_getByte()          (UDR)
 #define uart_setByte(b)         (UDR = (b))
 
+#ifdef SOS_SFI
+extern void uart_recv_interrupt(void);
+extern void uart_send_interrupt(void);
+#else
 #define uart_recv_interrupt()   SIGNAL(SIG_UART_RECV)
 #define uart_send_interrupt()   SIGNAL(SIG_UART_TRANS)
+#endif
 
 #define uart_disable()			UCR &= ((unsigned char)~((1<<(RXCIE))|(1<<(TXCIE))))
 

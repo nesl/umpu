@@ -9,7 +9,7 @@
 #define _UART_H_
 
 
-#ifndef _MODULE_
+#ifdef _UART_DRIVER_
 #include <sos_types.h>
 
 void uart_init(void);
@@ -24,6 +24,6 @@ int8_t uart_startTransceiverRx(uint8_t rx_len, uint8_t flags);
 
 uint8_t *uart_getRecievedData(void);
 
-#endif /* _MODULE_ */
+#endif /* _UART_DRIVER_ */
 
 #endif // _UART_H_

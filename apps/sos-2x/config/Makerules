@@ -19,14 +19,16 @@ endif
 # BUILD CONFIGURATIONS
 ################################################
 # Kernel Build Definitions
-KER_DEFS += -D_SOS_KERNEL
+KER_DEFS += -D_SOS_KERNEL_
 KER_OBJS += $(KER_SRCS:.c=.o) 
 KER_ASM_OBJS += $(KER_ASM_SRCS:.S=.o)
 
 # UART Driver Build Definitions
-UART_DRV_DEFS +=  -D_MODULE_
+UART_DRV_DEFS +=  -D_MODULE_ -D_UART_DRIVER_
 UART_DRV_OBJS += $(UART_DRV_SRCS:.c=.o)
+UART_DRV_ASM_OBJS += $(UART_DRV_ASM_SRCS:.S=.o)
 
+OBJS += $(KER_OBJS) $(KER_ASM_OBJS) $(UART_DRV_OBJS) $(UART_DRV_ASM_OBJS)
 
 ##################################################
 # MEMORY PROTECTION OPTIONS
@@ -45,7 +47,7 @@ endif
 #################################################
 # KERNEL SOURCES AND OBJECTS
 #################################################
-KER_SRCS += $(PROJ).c
+KER_SRCS += $(PROJ).c malloc.c
 KER_SRCS += hardware.c main.c
 KER_SRCS += sched.c message.c message_queue.c message_net.c
 KER_SRCS += fntable.c

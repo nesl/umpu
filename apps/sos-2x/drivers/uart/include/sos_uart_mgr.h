@@ -9,7 +9,7 @@
 #define _SOS_UART_MGR_H_
 
 
-#ifndef _MODULE_
+#if (defined _SOS_KERNEL_) || (defined _UART_DRIVER_)
 #include <sos_types.h>
 
 /**
@@ -44,8 +44,8 @@ extern void set_uart_address(uint16_t addr);
 #define rm_uart_addr(...) -EINVAL
 
 #define set_uart_address(...) -EINVAL
-#endif
+#endif//NO_SOS_UART_MGR
 
-#endif /* _MODULE_ */
+#endif// (defined _SOS_KERNEL_) || (defined _UART_DRIVER_)
 
 #endif

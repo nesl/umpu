@@ -20,6 +20,7 @@
 #ifdef SOS_SFI
 #define UART_DOM_ID SFI_DOM0
 #endif
+
 // Prototypes of the acutal function implementations
 void sos_uart_init_real();
 void uart_msg_alloc_real(Message *m);
@@ -48,6 +49,20 @@ static inline void uart_msg_alloc(Message *e){
 #else
 #define uart_msg_alloc(e) uart_msg_alloc_real(e)
 #endif//SOS_SFI
+
+
+#ifdef SOS_SFI
+typedef void (*uart_recv_interrupt_func_t)(void);
+static inline void uart_driver_recv_interrupt(void){
+  return ((uart_recv_interrupt_func_t)(SFI_JMP_TABLE_FUNC(UART_DOM_ID, 3)))();
+}
+
+typedef void (*uart_send_interrupt_func_t)(void);
+static inline void uart_driver_send_interrupt(void){
+  return ((uart_send_interrupt_func_t)(SFI_JMP_TABLE_FUNC(UART_DOM_ID, 4)))();
+}
+#endif//SOS_SFI
+
 
 #else
 //------------------------------------

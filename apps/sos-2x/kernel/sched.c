@@ -243,9 +243,8 @@ void* ker_get_module_state(sos_pid_t pid)
 }
 
 
-void ker_set_state_pointer(sos_pid_t pid, void** hdl_state)
+void ker_set_state_pointer(void* state, void** hdl_state)
 {
-	void* state = ker_get_module_state(pid);
 	*hdl_state = state; // Null check for *hdl_state will be done by the caller
 	return;
 }
@@ -746,6 +745,17 @@ int8_t ker_query_task(uint8_t pid)
   return 0;
 }
 
+// Ram - Probably do not need this function
+/*
+void ker_sys_handle_incoming_msg(Message* msg, uint16_t channel_flag)
+{
+	msg->flag |= SOS_MSG_FROM_NETWORK | channel_flag;
+  msg->daddr = entohs(msg->daddr);
+  msg->saddr = entohs(msg->saddr);
+  sched_msg_alloc(msg);
+	return;
+}
+*/
 
 void sched_msg_alloc(Message *m)
 {
@@ -754,6 +764,7 @@ void sched_msg_alloc(Message *m)
   }	
 	DEBUG("sched_msg_alloc\n");
   mq_enqueue(&schedpq, m);	
+	return;
 }
 
 void sched_msg_remove(Message *m)

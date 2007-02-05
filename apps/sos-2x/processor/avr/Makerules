@@ -24,8 +24,8 @@ KER_SRCS += crc.c timer.c
 KER_ASM_SRCS += sos_fnptr_call.S sys_jmptable.S
 
 # Uart Sources
-UART_DRV_SRCS += uart_hal.c uart.c uart_system.c
-
+UART_DRV_SRCS += uart_system.c uart.c uart_hal.c
+UART_DRV_ASM_SRCS += uart_driver.S
 
 
 

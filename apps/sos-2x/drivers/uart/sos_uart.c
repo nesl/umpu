@@ -54,10 +54,13 @@ typedef struct sos_uart_state {
 //static sos_uart_state_t s;
 static sos_uart_state_t* s;
 
+
 //-----------------------------------------------------------------------
 // STATIC FUNCTION PROTOTYPES
 //-----------------------------------------------------------------------
+#ifndef SOS_SFI
 static int8_t sos_uart_msg_handler(void *state, Message *e);
+#endif
 static void sos_uart_msg_senddone( bool failed );
 
 //-----------------------------------------------------------------------
@@ -83,8 +86,10 @@ static mod_header_t uart_mod_header SOS_MODULE_HEADER = {
 //-----------------------------------------------------------------------
 void sos_uart_init_real()
 {
+	void* sos_uart_state;
 	sys_register_module(sos_get_header_address(uart_mod_header));
-	sys_set_state_pointer(KER_UART_PID, (void**)&s);
+	sos_uart_state = sys_get_state();
+	sys_set_state_pointer(sos_uart_state, (void**)(&s));
   s->state = SOS_UART_IDLE;
 	s->msg_ptr = NULL;
 	sys_set_uart_address(sys_id()); 	// set uart_address 
@@ -126,7 +131,7 @@ static void uart_try_send_reserved_bus(Message *m)
 	s->state = SOS_UART_TX_MSG;
 }
 //-----------------------------------------------------------------------
-void uart_msg_alloc_real(Message *m)
+void sos_uart_msg_alloc_real(Message *m)
 {
 	HAS_CRITICAL_SECTION;
 	//! change ownership

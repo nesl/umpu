@@ -53,6 +53,11 @@
 #include <message_queue.h>
 #include <sos_sched.h>
 #include <sos_info.h>
+#ifdef SOS_SFI
+#include <umpu.h>
+#include <sfi_jumptable.h>
+#include <sys_module.h>
+#endif
 
 static inline void handle_incoming_msg(Message *msg, uint16_t channel_flag)
 {
@@ -60,7 +65,12 @@ static inline void handle_incoming_msg(Message *msg, uint16_t channel_flag)
   msg->flag |= SOS_MSG_FROM_NETWORK | channel_flag;
   msg->daddr = entohs(msg->daddr);
   msg->saddr = entohs(msg->saddr);
+#ifdef SOS_SFI
+  sys_change_own((void*)msg, KER_SCHED_PID);
+  sys_sched_msg_alloc(msg);
+#else
   sched_msg_alloc(msg);
+#endif//SOS_SFI
 }
 
-#endif
+#endif//_NET_STACK_H

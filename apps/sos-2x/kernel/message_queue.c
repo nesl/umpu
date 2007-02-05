@@ -328,7 +328,7 @@ void sos_msg_dispose(Message *m)
 	uint8_t msgflag;
 	uint8_t* msgdata;
 	msgflag = m->flag;
-	msgdata = msg->data;
+	msgdata = m->data;
 #ifdef SOS_SFI
 	ker_sys_free(m, callerdomid);
 #else

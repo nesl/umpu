@@ -7,44 +7,43 @@
  */
 
 #include <hardware.h>
-#include <net_stack.h>
-#include <sos_info.h>
-#include <crc.h>
-#include <measurement.h>
-#include <malloc.h>
-
+//#include <net_stack.h>
+//#include <sos_info.h>
+//#include <crc.h>
+//#include <measurement.h>
+//#include <malloc.h>
 #include <uart_hal.h>
 
-static bool uart_initialized = false;
+//static bool uart_initialized = false;
 
 int8_t uart_hardware_init(void){
-	HAS_CRITICAL_SECTION;
-
-	if(uart_initialized == false) {
-	  ENTER_CRITICAL_SECTION();
+  HAS_CRITICAL_SECTION;
+  
+  //if(uart_initialized == false) {
+  ENTER_CRITICAL_SECTION();
 #ifndef DISABLE_UART
 	  
-	  //! UART will run at: 9.6kbps, N-8-1
-	  UBRR = (uint8_t) (BAUD_9600);
-
-	  /**
-	   * Enable reciever and transmitter and their interrupts
-	   * transmit interrupt will be disabled until there is 
-	   * packet to send.
-	   */
-	  UCR = ((1 << RXCIE) | (1 << RXEN) | (1 << TXEN));
+  //! UART will run at: 9.6kbps, N-8-1
+  UBRR = (uint8_t) (BAUD_9600);
+  
+  /**
+   * Enable reciever and transmitter and their interrupts
+   * transmit interrupt will be disabled until there is 
+   * packet to send.
+   */
+  UCR = ((1 << RXCIE) | (1 << RXEN) | (1 << TXEN));
 
 
 #ifdef SOS_USE_PRINTF
-		fdevopen(uart_putchar, NULL, 0);
+  fdevopen(uart_putchar, NULL, 0);
 #endif
 #else
-		uart_disable();
-#endif
+  uart_disable();
+#endif // DISABLE_UART
 
-		LEAVE_CRITICAL_SECTION();
-		uart_initialized = true;
-	}
-	return SOS_OK;
+  LEAVE_CRITICAL_SECTION();
+  //uart_initialized = true;
+  //	}
+  return SOS_OK;
 }
 

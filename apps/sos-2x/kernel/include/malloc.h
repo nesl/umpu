@@ -188,7 +188,7 @@ void* ker_sys_malloc(uint16_t size, uint8_t callerdomid);
 // Free
 void ker_sys_free(void *pntr, uint8_t callerdomid);
 // Change Ownership
-int8_t ker_sys_change_own(void* ptr, uint8_t callerdomid);
+int8_t ker_sys_change_own(void* ptr, sos_pid_t pid, uint8_t callerdomid);
 #endif//SOS_SFI
 
 

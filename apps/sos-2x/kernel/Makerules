@@ -165,23 +165,27 @@ build_info:
 %.s : %.c
 	$(CC) -c $(CFLAGS) $(INCDIR) $< -o $@
 
-$(KER_OBJS) : $(KER_SRCS)
-	@echo === BUILDING KERNEL: $@ =======
-	$(CC) -c $(CFLAGS) $(KER_DEFS) $(INCDIR) $< -o $@
+$(KER_OBJS) : SPL_DEFS = $(KER_DEFS)
+$(UART_DRV_OBJS): SPL_DEFS = $(UART_DRV_DEFS)
+$(KER_OBJS) : BANNER = KERNEL
+$(KER_ASM_OBJS): BANNER = KERNEL ASM
+$(UART_DRV_OBJS): BANNER = UART DRIVER
+$(UART_DRV_ASM_OBJS): BANNER = UART DRIVER ASM
 
-$(KER_ASM_OBJS) : $(KER_ASM_SRCS)
-	@echo === BUILDING KERNEL: $@ =======
-	$(AS) -c $(SFLAGS) $(KER_DEFS) $(INCDIR) $< -o $@
+%.o : %.c
+	@echo === BUILDING $(BANNER) OBJECT: $@ ================
+	$(CC) -c $(CFLAGS) $(SPL_DEFS) $(INCDIR) $< -o $@
 
-$(UART_DRV_OBJS): $(UART_DRV_SRCS)
-	@echo === BUILDING UART DRIVER: $@ ======
-	$(CC) -c $(CFLAGS) $(UART_DRV_DEFS) $(INCDIR) $< -o $@
+%.o : %.S
+	@echo === BUILDING $(BANNER) OBJECT: $@ ================
+	$(AS) -c $(SFLAGS) $(SPL_DEFS) $(INCDIR) $< -o $@
+
 
 %.o : %.s
 	@echo === <<<<<<<<<<>>>>>>>>>>>>> =======
 	$(AS) -c $(INCDIR) $(SFLAGS) $<
 
-%.elf: $(KER_OBJS) $(KER_ASM_OBJS) $(UART_DRV_OBJS)
+%.elf: $(KER_OBJS) $(KER_ASM_OBJS) $(UART_DRV_OBJS) $(UART_DRV_ASM_OBJS)
 	@echo === LINKING =====================
 	$(CC) $(OBJS) $(LIBS) $(LDFLAGS) -o $@
 	@echo === SIZE ========================

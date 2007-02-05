@@ -90,3 +90,21 @@ int main(void)
   sos_main(SOS_BOOT_NORMAL);
   return 0;
 }
+
+//-------------------------------------------------------------------------
+// INTERRUPT HANDLERS
+//-------------------------------------------------------------------------
+#ifdef SOS_SFI
+SIGNAL(SIG_UART_RECV)
+{
+  uart_driver_recv_interrupt();
+  return;
+}
+
+
+SIGNAL(SIG_UART_TRANS)
+{
+  uart_driver_send_interrupt();
+  return;
+}
+#endif//SOS_SFI
