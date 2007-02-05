@@ -5,16 +5,16 @@
  * This module shows some of concepts in SOS
  */
 
+
 #include <sys_module.h>
-#ifdef SOS_SFI
-#include <sfi_jumptable.h>
-#endif
+
 //#define LED_DEBUG
 #include <led_dbg.h>
 #include "blink.h"
 
+
 #ifdef SOS_SFI
-#define BLINK_DOM_ID  SFI_DOM0
+#define BLINK_DOM_ID  SFI_DOM1
 #endif
 
 
@@ -58,7 +58,7 @@ static mod_header_t blink_mod_header SOS_MODULE_HEADER = {
 	.code_id        = ehtons(DFLT_APP_ID0),
 #ifdef SOS_SFI
 	.dom_id         = BLINK_DOM_ID,
-	.module_handler = (msg_handler_t)SFI_MOD_TABLE_ENTRY_LOC(BLINK_DOM_ID, 0),
+	.module_handler = (msg_handler_t)SFI_JMP_TABLE_FUNC(BLINK_DOM_ID, 0),
 #else
 	.module_handler = blink_msg_handler,
 #endif

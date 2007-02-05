@@ -165,7 +165,8 @@ build_info:
 %.s : %.c
 	$(CC) -c $(CFLAGS) $(INCDIR) $< -o $@
 
-$(KER_OBJS) : SPL_DEFS = $(KER_DEFS)
+$(KER_OBJS) : SPL_DEFS = $(KER_DEFS) -Werror
+$(KER_ASM_OBJS): SPL_DEFS = $(KER_DEFS) -Werror
 $(UART_DRV_OBJS): SPL_DEFS = $(UART_DRV_DEFS)
 $(KER_OBJS) : BANNER = KERNEL
 $(KER_ASM_OBJS): BANNER = KERNEL ASM

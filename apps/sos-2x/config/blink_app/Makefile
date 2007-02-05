@@ -4,10 +4,10 @@ PROJ = blink_app
 ROOTDIR = ../..
 
 ifeq ($(MODE), sfi)
-ASMSRCS += blink_dom.S
+KER_ASM_SRCS += blink_dom.S
 endif
 
-SRCS += blink.c 
+KER_SRCS += blink.c 
 
 
 include ../Makerules

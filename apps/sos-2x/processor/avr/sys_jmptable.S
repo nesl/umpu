@@ -57,5 +57,3 @@ jmp 0			   ; 30
 jmp 0			   ; 31
 
 ;;; End of file
-
-	

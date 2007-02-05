@@ -6,21 +6,25 @@
 #ifndef __SYS_MODULE_H__
 #define __SYS_MODULE_H__
 
+#ifdef SOS_SFI
+#include <sos_types.h>
+#include <umpu.h>
+#include <sfi_jumptable.h>
+#endif
+#include <sos_timer.h>
+
 /*
 #ifndef _MODULE_
 #include <sos.h>
 #endif
 
 #include <sos_info.h>
-#include <sos_types.h>
+
 #include <sos_module_types.h>
 #include <sos_timer.h>
 #include <pid.h>
 #include <stddef.h>
 #include <sos_error_types.h>
-#ifdef SOS_SFI
-#include <sfi_jumptable.h>
-#endif
 */
 
 #ifdef SOS_SFI
