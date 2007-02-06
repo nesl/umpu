@@ -4,10 +4,10 @@ PROJ = uartTxTest_app
 ROOTDIR = ../..
 
 ifeq ($(MODE), sfi)
-ASMSRCS += uartTxTest_dom.S
+KER_ASM_SRCS += uartTxTest_dom.S
 endif
 
-SRCS += uartTxTest.c 
+KER_SRCS += uartTxTest.c 
 
 include ../Makerules
 
