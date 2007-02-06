@@ -10,6 +10,10 @@
 #ifndef _UART_SYSTEM_H
 #define _UART_SYSTEM_H
 #include <proc_msg_types.h>
+#ifdef SOS_SFI
+#include <sos_uart.h>
+#include <sfi_jumptable.h>
+#endif
 
 //------------------------------------------------------------
 // UART SYSTEM FLAGS
@@ -30,7 +34,17 @@
 //------------------------------------------------------------
 // UART SYSTEM FUNCTIONS
 //------------------------------------------------------------
-int8_t uart_system_init();
+int8_t uart_system_init_real();
+
+#ifdef SOS_SFI
+typedef void (*uart_system_init_func_t)(void);
+static inline void uart_system_init(void){
+  return ((uart_system_init_func_t)(SFI_JMP_TABLE_FUNC(UART_DOM_ID, 5)))();
+}
+#else
+#define uart_system_init() uart_system_init_real()
+#endif
+
 void uart_read_done(uint8_t len, uint8_t status);
 void uart_send_done(uint8_t status);
 

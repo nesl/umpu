@@ -67,7 +67,7 @@ static uart_system_state_t* s;
  Initialize the UART hardware on an AVR
  ****************************************
  */
-int8_t uart_system_init() {
+int8_t uart_system_init_real() {
 	uart_system_state_t* uart_system_state;
 	uint8_t i = 0;
 	uart_system_state = (uart_system_state_t*)
