@@ -25,7 +25,7 @@ void sfi_modtable_init()
   safe_stack_ptr = &__heap_start;
   SSPL = (uint8_t)((uint16_t)safe_stack_ptr & 0x00FF);
   SSPH = (uint8_t)((uint16_t)safe_stack_ptr >> 8);
-  sfi_jump_table_start_word_addr = SFI_JUMP_TABLE_START * WORDS_PER_PAGE;
+  sfi_jump_table_start_word_addr = SFI_JUMP_TABLE_START * (BYTES_PER_PAGE/2);
   JTL = (uint8_t)(sfi_jump_table_start_word_addr & 0x00FF);
   JTH = (uint8_t)(sfi_jump_table_start_word_addr >> 8);
   return;
