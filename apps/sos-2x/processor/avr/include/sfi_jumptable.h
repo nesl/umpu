@@ -53,7 +53,7 @@ enum sfi_domain_id_t
 #define BYTES_PER_PAGE 256L
 #define SIZE_OF_JMP_INSTR 4 // 2 word instruction
 #define WORDS_PER_PAGE 128L
-#define SIZE_OF_JMP_INSTR_WORD
+#define SIZE_OF_JMP_INSTR_WORD 2
 
 #define CONV_DOMAINID_TO_PAGENUM(x) (uint16_t)(SFI_DOM0_TABLE + (uint16_t)x)
 #define CONV_DOMAINID_TO_ADDRESS(x) (uint32_t)((SFI_DOM0_TABLE + (uint32_t)x) * 256)
