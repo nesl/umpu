@@ -74,7 +74,7 @@ static mod_header_t uart_mod_header SOS_MODULE_HEADER = {
 	.num_prov_func  = 0,
 #ifdef SOS_SFI
 	.dom_id        = UART_DOM_ID,
-	.module_handler = (msg_handler_t)SFI_JMP_TABLE_FUNC(UART_DOM_ID, 0),
+	.module_handler = (msg_handler_t)SFI_FUNC_WORD_ADDR(UART_DOM_ID, 0),
 #else
 	.module_handler = sos_uart_msg_handler,
 #endif

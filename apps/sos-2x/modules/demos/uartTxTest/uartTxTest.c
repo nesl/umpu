@@ -67,7 +67,7 @@ static mod_header_t uartTxTest_mod_header SOS_MODULE_HEADER = {
 	.code_id        = ehtons(DFLT_APP_ID0),
 #ifdef SOS_SFI
 	.dom_id         = UART_TX_TEST_DOM_ID,
-	.module_handler = (msg_handler_t)SFI_JMP_TABLE_FUNC(UART_TX_TEST_DOM_ID, 0),
+	.module_handler = (msg_handler_t)SFI_FUNC_WORD_ADDR(UART_TX_TEST_DOM_ID, 0),
 #else
 	.module_handler = uartTxTest_msg_handler,
 #endif
