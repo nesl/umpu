@@ -75,10 +75,14 @@ void hardware_init(void){
   timer_hardware_init(DEFAULT_INTERVAL, DEFAULT_SCALE);
 
   // UART
+  ker_push_current_pid(KER_UART_PID);
   uart_system_init();
+  ker_pop_current_pid();
 #ifndef NO_SOS_UART
   //! Initalize uart comm channel
+  ker_push_current_pid(KER_UART_PID);
   sos_uart_init();
+  ker_pop_current_pid();
 #endif
 }
 
@@ -97,14 +101,18 @@ int main(void)
 #ifdef SOS_SFI
 SIGNAL(SIG_UART_RECV)
 {
+  ker_push_current_pid(KER_UART_PID);
   uart_driver_recv_interrupt();
+  ker_pop_current_pid();
   return;
 }
 
 
 SIGNAL(SIG_UART_TRANS)
 {
+  ker_push_current_pid(KER_UART_PID);
   uart_driver_send_interrupt();
+  ker_pop_current_pid();
   return;
 }
 #endif//SOS_SFI

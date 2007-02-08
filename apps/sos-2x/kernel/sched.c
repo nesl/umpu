@@ -555,9 +555,10 @@ int8_t ker_deregister_module(sos_pid_t pid)
 	if(handler != NULL) {
 		void *handler_state = handle->handler_state;
 		Message msg;
-		sos_pid_t prev_pid = curr_pid;
+		//		sos_pid_t prev_pid = curr_pid;
 
-		curr_pid = handle->pid;
+		//curr_pid = handle->pid;
+		ker_push_current_pid(handle->pid);
 		msg.did = handle->pid;
 		msg.sid = KER_SCHED_PID;
 		msg.type = MSG_FINAL;
@@ -565,7 +566,8 @@ int8_t ker_deregister_module(sos_pid_t pid)
 		msg.data = NULL;
 		msg.flag = 0;
 		handler(handler_state, &msg);
-		curr_pid = prev_pid;
+		ker_pop_current_pid();
+		//		curr_pid = prev_pid;
 	}
 
 	// First remove handler from the list.
@@ -637,10 +639,12 @@ void sched_dispatch_short_message(sos_pid_t dst, sos_pid_t src,
 	/*
 	 * Update current pid
 	 */
-	curr_pid = dst;
+	//	curr_pid = dst;
 	ker_log( SOS_LOG_HANDLE_MSG, curr_pid, type );
-		handler(handler_state, &short_msg);
-		ker_log( SOS_LOG_HANDLE_MSG_END, curr_pid, type );
+	ker_push_current_pid(dst);
+	handler(handler_state, &short_msg);
+	ker_pop_current_pid();
+	ker_log( SOS_LOG_HANDLE_MSG_END, curr_pid, type );
 }
 
 
@@ -699,9 +703,11 @@ static void do_dispatch()
 			}
 
 			DEBUG("RUNNING HANDLER OF MODULE %d \n", handle->pid);
-			curr_pid = handle->pid;
+			//			curr_pid = handle->pid;
 			ker_log( SOS_LOG_HANDLE_MSG, curr_pid, e->type );
+			ker_push_current_pid(handle->pid);
 			ret = handler(handler_state, e);
+			ker_pop_current_pid();
 			ker_log( SOS_LOG_HANDLE_MSG_END, curr_pid, e->type );
 			DEBUG("FINISHED HANDLER OF MODULE %d \n", handle->pid);
 			if (ret == SOS_OK) senddone_flag = 0;

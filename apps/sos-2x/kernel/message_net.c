@@ -291,7 +291,9 @@ static int8_t sos_msg_dispatch(Message* m)
 #ifdef SOS_UART_CHANNEL
 	if (NULL != mcopy[SOS_UART_LINK_ID]){
 		msg_change_endian(mcopy[SOS_UART_LINK_ID]);
+		ker_push_current_pid(KER_UART_PID);
 		SOS_UART_LINK_DISPATCH(mcopy[SOS_UART_LINK_ID]);
+		ker_pop_current_pid();
 	}
 #endif
 
