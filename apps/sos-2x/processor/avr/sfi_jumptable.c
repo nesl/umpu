@@ -117,9 +117,7 @@ void sfi_exception(uint8_t errcode)
   clrdisp = 0;
 
   while (1){
-#ifndef DISABLE_WDT
-    watchdog_reset();
-#endif
+    
     if (val == 0){
       if (clrdisp){
 	sfi_err_code_led_display(errcode);
