@@ -44,6 +44,7 @@ static inline void sos_uart_init(void){
 #ifdef SOS_SFI
 typedef void (*uart_msg_alloc_func_t)(Message *e);
 static inline void uart_msg_alloc(Message *e){
+  ker_change_own((void*)ptr, KER_UART_PID);
   return ((uart_msg_alloc_func_t)(SFI_JMP_TABLE_FUNC(UART_DOM_ID, 2)))(e);
 }
 #else
