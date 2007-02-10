@@ -46,7 +46,7 @@
 //-----------------------------------------------------------------------------
 // DEBUG
 //-----------------------------------------------------------------------------
-#define LED_DEBUG
+//#define LED_DEBUG
 #include <led_dbg.h>
 //#define SOS_DEBUG_MALLOC
 #ifndef SOS_DEBUG_MALLOC
