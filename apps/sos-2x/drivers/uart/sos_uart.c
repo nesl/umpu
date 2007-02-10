@@ -134,10 +134,6 @@ static void uart_try_send_reserved_bus(Message *m)
 void sos_uart_msg_alloc_real(Message *m)
 {
 	HAS_CRITICAL_SECTION;
-	//! change ownership
-	if(flag_msg_release(m->flag)){
-		sys_change_own(m->data, KER_UART_PID);
-	}
 
   ENTER_CRITICAL_SECTION();
 	//DEBUG("uart_msg_alloc %d\n", s->state);
@@ -224,7 +220,7 @@ static void sos_uart_msg_senddone( bool failed )
 	//DEBUG("uart_send_done %d\n", s->state);
 	LED_DBG(LED_GREEN_TOGGLE);
 	// post send done message to calling module
-	msg_send_senddone(msg_txed, !failed, KER_UART_PID);
+	sys_msg_send_senddone(msg_txed, !failed, KER_UART_PID);
 	s->msg_ptr = mq_dequeue(&s->uartpq);
 	if (s->msg_ptr) {
 		uart_try_send_reserved_bus(s->msg_ptr);

@@ -23,7 +23,7 @@
 #define UART_TX_TEST_DOM_ID  SFI_DOM2
 #endif
 
-#define UART_TX_TIMER_INTERVAL	20L
+#define UART_TX_TIMER_INTERVAL	10L
 #define UART_TX_TID               0
 
 #define MSG_TX_TEST_SEND (MOD_MSG_START + 0)
@@ -140,10 +140,14 @@ int8_t uartTxTest_msg_handler(void *state, Message *msg)
 	  uint32_t* buff;
 	  sys_led(LED_GREEN_TOGGLE);
 	  s->pktcount++;
-	  buff =  (uint32_t*)sys_malloc(sizeof(uint32_t));
-	  *buff = s->pktcount++;
-	  sys_post_uart(DFLT_APP_ID0, MSG_TX_TEST_SEND, sizeof(uint32_t),
-					buff, SOS_MSG_RELEASE, UART_ADDRESS);
+	  if (s->pktcount < 5){
+		buff =  (uint32_t*)sys_malloc(sizeof(uint32_t));
+		*buff = s->pktcount;
+		sys_post_uart(DFLT_APP_ID0, MSG_TX_TEST_SEND, sizeof(uint32_t),
+					  buff, SOS_MSG_RELEASE, UART_ADDRESS);
+	  }
+	  else
+		sys_timer_stop(UART_TX_TID);
 	  break;
 	}
 

@@ -67,6 +67,9 @@ typedef struct uart_state {
 	uint8_t idx;          //!< byte index
 
 	uint8_t flags;
+	uint8_t usb_saved_state;
+	uint16_t recv_int_crc_in;
+	uint8_t recv_int_saved_state;
 } uart_state_t;
 
 #define TX 0
@@ -102,16 +105,15 @@ void uart_init(void) {
 }
 
 static inline void uart_send_byte(uint8_t byte) {
-	static uint8_t saved_state;
 
 	if ((state[TX]->flags & UART_CRC_FLAG) && (state[TX]->hdlc_state == HDLC_DATA)) {
 		state[TX]->crc = crcByte(state[TX]->crc, byte);
 	}
 	if (state[TX]->hdlc_state == HDLC_ESCAPE) {
 		uart_setByte(0x20 ^ byte);
-		state[TX]->hdlc_state = saved_state;
+		state[TX]->hdlc_state = state[TX]->usb_saved_state;
 	} else if ((byte == HDLC_FLAG) || (byte == HDLC_CTR_ESC) || (byte == HDLC_EXT)) {
-		saved_state = state[TX]->hdlc_state;
+		state[TX]->usb_saved_state = state[TX]->hdlc_state;
 		state[TX]->hdlc_state = HDLC_ESCAPE;
 		uart_setByte(HDLC_CTR_ESC);
 		return;
@@ -349,8 +351,6 @@ uart_recv_interrupt() {
 #endif	
 	uint8_t err;
 	uint8_t byte_in;
-	static uint16_t crc_in;
-	static uint8_t saved_state;
 	SOS_MEASUREMENT_IDLE_END()
 	LED_DBG(LED_YELLOW_TOGGLE);
 	//! NOTE that the order has to be this in AVR
@@ -431,7 +431,7 @@ uart_recv_interrupt() {
 
 				// recieve an escape byte, wait for next byte
 				if (byte_in  == HDLC_CTR_ESC) {
-					saved_state = state[RX]->hdlc_state;
+					state[RX]->recv_int_saved_state = state[RX]->hdlc_state;
 					state[RX]->hdlc_state = HDLC_ESCAPE;
 					break;
 				}
@@ -456,7 +456,7 @@ uart_recv_interrupt() {
 
 				if (state[RX]->hdlc_state == HDLC_ESCAPE) {
 					byte_in ^= 0x20;
-					state[RX]->hdlc_state = saved_state;
+					state[RX]->hdlc_state = state[RX]->recv_int_saved_state;
 				}
 
 				switch (state[RX]->msg_state) {
@@ -518,12 +518,12 @@ uart_recv_interrupt() {
 						break;
 
 					case SOS_MSG_RX_CRC_LOW:
-						crc_in = byte_in;
+						state[RX]->recv_int_crc_in = byte_in;
 						state[RX]->msg_state = SOS_MSG_RX_CRC_HIGH;
 						break;
 
 					case SOS_MSG_RX_CRC_HIGH:
-						crc_in |= ((uint16_t)(byte_in) << 8);
+						state[RX]->recv_int_crc_in |= ((uint16_t)(byte_in) << 8);
 						state[RX]->hdlc_state = HDLC_PADDING;
 						state[RX]->msg_state = SOS_MSG_RX_END;
 						state[RX]->state = UART_HDLC_STOP;
@@ -542,7 +542,7 @@ uart_recv_interrupt() {
 					break;
 				} else { // sos msg rx done
 					state[RX]->hdlc_state = HDLC_IDLE;
-					if(crc_in == state[RX]->crc) {
+					if(state[RX]->recv_int_crc_in == state[RX]->crc) {
 #ifndef NO_SOS_UART_MGR
 						set_uart_address(entohs(state[RX]->msgHdr->saddr));
 #endif

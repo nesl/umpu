@@ -324,6 +324,7 @@ void sos_msg_dispose(Message *m, uint8_t callerdomid)
 void sos_msg_dispose(Message *m)
 #endif
 {
+
 	HAS_CRITICAL_SECTION;
 	uint8_t msgflag;
 	uint8_t* msgdata;

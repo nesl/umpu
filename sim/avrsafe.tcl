@@ -46,6 +46,25 @@ echo --- Adding Clock
 add wave -hex -label clock sim:/tb_umpu/umpu1/TOP_AVR/cp2
 echo --- Adding Panic Signal
 add wave -hex -label PANIC sim:/tb_umpu/umpu1/TOP_AVR/panic
+add wave -label TEMP_PANIC sim:/tb_umpu/umpu1/top_avr/testing_core/umpu_panic_module/umpu_panic
+
+proc str {} {
+    add wave -divider STR_INSTR_SIGNALS
+    add wave -label fet_dec_ramwe sim:/tb_umpu/umpu1/TOP_AVR/testing_core/main/ramwe
+    add wave -label fet_dec_ramadr sim:/tb_umpu/umpu1/TOP_AVR/testing_core/main/ramadr
+    add wave -label fet_dec_dbusout sim:/tb_umpu/umpu1/TOP_AVR/testing_core/main/dbusout
+
+    add wave -label idc_st_z sim:/tb_umpu/umpu1/TOP_AVR/testing_core/main/idc_st_z
+    add wave -label idc_std_z sim:/tb_umpu/umpu1/TOP_AVR/testing_core/main/idc_std_z
+
+    add wave -label fet_dec_ramwe_int sim:/tb_umpu/umpu1/TOP_AVR/testing_core/main/ramwe_int
+    add wave -label ramadr_reg_in sim:/tb_umpu/umpu1/TOP_AVR/testing_core/main/ramadr_reg_in(15:5)
+
+    add wave -hex -label mmc_addr sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_addr
+    add wave -hex -label mmc_wr_en sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_wr_en
+    add wave -hex -label mmc_dbusout sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/MEM_MAP_CHECK/mmc_dbusout
+}
+
 
 proc ocr0 {} {
     add wave -divider OCR0_AND_RELATED

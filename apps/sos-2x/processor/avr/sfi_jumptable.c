@@ -67,9 +67,6 @@ void sfi_jmptbl_exception()
   val = 0xffff;
   ledcnt = 0;
   while (1){
-#ifndef DISABLE_WDT
-    watchdog_reset();
-#endif
     if (val == 0){
       switch (ledcnt){
       case 0: ker_led(LED_RED_TOGGLE); ker_led(LED_GREEN_TOGGLE); break;

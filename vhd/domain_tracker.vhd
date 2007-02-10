@@ -154,18 +154,19 @@ begin
   -- The jump address is outside the jump table
 
   -----------------------------------------------------------------------------
-  -- DISABLED BOUNDS CHECKS
+  -- DISABLED BOUNDS CHECKS, WE ARE NOT DOING ANY CHECKS ON CALL NOW
   -----------------------------------------------------------------------------
 
   lb_err   <= '1' when fet_dec_pc < lower_bound
               else '0';
   ub_err   <= '1' when fet_dec_pc > upper_bound
               else '0';
-  dt_error <= '1' when
-              ((not in_trusted_domain) and fet_dec_call_instr  --and (lb_err or ub_err)
-               and (not call_in_jmp_table)) = '1'
-              --and (not is_positive or not not_bit_ten)) = '1'
-              else '0';
+  dt_error <= '0';
+--   dt_error <= '1' when
+--               ((not in_trusted_domain) and fet_dec_call_instr  --and (lb_err or ub_err)
+--                and (not call_in_jmp_table)) = '1'
+--               --and (not is_positive or not not_bit_ten)) = '1'
+--               else '0';
 
   -- This component will update the bound information whenever the dom_bnd_ctl
   -- register is written to. This component also makes available the lower and

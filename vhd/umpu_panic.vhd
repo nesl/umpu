@@ -59,8 +59,17 @@ architecture Beh of umpu_panic is
 
 begin
   -- Setting the dbg panic signal to be observable at the top most entity
-  dbg_umpu_panic <= umpu_panic;
-
+  DBG_PANIC_LATCH:process(clock,ireset)
+  begin
+    if (ireset = '0') then
+      dbg_umpu_panic <= '0';
+    elsif (clock = '1' and clock'event) then
+      if umpu_panic = '1' then
+        dbg_umpu_panic <= '1';
+      end if;
+    end if;
+  end process;
+  
   -- Extracting the protection bit from mmc_status_reg
   umpu_en           <= mmc_status_reg(0);
   -- Extracting the domain id from the mmc_status_reg

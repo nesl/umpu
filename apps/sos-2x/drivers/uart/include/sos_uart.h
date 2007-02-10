@@ -46,6 +46,10 @@ static inline void sos_uart_init(void){
 typedef void (*uart_msg_alloc_func_t)(Message *e);
 static inline void uart_msg_alloc(Message *e){
   ker_change_own((void*)e, KER_UART_PID);
+  //! change ownership
+  if(flag_msg_release(e->flag)){
+    ker_change_own(e->data, KER_UART_PID);
+  }
   return ((uart_msg_alloc_func_t)(SFI_JMP_TABLE_FUNC(UART_DOM_ID, 2)))(e);
 }
 #else
