@@ -1,15 +1,15 @@
 # -*-Makefile-*-
 
-PROJ = uartTxTest_app
+PROJ = uart_ping_pong_app
 ROOTDIR = ../..
 
 ifeq ($(MODE), sfi)
-KER_ASM_SRCS += uartTxTest_dom.S
+KER_ASM_SRCS += uart_ping_pong_dom.S
 endif
 
-KER_SRCS += uartTxTest.c 
+KER_SRCS += uart_ping_pong.c 
 
 include ../Makerules
 
-vpath uartTxTest.c ../../modules/demos/uartTxTest/
-vpath uartTxTest_dom.S ../../modules/demos/uartTxTest/
+vpath uart_ping_pong.c ../../modules/demos/uart_ping_pong/
+vpath uart_ping_pong_dom.S ../../modules/demos/uart_ping_pong/

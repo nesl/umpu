@@ -4,7 +4,6 @@
 
 #include <inttypes.h>
 #include <avr/io.h>
-#include <avr/signal.h>
 #include <avr/sleep.h>
 #include <avr/interrupt.h>
 

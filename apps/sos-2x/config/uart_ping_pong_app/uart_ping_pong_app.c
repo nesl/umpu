@@ -2,10 +2,10 @@
 #include <sos.h>
 /**
  * Must also include the header file that defines the 
- * uartTxTest_get_header()
+ * uart_ping_pong_get_header()
  */
 
-mod_header_ptr uartTxTest_get_header();
+mod_header_ptr uart_ping_pong_get_header();
 
 /**
  * application start
@@ -13,5 +13,5 @@ mod_header_ptr uartTxTest_get_header();
  */
 void sos_start(void)
 {
-ker_register_module(uartTxTest_get_header());
+ker_register_module(uart_ping_pong_get_header());
 }

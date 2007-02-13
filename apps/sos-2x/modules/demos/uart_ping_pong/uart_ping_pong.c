@@ -17,16 +17,16 @@
 
 //#define LED_DEBUG
 #include <led_dbg.h>
-#include "uartTxTest.h"
+#include "uart_ping_pong.h"
 
 #ifdef SOS_SFI
-#define UART_TX_TEST_DOM_ID  SFI_DOM2
+#define UART_PING_PONG_DOM_ID  SFI_DOM2
 #endif
 
-#define UART_TX_TIMER_INTERVAL	10L
-#define UART_TX_TID               0
+#define UART_PP_TIMER_INTERVAL	10L
+#define UART_PP_TID               0
 
-#define MSG_TX_TEST_SEND (MOD_MSG_START + 0)
+#define MSG_PP_SEND (MOD_MSG_START + 0)
 
 
 /**
@@ -52,12 +52,12 @@ typedef struct {
  * state, and a handler for MSG_FINAL to release module resources.
  */
 
-int8_t uartTxTest_msg_handler(void *start, Message *e);
+int8_t uart_ping_pong_msg_handler(void *start, Message *e);
 
 /**
  * This is the only global variable one can have.
  */
-static mod_header_t uartTxTest_mod_header SOS_MODULE_HEADER = {
+static mod_header_t uart_ping_pong_mod_header SOS_MODULE_HEADER = {
 	.mod_id         = DFLT_APP_ID0,
 	.state_size     = sizeof(app_state_t),
 	.num_sub_func   = 0,
@@ -66,15 +66,15 @@ static mod_header_t uartTxTest_mod_header SOS_MODULE_HEADER = {
 	.processor_type = MCU_TYPE,
 	.code_id        = ehtons(DFLT_APP_ID0),
 #ifdef SOS_SFI
-	.dom_id         = UART_TX_TEST_DOM_ID,
-	.module_handler = (msg_handler_t)SFI_FUNC_WORD_ADDR(UART_TX_TEST_DOM_ID, 0),
+	.dom_id         = UART_PING_PONG_DOM_ID,
+	.module_handler = (msg_handler_t)SFI_FUNC_WORD_ADDR(UART_PING_PONG_DOM_ID, 0),
 #else
-	.module_handler = uartTxTest_msg_handler,
+	.module_handler = uart_ping_pong_msg_handler,
 #endif
 };
 
 
-int8_t uartTxTest_msg_handler(void *state, Message *msg)
+int8_t uart_ping_pong_msg_handler(void *state, Message *msg)
 {
   /**
    * The module is passed in a void* that contains its state.  For easy
@@ -95,21 +95,27 @@ int8_t uartTxTest_msg_handler(void *state, Message *msg)
 	 * they will continue to receive periodic (or one shot) timer events.
 	 */
   case MSG_INIT:
-  {
+	{
 	  s->pid = msg->did;
 	  s->state = 0;
 	  s->pktcount = 0;
 	  sys_led(LED_RED_TOGGLE);
-	  /**
-	   * The timer API takes the following parameters:
-	   * - Timer ID (used to distinguish multiple timers of different
-	   *   ..types on the same host)
-	   * - Timer delay in
-	   * - Type of timer
-	   */
 	  DEBUG_PID(s->pid, "Uart_Tx Start\n");
-	  sys_timer_start(UART_TX_TID, UART_TX_TIMER_INTERVAL, TIMER_REPEAT);
+
+	  uint32_t* buff;
+	  *buff = s->pktcount++;
+	  sys_post_uart(DFLT_APP_ID0, MSG_PP_SEND, sizeof(uint32_t),
+					buff, SOS_MSG_RELEASE, UART_ADDRESS);
 	  break;
+	}
+
+  case MSG_PP_SEND:
+	{
+	  uint32_t* buff;
+	  *buff = s->pktcount++;
+	  sys_post_uart(DFLT_APP_ID0, MSG_PP_SEND, sizeof(uint32_t),
+					buff, SOS_MSG_RELEASE, UART_ADDRESS);	  
+	  break; 
 	}
 
 
@@ -120,34 +126,7 @@ int8_t uartTxTest_msg_handler(void *state, Message *msg)
 	 */
   case MSG_FINAL:
 	{
-	  /**
-	   * Stop the timer
-	   */
-	  sys_timer_stop(UART_TX_TID);
 	  DEBUG_PID(s->pid, "Uart_Tx Stop\n");
-	  break;
-	}
-
-
-	/**
-	 * All timers addressed to this PID, regardless of the timer ID, are of
-	 * type MSG_TIMER_TIMEOUT and handled by this handler.  Timers with
-	 * different timer IDs can be further distinguished by testing for the
-	 * type, as demonstrated in the relay module.
-	 */
-  case MSG_TIMER_TIMEOUT:
-	{
-	  uint32_t* buff;
-	  sys_led(LED_GREEN_TOGGLE);
-	  s->pktcount++;
-	  if (s->pktcount < 5){
-		buff =  (uint32_t*)sys_malloc(sizeof(uint32_t));
-		*buff = s->pktcount;
-		sys_post_uart(DFLT_APP_ID0, MSG_TX_TEST_SEND, sizeof(uint32_t),
-					  buff, SOS_MSG_RELEASE, UART_ADDRESS);
-	  }
-	  else
-		sys_timer_stop(UART_TX_TID);
 	  break;
 	}
 
@@ -166,9 +145,9 @@ int8_t uartTxTest_msg_handler(void *state, Message *msg)
 }
 
 #ifndef _MODULE_
-mod_header_ptr uartTxTest_get_header()
+mod_header_ptr uart_ping_pong_get_header()
 {
-  return sos_get_header_address(uartTxTest_mod_header);
+  return sos_get_header_address(uart_ping_pong_mod_header);
 }
 #endif
 

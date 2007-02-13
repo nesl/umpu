@@ -2,7 +2,7 @@
 #define _BLINK_H_
 
 #ifndef _MODULE_
-int8_t uartTxTest_init();
+int8_t uart_ping_pong_init();
 #endif
 
 #endif
