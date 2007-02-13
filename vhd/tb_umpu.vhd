@@ -90,6 +90,10 @@ architecture test_bench of tb_umpu is
 
   end component;
 
+  signal uart_loop_back_tx : std_logic;
+  signal uart_loop_back_rx : std_logic;
+  signal test_sig : std_logic;
+
 begin  -- test_bench
 
   umpu1 : umpu
@@ -108,8 +112,8 @@ begin  -- test_bench
       RamWrEn    => tbRamWrEn,
       -- temp signals end
 
-      -- real time clock for timer counter
-      rt_Clock => tb_rt_Clock,
+      -- real time clock for timer counter 
+     rt_Clock => tb_rt_Clock,
 
       -- panic signal from mmc
       panic => tbPanic,
@@ -118,8 +122,8 @@ begin  -- test_bench
       reset => tbReset,
       porta => tbPorta,
       portb => tbPortb,
-      rxd   => tbRxd,
-      txd   => tbTxd,
+      rxd   => uart_loop_back_rx,
+      txd   => uart_loop_back_tx,
       nINT0 => tb_nINT0,
       nINT1 => tb_nINT1,
       nINT2 => tb_nINT2,
@@ -130,6 +134,8 @@ begin  -- test_bench
       INT7  => tb_INT7
       );
 
+  uart_loop_back_rx <= uart_loop_back_tx after 2 us;
+  
   rt_clock_process : process
   begin
     -- rt clock period of 30518 ns or 32,768 Hz

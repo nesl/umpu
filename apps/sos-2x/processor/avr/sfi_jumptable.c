@@ -59,6 +59,7 @@ int8_t sfi_get_domain_id(sos_pid_t pid)
 //----------------------------------------------------------
 void sfi_jmptbl_exception()
 {
+  DISABLE_GLOBAL_INTERRUPTS();
   uint16_t val;
   uint8_t ledcnt;
   ker_led(LED_RED_ON);
@@ -106,6 +107,7 @@ static void sfi_err_code_led_display(uint8_t errcode)
 
 void sfi_exception(uint8_t errcode)
 {
+  DISABLE_GLOBAL_INTERRUPTS();
   uint8_t clrdisp;
   uint16_t val;
   val = 0xffff;

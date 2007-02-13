@@ -33,8 +33,6 @@
  * Module can define its own state
  */
 typedef struct {
-  uint8_t pid;
-  uint8_t state;
   uint32_t pktcount;
 } app_state_t;
 
@@ -96,14 +94,15 @@ int8_t uart_ping_pong_msg_handler(void *state, Message *msg)
 	 */
   case MSG_INIT:
 	{
-	  s->pid = msg->did;
-	  s->state = 0;
+	  PORTB = 0x80;
+	  PORTB = 0x81;
 	  s->pktcount = 0;
 	  sys_led(LED_RED_TOGGLE);
-	  DEBUG_PID(s->pid, "Uart_Tx Start\n");
 
 	  uint32_t* buff;
+	  buff = (uint32_t*)sys_malloc(sizeof(uint32_t));
 	  *buff = s->pktcount++;
+	  // Enable promiscuous mode in sos_start to receive uart loopback msgs
 	  sys_post_uart(DFLT_APP_ID0, MSG_PP_SEND, sizeof(uint32_t),
 					buff, SOS_MSG_RELEASE, UART_ADDRESS);
 	  break;
@@ -111,10 +110,15 @@ int8_t uart_ping_pong_msg_handler(void *state, Message *msg)
 
   case MSG_PP_SEND:
 	{
+	  PORTB = 0x90;
+	  PORTB = 0x91;
+	  sys_led(LED_GREEN_TOGGLE);
 	  uint32_t* buff;
+	  buff = (uint32_t*)sys_malloc(sizeof(uint32_t));
 	  *buff = s->pktcount++;
+	  // Enable promiscuous mode in sos_start to receive uart loopback msgs
 	  sys_post_uart(DFLT_APP_ID0, MSG_PP_SEND, sizeof(uint32_t),
-					buff, SOS_MSG_RELEASE, UART_ADDRESS);	  
+					buff, SOS_MSG_RELEASE, UART_ADDRESS);
 	  break; 
 	}
 
@@ -126,7 +130,6 @@ int8_t uart_ping_pong_msg_handler(void *state, Message *msg)
 	 */
   case MSG_FINAL:
 	{
-	  DEBUG_PID(s->pid, "Uart_Tx Stop\n");
 	  break;
 	}
 

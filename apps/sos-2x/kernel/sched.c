@@ -855,7 +855,6 @@ void sched(void)
 			SOS_MEASUREMENT_IDLE_START();
 			ENABLE_GLOBAL_INTERRUPTS();
 		}
-		//watchdog_reset();
 	}
 }
 

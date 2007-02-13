@@ -15,7 +15,7 @@
  */
 enum {
 	/* i2c_system msgs */
- MSG_I2C_SEND_DONE = PROC_MSG_START, //!< I2C send done
+ MSG_I2C_SEND_DONE = PROC_MSG_START, //!< I2C send done = 0x40
  MSG_I2C_READ_DONE, //!< I2C read Done     
  /* uart_system msgs */
  MSG_UART_SEND_DONE, //!< uart send done

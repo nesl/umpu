@@ -544,7 +544,7 @@ uart_recv_interrupt() {
 					state[RX]->hdlc_state = HDLC_IDLE;
 					if(state[RX]->recv_int_crc_in == state[RX]->crc) {
 #ifndef NO_SOS_UART_MGR
-						set_uart_address(entohs(state[RX]->msgHdr->saddr));
+						sys_set_uart_address(entohs(state[RX]->msgHdr->saddr));
 #endif
 						handle_incoming_msg(state[RX]->msgHdr, SOS_MSG_UART_IO);
 						state[RX]->msgHdr = NULL;

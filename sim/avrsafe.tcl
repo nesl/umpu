@@ -49,6 +49,32 @@ add wave -hex -label PANIC sim:/tb_umpu/umpu1/TOP_AVR/panic
 add wave -label TEMP_PANIC sim:/tb_umpu/umpu1/top_avr/testing_core/umpu_panic_module/umpu_panic
 
 proc str {} {
+    add wave -divider STR_CHECKING
+    add wave -hex -label idc_st_x sim:/tb_umpu/umpu1/TOP_AVR/testing_core/main/idc_st_x
+    add wave -hex -label idc_st_y sim:/tb_umpu/umpu1/TOP_AVR/testing_core/main/idc_st_y
+    add wave -hex -label idc_st_z sim:/tb_umpu/umpu1/TOP_AVR/testing_core/main/idc_st_z
+
+    add wave -hex -label st_st sim:/tb_umpu/umpu1/TOP_AVR/testing_core/main/st_st
+    add wave -hex -label dex_adrreg_d_latched sim:/tb_umpu/umpu1/TOP_AVR/testing_core/main/dex_adrreg_d_latched
+    add wave -hex -label dex_adrreg_d sim:/tb_umpu/umpu1/TOP_AVR/testing_core/main/dex_adrreg_d
+
+    add wave -hex -label ramadr_reg_en sim:/tb_umpu/umpu1/TOP_AVR/testing_core/main/ramadr_reg_en
+    add wave -hex -label ramadr_reg_in sim:/tb_umpu/umpu1/TOP_AVR/testing_core/main/ramadr_reg_in
+    add wave -hex -label ramadr_int sim:/tb_umpu/umpu1/TOP_AVR/testing_core/main/ramadr_int
+    add wave -hex -label ramadr sim:/tb_umpu/umpu1/TOP_AVR/testing_core/main/ramadr
+
+    add wave -hex -label ramwe_int sim:/tb_umpu/umpu1/TOP_AVR/testing_core/main/ramwe_int
+    add wave -hex -label dbusout_int sim:/tb_umpu/umpu1/TOP_AVR/testing_core/main/dbusout_int
+    add wave -hex -label reg_rd_out sim:/tb_umpu/umpu1/TOP_AVR/testing_core/main/reg_rd_out
+    add wave -hex -label reg_rd_wr sim:/tb_umpu/umpu1/TOP_AVR/testing_core/main/reg_rd_wr
+    add wave -hex -label reg_rd_adr sim:/tb_umpu/umpu1/TOP_AVR/testing_core/main/reg_rd_adr
+    add wave -hex -label reg_rd_in sim:/tb_umpu/umpu1/TOP_AVR/testing_core/main/reg_rd_in
+    add wave -hex -label reg_rr_adr sim:/tb_umpu/umpu1/TOP_AVR/testing_core/main/reg_rr_adr
+    add wave -hex -label iowe_int sim:/tb_umpu/umpu1/TOP_AVR/testing_core/main/iowe_int
+}
+
+
+proc str_mmc {} {
     add wave -divider STR_INSTR_SIGNALS
     add wave -label fet_dec_ramwe sim:/tb_umpu/umpu1/TOP_AVR/testing_core/main/ramwe
     add wave -label fet_dec_ramadr sim:/tb_umpu/umpu1/TOP_AVR/testing_core/main/ramadr
@@ -378,9 +404,9 @@ proc test_bench {} {
 
     add wave -divider PC_STUFF
     add wave -hex -label PC sim:/tb_umpu/umpu1/TOP_AVR/TESTING_CORE/main/pc
+    add wave -label Proc_Data -hex sim:/tb_umpu/tbProcData
     add wave -label instr_code_reg -hex sim:/tb_umpu/umpu1/top_avr/testing_core/main/instruction_code_reg
     add wave -label instr_reg -hex sim:/tb_umpu/umpu1/top_avr/testing_core/main/instruction_reg
-    add wave -label Proc_Data -hex sim:/tb_umpu/tbProcData
 
     add wave -divider INTERRUPTS
     add wave -label IRQLines  sim:/tb_umpu/umpu1/top_avr/testing_core/main/irqlines(22:0)
@@ -394,8 +420,12 @@ proc test_bench {} {
     add wave -label Ram_Rd_En sim:/tb_umpu/umpu1/top_avr/testing_core/ramre
 
     add wave -divider UART
-    add wave -label rxd -hex sim:/tb_umpu/tbRxd
-    add wave -label txd -hex sim:/tb_umpu/tbTxd
+    add wave -label txd_pp -hex sim:/tb_umpu/uart_loop_back_tx
+    add wave -label rxd_pp -hex sim:/tb_umpu/uart_loop_back_rx
+    add wave -label test_sig -hex sim:/tb_umpu/test_sig
+
+    add wave -label rxd_real -hex sim:/tb_umpu/tbTxd
+    add wave -label txd_real -hex sim:/tb_umpu/tbRxd
 
     add wave -divider REG_BUS
     add wave -label reg_bus_addr -hex sim:/tb_umpu/umpu1/top_avr/testing_core/adr

@@ -21,6 +21,8 @@ int main () {
   UCR = (1 << TXEN) | (1 << TXCIE) | (1 << RXCIE) | (1 << RXEN);
   
   DDRA = 0xFF;
+  DDRB = 0xFF;
+  PORTB = 0x44;
   PORTA = 0x02;
 
   while (!(USR & (1<<UDRE)));
@@ -50,7 +52,11 @@ SIGNAL(SIG_UART_RECV) {
 }
 */
 SIGNAL(SIG_UART_TRANS) {
-  //UDR = 0x55;
+  PORTB = 0x22;
   UDR = counter++;
+}
+
+SIGNAL(SIG_UART_RECV) {
+  PORTA = UDR;
 }
 

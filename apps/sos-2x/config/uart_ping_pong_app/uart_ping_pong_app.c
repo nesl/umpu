@@ -13,5 +13,6 @@ mod_header_ptr uart_ping_pong_get_header();
  */
 void sos_start(void)
 {
-ker_register_module(uart_ping_pong_get_header());
+  ker_register_module(uart_ping_pong_get_header());
+ ker_msg_change_rules(DFLT_APP_ID0, SOS_MSG_RULES_PROMISCUOUS);
 }
