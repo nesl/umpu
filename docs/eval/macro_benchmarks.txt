@@ -1,0 +1,3 @@
+uart_ping_pong and uartTxTest:
+1. Execution time of the send and receive interrupts
+2. Enqueue and Dequeue operations within uart

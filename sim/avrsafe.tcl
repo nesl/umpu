@@ -422,7 +422,6 @@ proc test_bench {} {
     add wave -divider UART
     add wave -label txd_pp -hex sim:/tb_umpu/uart_loop_back_tx
     add wave -label rxd_pp -hex sim:/tb_umpu/uart_loop_back_rx
-    add wave -label test_sig -hex sim:/tb_umpu/test_sig
 
     add wave -label rxd_real -hex sim:/tb_umpu/tbTxd
     add wave -label txd_real -hex sim:/tb_umpu/tbRxd
