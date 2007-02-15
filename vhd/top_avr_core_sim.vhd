@@ -16,16 +16,6 @@ entity top_avr_core_sim is
     RAMSize : positive := 4096
     );
   port(
-
-    -- Temp signals
-    tempPromAddress : out std_logic_vector(15 downto 0);
-    tempPromData    : out std_logic_vector(15 downto 0);
-
-    tempRamAddress : out std_logic_vector(15 downto 0);
-    tempRamDataIn  : out std_logic_vector(7 downto 0);
-    tempRamDataOut : out std_logic_vector(7 downto 0);
-    tempRamWrEn    : out std_logic;
-
     -- Real time clock for timer counter
     rt_Clock : in std_logic;
 
@@ -399,24 +389,9 @@ architecture Struct of top_avr_core_sim is
 
 begin
 
-  -- temp signals begin
-  tempPromAddress <= sg_core_pc;
-  tempPromData    <= sg_core_inst;
-  tempRamAddress  <= sg_core_ramadr(15 downto 0);
-  tempRamDataIn   <= sg_ram_din;
-  tempRamDataOut  <= sg_ram_dout;
-  tempRamWrEn     <= sg_core_ramwe;
-  -- temp signals end
-
-  -- Setting the umpu_panic interrupt ports
-  --sg_core_irqlines(20) <= umpu_irq;
-  --umpu_irqack <= sg_ind_irq_ack(20);
-  
   TESTING_CORE : component avr_core port map
     (
-
       panic => panic,
-
       cp2     => cp2,
       ireset  => ireset,
       cpuwait => sg_core_cpuwait,

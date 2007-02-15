@@ -7,20 +7,6 @@ use WORK.AVRuCPackage.all;
 
 entity umpu
 is port (
-
-  -- temp signals begin
-  loadingData    : out std_logic_vector(15 downto 0);
-  loadingAddress : out std_logic_vector(15 downto 0);
-  procData       : out std_logic_vector(15 downto 0);
-  procAddress    : out std_logic_vector(15 downto 0);
-  loadingWrEn    : out std_logic;
-
-  RamAddress : out std_logic_vector(15 downto 0);
-  RamDataIn  : out std_logic_vector(7 downto 0);
-  RamDataOut : out std_logic_vector(7 downto 0);
-  RamWrEn    : out std_logic;
-  -- temp signals end
-
   -- Real time clock for timer counter
   rt_Clock : in std_logic;
 
@@ -52,19 +38,8 @@ end umpu;
 
 architecture beh of umpu is
 
-  signal eightMhzClock : std_logic_vector(1 downto 0);
-
   component top_avr_core_sim
     is port (
-
-      -- Temp signals
-      tempPromAddress : out std_logic_vector(15 downto 0);
-      tempPromData    : out std_logic_vector(15 downto 0);
-      tempRamAddress  : out std_logic_vector(15 downto 0);
-      tempRamDataIn   : out std_logic_vector(7 downto 0);
-      tempRamDataOut  : out std_logic_vector(7 downto 0);
-      tempRamWrEn     : out std_logic;
-
       -- Real time clock for timer counter
       rt_Clock : in std_logic;
 
@@ -111,57 +86,42 @@ architecture beh of umpu is
       );
   end component;
 
-  component program_loader
-    is port (
-      reset : in std_logic;
-      clock : in std_logic;
-
-      data_in   : in  std_logic_vector(7 downto 0);
-      data_req  : out std_logic;
-      data_recd : in  std_logic;
-
-      avr_reset : out std_logic;
-
-      prom_wr_en   : out std_logic;
-      prom_address : out std_logic_vector(15 downto 0);
-      prom_data    : out std_logic_vector(15 downto 0)
+  component data_col
+    generic (
+      NEVENTS  :    integer;
+      filename :    string
+      );
+    port (
+      reset    : in std_logic;
+      clock    : in std_logic;
+      monitor  : in std_logic;
+      stop     : in std_logic;
+      value    : in std_logic_vector(7 downto 0)
       );
   end component;
 
-  signal sgData     : std_logic_vector(15 downto 0);
-  signal sgAddress  : std_logic_vector(15 downto 0);
-  signal sgWrEn     : std_logic;
+  signal sgAddress : std_logic_vector(15 downto 0);
+  signal sgData : std_logic_vector(15 downto 0);
+  signal sgWrEn : std_logic;
+  
+  signal eightMhzClock : std_logic_vector(1 downto 0);
   signal sgAvrReset : std_logic;
   signal sgPanic    : std_logic;
-
   signal avr_txd : std_logic;
+  signal stop : std_logic;
+  signal stop_counter : std_logic_vector(31 downto 0);
 
 begin  -- beh
 
-  loadingAddress <= sgAddress;
-  loadingData    <= sgData;
-  loadingWrEn    <= sgWrEn;
-
-  -- map the panic signal so it can be observed
   panic <= sgPanic;
 
   SOS_PACKET_MODULE : component sos_packet port map (
-    reset       => reset,
-    clock       => eightMhzClock(1),
-    load_rxd    => avr_txd
--- load_txd => ,
+    reset    => reset,
+    clock    => eightMhzClock(1),
+    load_rxd => avr_txd
     );
 
   TOP_AVR : component top_avr_core_sim port map (
-    -- temp signals begin
-    tempPromData    => procData,
-    tempPromAddress => procAddress,
-    tempRamAddress  => RamAddress,
-    tempRamDataOut  => RamDataOut,
-    tempRamDataIn   => RamDataIn,
-    tempRamWrEn     => RamWrEn,
-    -- temp signals end
-
     -- real time clock for timer counter
     rt_Clock      => rt_Clock,
     -- Panic signal from mmc
@@ -195,6 +155,128 @@ begin  -- beh
     data_out   => sgData
     );
 
+  data_col0 : data_col
+    generic map (
+      NEVENTS => 100,
+      FILENAME => "portb0"
+      )
+    port map (
+      reset => reset,
+      clock => eightMhzClock(1),
+      monitor => porta(0),
+      stop => stop,
+      value => porta
+      );
+
+  data_col1 : data_col
+    generic map (
+      NEVENTS => 100,
+      FILENAME => "portb1"
+      )
+    port map (
+      reset => reset,
+      clock => eightMhzClock(1),
+      monitor => porta(1),
+      stop => stop,
+      value => porta
+      );
+
+  data_col2 : data_col
+    generic map (
+      NEVENTS => 100,
+      FILENAME => "portb2"
+      )
+    port map (
+      reset => reset,
+      clock => eightMhzClock(1),
+      monitor => porta(2),
+      stop => stop,
+      value => porta
+      );
+
+  data_col3 : data_col
+    generic map (
+      NEVENTS => 100,
+      FILENAME => "portb3"
+      )
+    port map (
+      reset => reset,
+      clock => eightMhzClock(1),
+      monitor => porta(3),
+      stop => stop,
+      value => porta
+      );
+
+  data_col4 : data_col
+    generic map (
+      NEVENTS => 100,
+      FILENAME => "portb4"
+      )
+    port map (
+      reset => reset,
+      clock => eightMhzClock(1),
+      monitor => porta(4),
+      stop => stop,
+      value => porta
+      );
+
+  data_col5 : data_col
+    generic map (
+      NEVENTS => 100,
+      FILENAME => "portb5"
+      )
+    port map (
+      reset => reset,
+      clock => eightMhzClock(1),
+      monitor => porta(5),
+      stop => stop,
+      value => porta
+      );
+
+  data_col6 : data_col
+    generic map (
+      NEVENTS => 100,
+      FILENAME => "portb6"
+      )
+    port map (
+      reset => reset,
+      clock => eightMhzClock(1),
+      monitor => porta(6),
+      stop => stop,
+      value => porta
+      );
+
+  data_col7 : data_col
+    generic map (
+      NEVENTS => 100,
+      FILENAME => "portb7"
+      )
+    port map (
+      reset => reset,
+      clock => eightMhzClock(1),
+      monitor => porta(7),
+      stop => stop,
+      value => porta
+      );
+
+  stop <= '1' when porta = x"26"
+          else '0';
+  
+--   COUNTING_STOP : process(reset, clock)
+--   begin
+--     if (reset = '0') then
+--       stop_counter <= (others => '0');
+--       stop <= '0';
+--     elsif (clock = '1' and clock'event) then
+--       if (stop_counter < 300000) then
+--         stop_counter <= stop_counter + 1;
+--         stop <= '0';
+--       else
+--         stop <= '1';
+--       end if;
+--     end if;
+--   end process;
+  
   scalingClock : process(reset, clock)
   begin
     if (reset = '0') then

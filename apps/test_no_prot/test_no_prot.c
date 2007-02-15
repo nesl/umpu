@@ -7,7 +7,7 @@
 #include <avr/sleep.h>
 #include <avr/interrupt.h>
 
-#define BUFF_SIZE 10
+#define BUFF_SIZE 20
 
 uint8_t global_buffer[BUFF_SIZE];
 

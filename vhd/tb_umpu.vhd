@@ -33,34 +33,8 @@ architecture test_bench of tb_umpu is
   signal tb_INT6     : std_logic;
   signal tb_INT7     : std_logic;
 
-  -- Temp signals begin
-  signal tbProcData       : std_logic_vector(15 downto 0);
-  signal tbProcAddress    : std_logic_vector(15 downto 0);
-  signal tbLoadingData    : std_logic_vector(15 downto 0);
-  signal tbLoadingAddress : std_logic_vector(15 downto 0);
-  signal tbLoadingWrEn    : std_logic;
-
-  signal tbRamAddress  : std_logic_vector(15 downto 0);
-  signal tbRamDataOut : std_logic_vector(7 downto 0);
-  signal tbRamDataIn  : std_logic_vector(7 downto 0);
-  signal tbRamWrEn    : std_logic;
-  -- temp signals end
-
   component umpu
     port (
-      -- temp signals begin
-      loadingData    : out std_logic_vector(15 downto 0);
-      loadingAddress : out std_logic_vector(15 downto 0);
-      procData       : out std_logic_vector(15 downto 0);
-      procAddress    : out std_logic_vector(15 downto 0);
-      loadingWrEn    : out std_logic;
-
-      RamAddress : out std_logic_vector(15 downto 0);
-      RamDataIn  : out std_logic_vector(7 downto 0);
-      RamDataOut : out std_logic_vector(7 downto 0);
-      RamWrEn    : out std_logic;
-      -- temp signals end
-
       -- Real time clock for timer counter
       rt_Clock : in std_logic;
 
@@ -98,20 +72,6 @@ begin  -- test_bench
 
   umpu1 : umpu
     port map (
-
-      -- temp signals begin
-      loadingData    => tbLoadingData,
-      loadingAddress => tbLoadingAddress,
-      procData       => tbProcData,
-      procAddress    => tbProcAddress,
-      LoadingWrEn    => tbLoadingWrEn,
-
-      RamAddress => tbRamAddress,
-      RamDataOut => tbRamDataOut,
-      RamDataIn  => tbRamDataIn,
-      RamWrEn    => tbRamWrEn,
-      -- temp signals end
-
       -- real time clock for timer counter 
      rt_Clock => tb_rt_Clock,
 
@@ -142,12 +102,6 @@ begin  -- test_bench
     tb_rt_Clock <= '1', '0' after 15258.79 ns;
     wait for 30517.58 ns;
   end process rt_clock_process;
-  
---   rt_clock_process : process
---     begin
---       tb_rt_Clock <= '1', '0' after 333.33 ns;
---       wait for 666.66 ns;
---     end process rt_clock_process;
   
   clock_process : process
   begin
