@@ -399,6 +399,7 @@ proc data_col {} {
     add wave -unsigned -label value sim:/tb_umpu/umpu1/data_col0/value
     add wave -unsigned -label counter sim:/tb_umpu/umpu1/data_col0/counter
     add wave -unsigned -label point_counter sim:/tb_umpu/umpu1/data_col0/point_counter
+    add wave -label stop sim:/tb_umpu/umpu1/data_col0/stop
 }
 
 proc test_bench {} {

@@ -29,6 +29,8 @@ void dom0_realmain()
   uint8_t i;
   uint8_t stack_buffer[BUFF_SIZE];
   DDRA = 0xFF;
+  PORTA = 0x55;
+  PORTA = 0xAA;
 
   // Initialize and display the value of the memory
   for (i = 0; i < BUFF_SIZE; i++){

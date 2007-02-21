@@ -18,6 +18,7 @@
 #include <sfi_jumptable.h>
 #include <umpu.h>
 #endif
+#include <umpu_eval.h>
 #include <sys_module.h>
 #include <uart_system.h>
 #include <sos_uart_mgr.h>
@@ -213,6 +214,10 @@ void uart_send_interrupt(){
 #else
 uart_send_interrupt() {
 #endif
+
+	/* Enable Evaluation Measurement*/
+	UART_SEND_ISR_BEGIN()
+
 	SOS_MEASUREMENT_IDLE_END();
 	LED_DBG(LED_GREEN_TOGGLE);
 
@@ -311,6 +316,9 @@ uart_send_interrupt() {
 	}
 	//DEBUG("end uart_send_interrupt %d %d %d\n", state[TX]->state, state[TX]->msg_state,
 	//		state[TX]->hdlc_state);
+
+	/* Enable Evaluation Measurement*/
+	UART_SEND_ISR_DONE();
 }
 
 /*
@@ -349,6 +357,10 @@ void uart_recv_interrupt() {
 #else
 uart_recv_interrupt() {
 #endif	
+
+	/* Enable Evaluation Measurement*/
+	UART_RECV_ISR_BEGIN();
+
 	uint8_t err;
 	uint8_t byte_in;
 	SOS_MEASUREMENT_IDLE_END()
@@ -567,6 +579,9 @@ uart_recv_interrupt() {
 				uart_reset_recv();
 				break;
 	} // state[RX]->state
+
+	/* Enable Evaluation Measurement*/
+	UART_RECV_ISR_DONE();
 }
 #else
 uart_send_interrupt() {

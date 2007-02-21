@@ -54,7 +54,8 @@
 #include <uart_system.h>
 #include <sos_uart.h>
 #endif
-
+//umpu Eval
+#include <umpu_eval.h>
 
 
 
@@ -67,9 +68,11 @@
 // FUNCTION DECLARATION
 //-------------------------------------------------------------------------
 void hardware_init(void){
-  
+
+  // Setting portb and starting the evaluation
   DDRB = 0xff;
-  PORTB = 0xff;
+  EVAL_START();
+
   // LEDS
   led_init();
 

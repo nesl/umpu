@@ -109,7 +109,6 @@ architecture beh of umpu is
   signal sgPanic    : std_logic;
   signal avr_txd : std_logic;
   signal stop : std_logic;
-  signal stop_counter : std_logic_vector(31 downto 0);
 
 begin  -- beh
 
@@ -163,9 +162,9 @@ begin  -- beh
     port map (
       reset => reset,
       clock => eightMhzClock(1),
-      monitor => porta(0),
+      monitor => portb(0),
       stop => stop,
-      value => porta
+      value => portb
       );
 
   data_col1 : data_col
@@ -176,9 +175,9 @@ begin  -- beh
     port map (
       reset => reset,
       clock => eightMhzClock(1),
-      monitor => porta(1),
+      monitor => portb(1),
       stop => stop,
-      value => porta
+      value => portb
       );
 
   data_col2 : data_col
@@ -189,9 +188,9 @@ begin  -- beh
     port map (
       reset => reset,
       clock => eightMhzClock(1),
-      monitor => porta(2),
+      monitor => portb(2),
       stop => stop,
-      value => porta
+      value => portb
       );
 
   data_col3 : data_col
@@ -202,9 +201,9 @@ begin  -- beh
     port map (
       reset => reset,
       clock => eightMhzClock(1),
-      monitor => porta(3),
+      monitor => portb(3),
       stop => stop,
-      value => porta
+      value => portb
       );
 
   data_col4 : data_col
@@ -215,9 +214,9 @@ begin  -- beh
     port map (
       reset => reset,
       clock => eightMhzClock(1),
-      monitor => porta(4),
+      monitor => portb(4),
       stop => stop,
-      value => porta
+      value => portb
       );
 
   data_col5 : data_col
@@ -228,9 +227,9 @@ begin  -- beh
     port map (
       reset => reset,
       clock => eightMhzClock(1),
-      monitor => porta(5),
+      monitor => portb(5),
       stop => stop,
-      value => porta
+      value => portb
       );
 
   data_col6 : data_col
@@ -241,9 +240,9 @@ begin  -- beh
     port map (
       reset => reset,
       clock => eightMhzClock(1),
-      monitor => porta(6),
+      monitor => portb(6),
       stop => stop,
-      value => porta
+      value => portb
       );
 
   data_col7 : data_col
@@ -254,34 +253,26 @@ begin  -- beh
     port map (
       reset => reset,
       clock => eightMhzClock(1),
-      monitor => porta(7),
+      monitor => portb(7),
       stop => stop,
-      value => porta
+      value => portb
       );
 
-  stop <= '1' when porta = x"26"
-          else '0';
-  
---   COUNTING_STOP : process(reset, clock)
---   begin
---     if (reset = '0') then
---       stop_counter <= (others => '0');
---       stop <= '0';
---     elsif (clock = '1' and clock'event) then
---       if (stop_counter < 300000) then
---         stop_counter <= stop_counter + 1;
---         stop <= '0';
---       else
---         stop <= '1';
---       end if;
---     end if;
---   end process;
-  
+  COUNTING_STOP : process(reset, clock)
+  begin
+    if (reset = '0') then
+      stop <= '0';
+    elsif (clock = '1' and clock'event) then
+      if (portb = x"5A") then
+        stop <= '1';
+      end if;
+    end if;
+  end process;
+ 
   scalingClock : process(reset, clock)
   begin
     if (reset = '0') then
       eightMhzClock <= "00";
-
     elsif (clock = '1' and clock'event) then
       eightMhzClock <= eightMhzClock + 1;
     end if;

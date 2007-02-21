@@ -43,6 +43,12 @@ DEFS += -DSFI_DOMS_8
 endif
 endif
 
+##################################################
+# MEMORY PROTECTION OPTIONS
+#################################################
+ifeq ($(EVAL), on)
+DEFS += -DUMPU_EVAL
+endif
 
 #################################################
 # KERNEL SOURCES AND OBJECTS

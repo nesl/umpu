@@ -15,6 +15,8 @@
 #include <sfi_jumptable.h>
 #endif
 
+#include <umpu_eval.h>
+
 //#define LED_DEBUG
 #include <led_dbg.h>
 #include "uart_ping_pong.h"
@@ -94,8 +96,8 @@ int8_t uart_ping_pong_msg_handler(void *state, Message *msg)
 	 */
   case MSG_INIT:
 	{
-	  PORTB = 0x80;
-	  PORTB = 0x81;
+	  UART_MSG_INIT();
+
 	  s->pktcount = 0;
 	  sys_led(LED_RED_TOGGLE);
 
@@ -110,15 +112,19 @@ int8_t uart_ping_pong_msg_handler(void *state, Message *msg)
 
   case MSG_PP_SEND:
 	{
-	  PORTB = 0x90;
-	  PORTB = 0x91;
+	  UART_MSG_RECV();
+
 	  sys_led(LED_GREEN_TOGGLE);
 	  uint32_t* buff;
 	  buff = (uint32_t*)sys_malloc(sizeof(uint32_t));
 	  *buff = s->pktcount++;
+	  if (s->pktcount > 1)
+		EVAL_STOP();
 	  // Enable promiscuous mode in sos_start to receive uart loopback msgs
 	  sys_post_uart(DFLT_APP_ID0, MSG_PP_SEND, sizeof(uint32_t),
 					buff, SOS_MSG_RELEASE, UART_ADDRESS);
+
+	  UART_MSG_SENT();
 	  break; 
 	}
 

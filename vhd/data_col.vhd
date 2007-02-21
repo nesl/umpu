@@ -63,7 +63,8 @@ begin
   FILE_OUT : process(stop)
 -- variable trace_line : line;
   begin
-    if (stop = '1') then
+    if (stop = '1' and stop'event) then
+      --for index in 0 to (10) loop
       for index in 0 to (conv_integer(point_counter) - 2) loop
 -- write(trace_line, time_stamp(index));
 -- write(trace_line, string'(" "));
