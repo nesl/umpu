@@ -19,6 +19,14 @@
 #include <sys_module.h>
 #include <led.h>
 
+#ifdef SOS_SFI
+#include <sfi_jumptable.h>
+#endif
+#include <umpu_eval.h>
+#ifdef SOS_SFI
+#define DVM_DOM_ID  SFI_DOM2
+#endif
+
 //------------------------------------------------------------------------
 // TYPEDEFS
 //------------------------------------------------------------------------
@@ -41,6 +49,10 @@ static const mod_header_t mod_header SOS_MODULE_HEADER = {
   .state_size     =   sizeof(dvm_state_t),
   .num_sub_func   =    5,
   .num_prov_func  =    0,
+#ifdef SOS_SFI
+  .dom_id         = DVM_DOM_ID,
+  .module_handler = (msg_handler_t)SFI_FUNC_WORD_ADDR(DVM_DOM_ID, 0),
+#else
   .module_handler =    dvm_handler,
   .funct          = {
     {error_dvm, "czy2", M_EXT_LIB, EXECUTE},
