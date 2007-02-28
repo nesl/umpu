@@ -24,7 +24,7 @@
 //-------------------------------------------------------------
 // MODULE STATIC FUNCTIONS
 //-------------------------------------------------------------
-static int8_t test_fft_fix_module(void* state, Message *msg);
+int8_t test_fft_fix_module(void* state, Message *msg);
 
 //-------------------------------------------------------------
 // MODULE HEADER
@@ -39,15 +39,15 @@ static const mod_header_t mod_header SOS_MODULE_HEADER = {
   .platform_type  = HW_TYPE /* or PLATFORM_ANY */,
   .processor_type = MCU_TYPE,
 #ifdef SOS_SFI
-  .dom_id         = TEST_FFT_DOM_ID
-  .module_hander  = (msg_handler_t)SFI_FUNC_WORD_ADDR(TEST_FFT_DOM_ID, 0),
+  .dom_id         = TEST_FFT_DOM_ID,
+  .module_handler  = (msg_handler_t)SFI_FUNC_WORD_ADDR(TEST_FFT_DOM_ID, 0),
 #else
   .module_handler =  test_fft_fix_module,
 #endif
   .funct = {},
 };
 
-static int8_t test_fft_fix_module(void* state, Message* msg)
+int8_t test_fft_fix_module(void* state, Message* msg)
 {
   switch (msg->type){
   case MSG_FFT_DONE:

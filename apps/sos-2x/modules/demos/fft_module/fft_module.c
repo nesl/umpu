@@ -24,7 +24,7 @@
 //-------------------------------------------------------------
 // MODULE STATIC FUNCTIONS
 //-------------------------------------------------------------
-static int8_t fft_fix_module(void* state, Message *msg);
+int8_t fft_fix_module(void* state, Message *msg);
 
 //-------------------------------------------------------------
 // MODULE HEADER
@@ -47,7 +47,7 @@ static const mod_header_t mod_header SOS_MODULE_HEADER = {
   .funct = {},
 };
 
-static int8_t fft_fix_module(void* state, Message* msg)
+int8_t fft_fix_module(void* state, Message* msg)
 {
   switch (msg->type){
   case MSG_INIT:
