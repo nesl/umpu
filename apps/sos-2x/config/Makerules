@@ -44,7 +44,7 @@ endif
 endif
 
 ##################################################
-# MEMORY PROTECTION OPTIONS
+# MEMORY PROTECTION EVALUATION OPTIONS
 #################################################
 ifeq ($(EVAL), on)
 DEFS += -DUMPU_EVAL

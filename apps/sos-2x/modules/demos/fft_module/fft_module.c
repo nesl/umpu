@@ -5,14 +5,21 @@
  */
 
 #include <sys_module.h>
+#ifdef SOS_SFI
+#include <sfi_jumptable.h>
+#endif
+
+#include <umpu_eval.h>
+
 #include "fft_module.h"
 #include <led.h>
 
 //-------------------------------------------------------------
 // CONSTANTS
 //-------------------------------------------------------------
-
-
+#ifdef SOS_SFI
+#define FFT_DOM_ID  SFI_DOM2
+#endif
 
 //-------------------------------------------------------------
 // MODULE STATIC FUNCTIONS
@@ -31,7 +38,12 @@ static const mod_header_t mod_header SOS_MODULE_HEADER = {
   .code_id        =  ehtons(FFT_FIX_PID),
   .platform_type  = HW_TYPE /* or PLATFORM_ANY */,
   .processor_type = MCU_TYPE,
+#ifdef SOS_SFI
+	.dom_id         = FFT_DOM_ID,
+	.module_handler = (msg_handler_t)SFI_FUNC_WORD_ADDR(FFT_DOM_ID, 0),
+#else
   .module_handler =  fft_fix_module,
+#endif
   .funct = {},
 };
 

@@ -15,6 +15,8 @@
 #include <sfi_jumptable.h>
 #endif
 
+#include <umpu_eval.h>
+
 //#define LED_DEBUG
 #include <led_dbg.h>
 #include "uartTxTest.h"
@@ -141,7 +143,10 @@ int8_t uartTxTest_msg_handler(void *state, Message *msg)
 	  sys_led(LED_GREEN_TOGGLE);
 	  s->pktcount++;
 	  if (s->pktcount < 5){
+		MALLOC_START();
 		buff =  (uint32_t*)sys_malloc(sizeof(uint32_t));
+		MALLOC_DONE();
+		EVAL_STOP();
 		*buff = s->pktcount;
 		sys_post_uart(DFLT_APP_ID0, MSG_TX_TEST_SEND, sizeof(uint32_t),
 					  buff, SOS_MSG_RELEASE, UART_ADDRESS);

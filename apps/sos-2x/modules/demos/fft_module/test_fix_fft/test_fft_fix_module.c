@@ -5,13 +5,20 @@
  */
 
 #include <sys_module.h>
+#ifdef SOS_SFI
+#include <sfi_jumptable.h>
+#endif
+#include <umpu_eval.h>
+
 #include <demos/fft_module/fft_module.h>
 #include <led.h>
 
 //-------------------------------------------------------------
 // CONSTANTS
 //-------------------------------------------------------------
-
+#ifdef SOS_SFI
+#define TEST_FFT_DOM_ID SFI_DOM3
+#endif
 
 
 //-------------------------------------------------------------
@@ -31,7 +38,12 @@ static const mod_header_t mod_header SOS_MODULE_HEADER = {
   .code_id        =  ehtons(TEST_FFT_FIX_PID),
   .platform_type  = HW_TYPE /* or PLATFORM_ANY */,
   .processor_type = MCU_TYPE,
+#ifdef SOS_SFI
+  .dom_id         = TEST_FFT_DOM_ID
+  .module_hander  = (msg_handler_t)SFI_FUNC_WORD_ADDR(TEST_FFT_DOM_ID, 0),
+#else
   .module_handler =  test_fft_fix_module,
+#endif
   .funct = {},
 };
 
@@ -59,10 +71,11 @@ static int8_t test_fft_fix_module(void* state, Message* msg)
 	-24554, -15313, 29470, 4594, 4818, -6438, -19452, 21802};
 	*/
       fx = sys_malloc(sizeof(short)*N);
-      for (i = 0; i < N; i++)
+      for (i = 0; i < N; i++) {
 	fx[i] = temp[i];
+      }
       sys_post(FFT_FIX_PID, MSG_DO_FFT, sizeof(short)*N, fx,
-      SOS_MSG_RELEASE);
+	       SOS_MSG_RELEASE);
       sys_led(LED_GREEN_TOGGLE);
       break;
     }

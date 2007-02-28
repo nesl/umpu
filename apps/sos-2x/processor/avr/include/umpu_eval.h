@@ -23,6 +23,15 @@ PORTB = 0x00; \
 
 #define UART_MSG_INIT() SET_BIT(3)
 
+#define MALLOC_START() SET_BIT(4)
+#define MALLOC_DONE() CLEAR_BIT(4)
+
+#define FREE_START() SET_BIT(5)
+#define FREE_DONE() CLEAR_BIT(5)
+
+#define CHANGE_OWN_START() SET_BIT(6)
+#define CHANGE_OWN_DONE() CLEAR_BIT(6)
+
 #else
 #define EVAL_START()
 #define EVAL_STOP()
@@ -37,6 +46,15 @@ PORTB = 0x00; \
 #define UART_MSG_SENT() 
 
 #define UART_MSG_INIT()
+
+#define MALLOC_START() 
+#define MALLOC_DONE() 
+
+#define FREE_START()
+#define FREE_DONE() 
+
+#define CHANGE_OWN_START() 
+#define CHANGE_OWN_DONE() 
 #endif
 
 
