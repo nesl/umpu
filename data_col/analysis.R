@@ -23,12 +23,9 @@ analysis = function(fileName,bitNumber){
   # Selecting the bit from the value
   monitor = (value %/% (2 ^ bitNumber)) %% 2
 
-  print(monitor)
-
   # Detecting the initial pattern
   for(i in 2:length(value)) {
     if(value[i - 1] == STEP1 & value[i] == STEP2) {
-      print("found pattern");
       start_point = i + 1
       break;
     }
@@ -38,15 +35,11 @@ analysis = function(fileName,bitNumber){
   # events_list contains the time period that an event stays high
   for(i in start_point:(length(monitor) - 1)) {
     if(monitor[i] == EVENT) {
-      print("found event")
       events_list[nevents + 1] = time_stamp[i+1] - time_stamp[i]
       nevents = nevents + 1
     }
   }
 
-  print(events_list)
-  print(length(events_list))
-  print("avg and dev")
-  print(ave(events_list))
-  print(sd(events_list))
+  # returning the events_list
+  events_list
 }
