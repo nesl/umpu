@@ -52,7 +52,6 @@ int8_t fft_fix_module(void* state, Message* msg)
   switch (msg->type){
   case MSG_INIT:
     {
-      FFT_BEGIN();
       sys_post_value(TEST_FFT_FIX_PID, MSG_FFT_DONE, 0, 0);
       break;
     }
@@ -66,12 +65,13 @@ int8_t fft_fix_module(void* state, Message* msg)
       DEBUG("Received buffer for FFT\n");
       fx = (short*)sys_msg_take_data(msg);
       sys_led(LED_YELLOW_TOGGLE);
+      FFT_BEGIN();
       fix_fftr(fx, log2N, 0);
+      FFT_DONE();
       sys_led(LED_YELLOW_TOGGLE);
       //      sys_post_uart(FFT_FIX_PID, MSG_FFT_DONE, sizeof(short)*N, fx, 
       //	    SOS_MSG_RELEASE, UART_ADDRESS);
       DEBUG("Finished FFT\n");
-      FFT_DONE();
       break;
     }
 
