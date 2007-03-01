@@ -290,6 +290,7 @@ int fix_fft(short fr[], short fi[], short m, short inverse)
 */
 int fix_fftr(short f[], int m, int inverse)
 {
+  PORTB = 0x10;
   int i, NUM, scale;
   short tt;
   short *fr, *fi;
@@ -308,6 +309,8 @@ int fix_fftr(short f[], int m, int inverse)
   }
   if (! inverse)
     scale = fix_fft(fi, fr, m-1, inverse);
+
+  PORTB = 0x11;
   return scale;
 }
 

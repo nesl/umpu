@@ -1,0 +1,99 @@
+GAS LISTING c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cckZdaaa.s 			page 1
+
+
+   1               	# 1 "../../processor/avr/sos_fnptr_call.S"
+   2               	# 1 "<built-in>"
+   1               	__SREG__ = 0x3f
+   0               	
+   0               	
+   2               	__SREG__ = 0x3f
+   3               	__SP_H__ = 0x3e
+   4               	__SP_L__ = 0x3d
+   5               	xptr_l = 26
+   6               	xptr_h = 27
+   7               	zptr_l = 30
+   8               	zptr_h = 31
+   9               	word_l = 24
+  10               	word_h = 25
+  11               	temp_reg0 = 0
+  12               	temp_reg1 = 1
+  13               	RAMPZ  = 59
+  14               	
+  15               	.section .text
+  16               	.global ker_sys_fnptr_call
+  17:../../processor/avr/sos_fnptr_call.S **** ker_sys_fnptr_call:
+  18:../../processor/avr/sos_fnptr_call.S **** 	clr  xptr_l         ;
+  19:../../processor/avr/sos_fnptr_call.S **** 	mov zptr_l, word_l
+  20:../../processor/avr/sos_fnptr_call.S **** 	mov zptr_h, word_h
+  21:../../processor/avr/sos_fnptr_call.S **** 	lsl  zptr_l         ; shift left
+  22:../../processor/avr/sos_fnptr_call.S **** 	rol  zptr_h         ;
+  23:../../processor/avr/sos_fnptr_call.S **** 	rol  xptr_l         ; get the carry bit
+  24:../../processor/avr/sos_fnptr_call.S **** 	out  RAMPZ, xptr_l  ; set to RAMPZ
+  25:../../processor/avr/sos_fnptr_call.S **** 	lpm
+  26:../../processor/avr/sos_fnptr_call.S **** 	mov xptr_l, temp_reg0
+  27:../../processor/avr/sos_fnptr_call.S **** 	adiw zptr_l, 1
+  28:../../processor/avr/sos_fnptr_call.S **** 	lpm
+  29:../../processor/avr/sos_fnptr_call.S **** 	mov xptr_h, temp_reg0;
+  30:../../processor/avr/sos_fnptr_call.S **** 	push xptr_l         ; push xptr into stack so that we can reuse xptr
+  31:../../processor/avr/sos_fnptr_call.S **** 	push xptr_h         ;
+  32:../../processor/avr/sos_fnptr_call.S **** 	adiw zptr_l, 5      ; move Z pointer to the location of pid
+  33:../../processor/avr/sos_fnptr_call.S **** 	in   temp_reg0, __SREG__ ; save Status register for critical section
+  34:../../processor/avr/sos_fnptr_call.S **** 	cli          
+  35:../../processor/avr/sos_fnptr_call.S **** 	push temp_reg0 
+  36:../../processor/avr/sos_fnptr_call.S **** 	lds  temp_reg1, (curr_pid); Get current executing PID from variable
+  37:../../processor/avr/sos_fnptr_call.S **** 	lds  xptr_l, (pid_sp)   ;  load the stack pointer for pid
+  38:../../processor/avr/sos_fnptr_call.S **** 	lds  xptr_h, (pid_sp+1) ;
+  39:../../processor/avr/sos_fnptr_call.S **** 	st   X+, temp_reg1  ;  save curr_pid to pid stack
+  40:../../processor/avr/sos_fnptr_call.S **** 	sts  pid_sp, xptr_l ;
+  41:../../processor/avr/sos_fnptr_call.S **** 	sts  (pid_sp+1), xptr_h ;
+  42:../../processor/avr/sos_fnptr_call.S **** 	lpm
+  43:../../processor/avr/sos_fnptr_call.S **** 	mov xptr_l, temp_reg0
+  44:../../processor/avr/sos_fnptr_call.S **** 	cpi  xptr_l, 255 ; check whether this is RUNTIME_PID
+  45:../../processor/avr/sos_fnptr_call.S **** 	brne label_store_curr_pid;
+  46               		lds  xptr_l, (curr_pid);
+  47:../../processor/avr/sos_fnptr_call.S **** label_store_curr_pid:
+  48:../../processor/avr/sos_fnptr_call.S **** 	sts  (curr_pid), xptr_l ;  update curr_pid to destination PID
+  49:../../processor/avr/sos_fnptr_call.S **** 	pop temp_reg0
+  50:../../processor/avr/sos_fnptr_call.S **** 	out  __SREG__, temp_reg0 ;  leave critical section
+  51:../../processor/avr/sos_fnptr_call.S **** 	pop  zptr_h         ; get the function location from the stack
+  52:../../processor/avr/sos_fnptr_call.S **** 	pop  zptr_l         ;
+  53:../../processor/avr/sos_fnptr_call.S **** 	clr  temp_reg1      ; clear R1 for gcc
+GAS LISTING c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cckZdaaa.s 			page 2
+
+
+  54:../../processor/avr/sos_fnptr_call.S **** 	icall               ;
+  55:../../processor/avr/sos_fnptr_call.S **** 	in   temp_reg0, __SREG__ ; save Status register for critical section
+  56:../../processor/avr/sos_fnptr_call.S **** 	cli                 ;
+  57:../../processor/avr/sos_fnptr_call.S **** 	lds  xptr_l, (pid_sp)   ;  load the stack pointer for pid
+  58:../../processor/avr/sos_fnptr_call.S **** 	lds  xptr_h, (pid_sp+1) ;
+  59:../../processor/avr/sos_fnptr_call.S **** 	ld   temp_reg1, -X  ;
+  60:../../processor/avr/sos_fnptr_call.S **** 	sts  pid_sp, xptr_l ;
+  61:../../processor/avr/sos_fnptr_call.S **** 	sts  (pid_sp+1), xptr_h ;
+  62:../../processor/avr/sos_fnptr_call.S **** 	sts  (curr_pid), temp_reg1;
+  63:../../processor/avr/sos_fnptr_call.S **** 	out  __SREG__, temp_reg0 ;  leave critical section
+  64:../../processor/avr/sos_fnptr_call.S **** 	clr  temp_reg1      ; clear R1 for gcc 
+  65               		ret
+  66               		
+GAS LISTING c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cckZdaaa.s 			page 3
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 ../../processor/avr/sos_fnptr_call.S
+../../processor/avr/sos_fnptr_call.S:1      *ABS*:0000003f __SREG__
+../../processor/avr/sos_fnptr_call.S:2      *ABS*:0000003e __SP_H__
+../../processor/avr/sos_fnptr_call.S:3      *ABS*:0000003d __SP_L__
+../../processor/avr/sos_fnptr_call.S:4      *ABS*:0000001a xptr_l
+../../processor/avr/sos_fnptr_call.S:5      *ABS*:0000001b xptr_h
+../../processor/avr/sos_fnptr_call.S:6      *ABS*:0000001e zptr_l
+../../processor/avr/sos_fnptr_call.S:7      *ABS*:0000001f zptr_h
+../../processor/avr/sos_fnptr_call.S:8      *ABS*:00000018 word_l
+../../processor/avr/sos_fnptr_call.S:9      *ABS*:00000019 word_h
+../../processor/avr/sos_fnptr_call.S:10     *ABS*:00000000 temp_reg0
+../../processor/avr/sos_fnptr_call.S:11     *ABS*:00000001 temp_reg1
+../../processor/avr/sos_fnptr_call.S:12     *ABS*:0000003b RAMPZ
+../../processor/avr/sos_fnptr_call.S:16     .text:00000000 ker_sys_fnptr_call
+../../processor/avr/sos_fnptr_call.S:46     .text:00000046 label_store_curr_pid
+
+UNDEFINED SYMBOLS
+curr_pid
+pid_sp

@@ -1,0 +1,70 @@
+   1               		.file	"sos_uart_mgr.c"
+   2               		.arch atmega103
+   3               	__SREG__ = 0x3f
+   4               	__SP_H__ = 0x3e
+   5               	__SP_L__ = 0x3d
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+   8               		.global __do_copy_data
+   9               		.global __do_clear_bss
+  17               	.Ltext0:
+  18               		.data
+  21               	uart_address:
+  22 0000 0100      		.word	1
+  23               		.text
+  24               	.global	check_uart_address
+  26               	check_uart_address:
+  27               	.LFB2:
+  28               	.LM1:
+  29               	/* prologue: frame size=0 */
+  30               	/* prologue end (size=0) */
+  31               	.LM2:
+  32 0000 2091 0000 		lds r18,uart_address
+  33 0004 3091 0000 		lds r19,(uart_address)+1
+  34 0008 8217      		cp r24,r18
+  35 000a 9307      		cpc r25,r19
+  36 000c 19F0      		breq .L2
+  37               	.LM3:
+  38 000e 8AEE      		ldi r24,lo8(-22)
+  39 0010 9FEF      		ldi r25,hi8(-22)
+  40 0012 0895      		ret
+  41               	.L2:
+  42               	.LM4:
+  43 0014 80E0      		ldi r24,lo8(0)
+  44 0016 90E0      		ldi r25,hi8(0)
+  45               	.LM5:
+  46 0018 0895      		ret
+  47               	/* epilogue: frame size=0 */
+  48               	/* epilogue: noreturn */
+  49               	/* epilogue end (size=0) */
+  50               	/* function check_uart_address size 13 (13) */
+  51               	.LFE2:
+  53               	.global	set_uart_address
+  55               	set_uart_address:
+  56               	.LFB3:
+  57               	.LM6:
+  58               	/* prologue: frame size=0 */
+  59               	/* prologue end (size=0) */
+  60               	.LM7:
+  61 001a 9093 0000 		sts (uart_address)+1,r25
+  62 001e 8093 0000 		sts uart_address,r24
+  63               	/* epilogue: frame size=0 */
+  64 0022 0895      		ret
+  65               	/* epilogue end (size=1) */
+  66               	/* function set_uart_address size 5 (4) */
+  67               	.LFE3:
+  69               	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 sos_uart_mgr.c
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccuUdaaa.s:3      *ABS*:0000003f __SREG__
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccuUdaaa.s:4      *ABS*:0000003e __SP_H__
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccuUdaaa.s:5      *ABS*:0000003d __SP_L__
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccuUdaaa.s:6      *ABS*:00000000 __tmp_reg__
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccuUdaaa.s:7      *ABS*:00000001 __zero_reg__
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccuUdaaa.s:21     .data:00000000 uart_address
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccuUdaaa.s:26     .text:00000000 check_uart_address
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccuUdaaa.s:55     .text:0000001a set_uart_address
+
+UNDEFINED SYMBOLS
+__do_copy_data
+__do_clear_bss

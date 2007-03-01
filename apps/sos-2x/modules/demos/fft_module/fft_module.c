@@ -51,8 +51,11 @@ int8_t fft_fix_module(void* state, Message* msg)
 {
   switch (msg->type){
   case MSG_INIT:
-    sys_post_value(TEST_FFT_FIX_PID, MSG_FFT_DONE, 0, 0);
-    break;
+    {
+      FFT_BEGIN();
+      sys_post_value(TEST_FFT_FIX_PID, MSG_FFT_DONE, 0, 0);
+      break;
+    }
 
   case MSG_FINAL:
     break;
@@ -68,12 +71,15 @@ int8_t fft_fix_module(void* state, Message* msg)
       //      sys_post_uart(FFT_FIX_PID, MSG_FFT_DONE, sizeof(short)*N, fx, 
       //	    SOS_MSG_RELEASE, UART_ADDRESS);
       DEBUG("Finished FFT\n");
+      FFT_DONE();
       break;
     }
 
   default:
-    sys_led(LED_YELLOW_TOGGLE);
-    return -EINVAL;
+    {
+      sys_led(LED_RED_TOGGLE);
+      return -EINVAL;
+    }
   }
   return SOS_OK;
 }

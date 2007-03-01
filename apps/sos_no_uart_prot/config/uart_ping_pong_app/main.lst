@@ -1,0 +1,79 @@
+   1               		.file	"main.c"
+   2               		.arch atmega103
+   3               	__SREG__ = 0x3f
+   4               	__SP_H__ = 0x3e
+   5               	__SP_L__ = 0x3d
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+   8               		.global __do_copy_data
+   9               		.global __do_clear_bss
+  17               	.Ltext0:
+  18               	.global	sos_main
+  20               	sos_main:
+  21               	.LFB9:
+  22               	.LM1:
+  23               	/* prologue: frame size=0 */
+  24 0000 1F93      		push r17
+  25               	/* prologue end (size=1) */
+  26 0002 182F      		mov r17,r24
+  27               	.LM2:
+  28               	/* #APP */
+  29 0004 F894      		cli
+  30               	.LM3:
+  31               	/* #NOAPP */
+  32 0006 0E94 0000 		call id_init
+  33               	.LM4:
+  34 000a 0E94 0000 		call mem_init
+  35               	.LM5:
+  36 000e 0E94 0000 		call msg_queue_init
+  37               	.LM6:
+  38 0012 0E94 0000 		call random_init
+  39               	.LM7:
+  40 0016 812F      		mov r24,r17
+  41 0018 0E94 0000 		call sched_init
+  42               	.LM8:
+  43 001c 0E94 0000 		call fntable_init
+  44               	.LM9:
+  45 0020 0E94 0000 		call monitor_init
+  46               	.LM10:
+  47 0024 0E94 0000 		call hardware_init
+  48               	.LM11:
+  49               	/* #APP */
+  50 0028 7894      		sei
+  51               	.LM12:
+  52               	/* #NOAPP */
+  53 002a 0E94 0000 		call sos_start
+  54               	.LM13:
+  55 002e 0E94 0000 		call sched
+  56               	.LM14:
+  57 0032 80E0      		ldi r24,lo8(0)
+  58 0034 90E0      		ldi r25,hi8(0)
+  59               	/* epilogue: frame size=0 */
+  60 0036 1F91      		pop r17
+  61 0038 0895      		ret
+  62               	/* epilogue end (size=2) */
+  63               	/* function sos_main size 31 (28) */
+  64               	.LFE9:
+  66               	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 main.c
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccmSdaaa.s:3      *ABS*:0000003f __SREG__
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccmSdaaa.s:4      *ABS*:0000003e __SP_H__
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccmSdaaa.s:5      *ABS*:0000003d __SP_L__
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccmSdaaa.s:6      *ABS*:00000000 __tmp_reg__
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccmSdaaa.s:7      *ABS*:00000001 __zero_reg__
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccmSdaaa.s:20     .text:00000000 sos_main
+
+UNDEFINED SYMBOLS
+__do_copy_data
+__do_clear_bss
+id_init
+mem_init
+msg_queue_init
+random_init
+sched_init
+fntable_init
+monitor_init
+hardware_init
+sos_start
+sched

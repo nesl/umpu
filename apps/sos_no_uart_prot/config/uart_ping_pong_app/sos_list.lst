@@ -1,0 +1,246 @@
+   1               		.file	"sos_list.c"
+   2               		.arch atmega103
+   3               	__SREG__ = 0x3f
+   4               	__SP_H__ = 0x3e
+   5               	__SP_L__ = 0x3d
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+   8               		.global __do_copy_data
+   9               		.global __do_clear_bss
+  17               	.Ltext0:
+  18               	.global	list_insert_before
+  20               	list_insert_before:
+  21               	.LFB2:
+  22               	.LM1:
+  23               	/* prologue: frame size=0 */
+  24 0000 CF93      		push r28
+  25 0002 DF93      		push r29
+  26               	/* prologue end (size=2) */
+  27 0004 B72F      		mov r27,r23
+  28 0006 A62F      		mov r26,r22
+  29               	.LM2:
+  30 0008 8D93      		st X+,r24
+  31 000a 9C93      		st X,r25
+  32               	.LM3:
+  33 000c D92F      		mov r29,r25
+  34 000e C82F      		mov r28,r24
+  35 0010 8A81      		ldd r24,Y+2
+  36 0012 9B81      		ldd r25,Y+3
+  37 0014 F72F      		mov r31,r23
+  38 0016 E62F      		mov r30,r22
+  39 0018 9383      		std Z+3,r25
+  40 001a 8283      		std Z+2,r24
+  41               	.LM4:
+  42 001c EA81      		ldd r30,Y+2
+  43 001e FB81      		ldd r31,Y+3
+  44 0020 7183      		std Z+1,r23
+  45 0022 6083      		st Z,r22
+  46               	.LM5:
+  47 0024 7B83      		std Y+3,r23
+  48 0026 6A83      		std Y+2,r22
+  49               	/* epilogue: frame size=0 */
+  50 0028 DF91      		pop r29
+  51 002a CF91      		pop r28
+  52 002c 0895      		ret
+  53               	/* epilogue end (size=3) */
+  54               	/* function list_insert_before size 23 (18) */
+  55               	.LFE2:
+  57               	.global	list_insert_head
+  59               	list_insert_head:
+  60               	.LFB3:
+  61               	.LM6:
+  62               	/* prologue: frame size=0 */
+  63               	/* prologue end (size=0) */
+  64 002e F92F      		mov r31,r25
+  65 0030 E82F      		mov r30,r24
+  66               	.LM7:
+  67 0032 8081      		ld r24,Z
+  68 0034 9181      		ldd r25,Z+1
+  69 0036 0E94 0000 		call list_insert_before
+  70               	/* epilogue: frame size=0 */
+  71 003a 0895      		ret
+  72               	/* epilogue end (size=1) */
+  73               	/* function list_insert_head size 7 (6) */
+  74               	.LFE3:
+  76               	.global	list_insert_tail
+  78               	list_insert_tail:
+  79               	.LFB4:
+  80               	.LM8:
+  81               	/* prologue: frame size=0 */
+  82               	/* prologue end (size=0) */
+  83               	.LM9:
+  84 003c 0E94 0000 		call list_insert_before
+  85               	/* epilogue: frame size=0 */
+  86 0040 0895      		ret
+  87               	/* epilogue end (size=1) */
+  88               	/* function list_insert_tail size 3 (2) */
+  89               	.LFE4:
+  91               	.global	list_remove
+  93               	list_remove:
+  94               	.LFB5:
+  95               	.LM10:
+  96               	/* prologue: frame size=0 */
+  97 0042 CF93      		push r28
+  98 0044 DF93      		push r29
+  99               	/* prologue end (size=2) */
+ 100 0046 F92F      		mov r31,r25
+ 101 0048 E82F      		mov r30,r24
+ 102               	.LM11:
+ 103 004a 4281      		ldd r20,Z+2
+ 104 004c 5381      		ldd r21,Z+3
+ 105               	.LM12:
+ 106 004e A081      		ld r26,Z
+ 107 0050 B181      		ldd r27,Z+1
+ 108               	.LM13:
+ 109 0052 D52F      		mov r29,r21
+ 110 0054 C42F      		mov r28,r20
+ 111 0056 2881      		ld r18,Y
+ 112 0058 3981      		ldd r19,Y+1
+ 113 005a 2817      		cp r18,r24
+ 114 005c 3907      		cpc r19,r25
+ 115 005e 39F0      		breq .L5
+ 116               	.LM14:
+ 117 0060 DB2F      		mov r29,r27
+ 118 0062 CA2F      		mov r28,r26
+ 119 0064 8A81      		ldd r24,Y+2
+ 120 0066 9B81      		ldd r25,Y+3
+ 121 0068 8E17      		cp r24,r30
+ 122 006a 9F07      		cpc r25,r31
+ 123 006c 91F4      		brne .L9
+ 124               	.L5:
+ 125               	.LM15:
+ 126 006e 2E17      		cp r18,r30
+ 127 0070 3F07      		cpc r19,r31
+ 128 0072 99F4      		brne .L4
+ 129 0074 DB2F      		mov r29,r27
+ 130 0076 CA2F      		mov r28,r26
+ 131 0078 8A81      		ldd r24,Y+2
+ 132 007a 9B81      		ldd r25,Y+3
+ 133 007c 8E17      		cp r24,r30
+ 134 007e 9F07      		cpc r25,r31
+ 135 0080 61F4      		brne .L4
+ 136               	.LM16:
+ 137 0082 D52F      		mov r29,r21
+ 138 0084 C42F      		mov r28,r20
+ 139 0086 B983      		std Y+1,r27
+ 140 0088 A883      		st Y,r26
+ 141               	.LM17:
+ 142 008a DB2F      		mov r29,r27
+ 143 008c CA2F      		mov r28,r26
+ 144 008e 5B83      		std Y+3,r21
+ 145 0090 4A83      		std Y+2,r20
+ 146               	.L9:
+ 147               	.LM18:
+ 148 0092 1182      		std Z+1,__zero_reg__
+ 149 0094 1082      		st Z,__zero_reg__
+ 150               	.LM19:
+ 151 0096 1382      		std Z+3,__zero_reg__
+ 152 0098 1282      		std Z+2,__zero_reg__
+ 153               	.L4:
+ 154               	/* epilogue: frame size=0 */
+ 155 009a DF91      		pop r29
+ 156 009c CF91      		pop r28
+ 157 009e 0895      		ret
+ 158               	/* epilogue end (size=3) */
+ 159               	/* function list_remove size 47 (42) */
+ 160               	.LFE5:
+ 162               	.global	list_remove_head
+ 164               	list_remove_head:
+ 165               	.LFB6:
+ 166               	.LM20:
+ 167               	/* prologue: frame size=0 */
+ 168               	/* prologue end (size=0) */
+ 169 00a0 F92F      		mov r31,r25
+ 170 00a2 E82F      		mov r30,r24
+ 171               	.LM21:
+ 172 00a4 8081      		ld r24,Z
+ 173 00a6 9181      		ldd r25,Z+1
+ 174 00a8 0E94 0000 		call list_remove
+ 175               	/* epilogue: frame size=0 */
+ 176 00ac 0895      		ret
+ 177               	/* epilogue end (size=1) */
+ 178               	/* function list_remove_head size 7 (6) */
+ 179               	.LFE6:
+ 181               	.global	list_remove_tail
+ 183               	list_remove_tail:
+ 184               	.LFB7:
+ 185               	.LM22:
+ 186               	/* prologue: frame size=0 */
+ 187               	/* prologue end (size=0) */
+ 188               	.LM23:
+ 189 00ae F92F      		mov r31,r25
+ 190 00b0 E82F      		mov r30,r24
+ 191 00b2 8281      		ldd r24,Z+2
+ 192 00b4 9381      		ldd r25,Z+3
+ 193 00b6 0E94 0000 		call list_remove
+ 194               	/* epilogue: frame size=0 */
+ 195 00ba 0895      		ret
+ 196               	/* epilogue end (size=1) */
+ 197               	/* function list_remove_tail size 7 (6) */
+ 198               	.LFE7:
+ 200               	.global	list_init
+ 202               	list_init:
+ 203               	.LFB8:
+ 204               	.LM24:
+ 205               	/* prologue: frame size=0 */
+ 206               	/* prologue end (size=0) */
+ 207 00bc F92F      		mov r31,r25
+ 208 00be E82F      		mov r30,r24
+ 209               	.LM25:
+ 210 00c0 9383      		std Z+3,r25
+ 211 00c2 8283      		std Z+2,r24
+ 212 00c4 9183      		std Z+1,r25
+ 213 00c6 8083      		st Z,r24
+ 214               	/* epilogue: frame size=0 */
+ 215 00c8 0895      		ret
+ 216               	/* epilogue end (size=1) */
+ 217               	/* function list_init size 7 (6) */
+ 218               	.LFE8:
+ 220               	.global	list_empty
+ 222               	list_empty:
+ 223               	.LFB9:
+ 224               	.LM26:
+ 225               	/* prologue: frame size=0 */
+ 226               	/* prologue end (size=0) */
+ 227 00ca F92F      		mov r31,r25
+ 228 00cc E82F      		mov r30,r24
+ 229               	.LM27:
+ 230 00ce 20E0      		ldi r18,lo8(0)
+ 231 00d0 30E0      		ldi r19,hi8(0)
+ 232 00d2 8081      		ld r24,Z
+ 233 00d4 9181      		ldd r25,Z+1
+ 234 00d6 8E17      		cp r24,r30
+ 235 00d8 9F07      		cpc r25,r31
+ 236 00da 11F4      		brne .L14
+ 237               	.LM28:
+ 238 00dc 21E0      		ldi r18,lo8(1)
+ 239 00de 30E0      		ldi r19,hi8(1)
+ 240               	.L14:
+ 241               	.LM29:
+ 242 00e0 932F      		mov r25,r19
+ 243 00e2 822F      		mov r24,r18
+ 244               	/* epilogue: frame size=0 */
+ 245 00e4 0895      		ret
+ 246               	/* epilogue end (size=1) */
+ 247               	/* function list_empty size 14 (13) */
+ 248               	.LFE9:
+ 250               	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 sos_list.c
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc4Mdaaa.s:3      *ABS*:0000003f __SREG__
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc4Mdaaa.s:4      *ABS*:0000003e __SP_H__
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc4Mdaaa.s:5      *ABS*:0000003d __SP_L__
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc4Mdaaa.s:6      *ABS*:00000000 __tmp_reg__
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc4Mdaaa.s:7      *ABS*:00000001 __zero_reg__
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc4Mdaaa.s:20     .text:00000000 list_insert_before
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc4Mdaaa.s:59     .text:0000002e list_insert_head
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc4Mdaaa.s:78     .text:0000003c list_insert_tail
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc4Mdaaa.s:93     .text:00000042 list_remove
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc4Mdaaa.s:164    .text:000000a0 list_remove_head
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc4Mdaaa.s:183    .text:000000ae list_remove_tail
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc4Mdaaa.s:202    .text:000000bc list_init
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc4Mdaaa.s:222    .text:000000ca list_empty
+
+UNDEFINED SYMBOLS
+__do_copy_data
+__do_clear_bss

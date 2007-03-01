@@ -1,0 +1,83 @@
+   1               		.file	"hardware.c"
+   2               		.arch atmega103
+   3               	__SREG__ = 0x3f
+   4               	__SP_H__ = 0x3e
+   5               	__SP_L__ = 0x3d
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+   8               		.global __do_copy_data
+   9               		.global __do_clear_bss
+  17               	.Ltext0:
+  18               	.global	hardware_init
+  20               	hardware_init:
+  21               	.LFB19:
+  22               	.LM1:
+  23               	/* prologue: frame size=0 */
+  24               	/* prologue end (size=0) */
+  25               	.LM2:
+  26 0000 8FEF      		ldi r24,lo8(-1)
+  27 0002 87BB      		out 55-0x20,r24
+  28               	.LM3:
+  29 0004 88BB      		out 56-0x20,r24
+  30 0006 18BA      		out 56-0x20,__zero_reg__
+  31               	.LM4:
+  32 0008 8AB3      		in r24,58-0x20
+  33 000a 8760      		ori r24,lo8(7)
+  34 000c 8ABB      		out 58-0x20,r24
+  35 000e D99A      		sbi 59-0x20,1
+  36 0010 DA9A      		sbi 59-0x20,2
+  37 0012 D89A      		sbi 59-0x20,0
+  38               	.LM5:
+  39 0014 63E0      		ldi r22,lo8(3)
+  40 0016 80E1      		ldi r24,lo8(16)
+  41 0018 0E94 0000 		call timer_hardware_init
+  42               	.LM6:
+  43 001c 0E94 0000 		call uart_system_init
+  44               	.LM7:
+  45 0020 0E94 0000 		call sos_uart_init
+  46               	/* epilogue: frame size=0 */
+  47 0024 0895      		ret
+  48               	/* epilogue end (size=1) */
+  49               	/* function hardware_init size 19 (18) */
+  50               	.LFE19:
+  52               	.global	main
+  54               	main:
+  55               	.LFB20:
+  56               	.LM8:
+  57               	/* prologue: frame size=0 */
+  58 0026 C0E0      		ldi r28,lo8(__stack - 0)
+  59 0028 D0E0      		ldi r29,hi8(__stack - 0)
+  60 002a DEBF      		out __SP_H__,r29
+  61 002c CDBF      		out __SP_L__,r28
+  62               	/* prologue end (size=4) */
+  63               	.LM9:
+  64 002e 80E0      		ldi r24,lo8(0)
+  65 0030 0E94 0000 		call sos_main
+  66               	.LM10:
+  67 0034 80E0      		ldi r24,lo8(0)
+  68 0036 90E0      		ldi r25,hi8(0)
+  69               	/* epilogue: frame size=0 */
+  70 0038 0C94 0000 		jmp exit
+  71               	/* epilogue end (size=2) */
+  72               	/* function main size 11 (5) */
+  73               	.LFE20:
+  75               	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 hardware.c
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccANdaaa.s:3      *ABS*:0000003f __SREG__
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccANdaaa.s:4      *ABS*:0000003e __SP_H__
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccANdaaa.s:5      *ABS*:0000003d __SP_L__
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccANdaaa.s:6      *ABS*:00000000 __tmp_reg__
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccANdaaa.s:7      *ABS*:00000001 __zero_reg__
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccANdaaa.s:20     .text:00000000 hardware_init
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccANdaaa.s:54     .text:00000026 main
+
+UNDEFINED SYMBOLS
+__do_copy_data
+__do_clear_bss
+timer_hardware_init
+uart_system_init
+sos_uart_init
+__stack
+sos_main
+exit

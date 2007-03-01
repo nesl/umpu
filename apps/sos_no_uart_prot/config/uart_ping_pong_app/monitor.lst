@@ -1,0 +1,400 @@
+   1               		.file	"monitor.c"
+   2               		.arch atmega103
+   3               	__SREG__ = 0x3f
+   4               	__SP_H__ = 0x3e
+   5               	__SP_L__ = 0x3d
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+   8               		.global __do_copy_data
+   9               		.global __do_clear_bss
+  17               	.Ltext0:
+  18               	.global	monitor_init
+  20               	monitor_init:
+  21               	.LFB2:
+  22               	.LM1:
+  23               	/* prologue: frame size=0 */
+  24               	/* prologue end (size=0) */
+  25               	.LM2:
+  26 0000 1092 0000 		sts (cb_list)+1,__zero_reg__
+  27 0004 1092 0000 		sts cb_list,__zero_reg__
+  28               	.LM3:
+  29 0008 80E0      		ldi r24,lo8(0)
+  30 000a 90E0      		ldi r25,hi8(0)
+  31               	/* epilogue: frame size=0 */
+  32 000c 0895      		ret
+  33               	/* epilogue end (size=1) */
+  34               	/* function monitor_init size 7 (6) */
+  35               	.LFE2:
+  37               	.global	ker_register_monitor
+  39               	ker_register_monitor:
+  40               	.LFB3:
+  41               	.LM4:
+  42               	/* prologue: frame size=0 */
+  43 000e 1F93      		push r17
+  44 0010 CF93      		push r28
+  45 0012 DF93      		push r29
+  46               	/* prologue end (size=3) */
+  47 0014 162F      		mov r17,r22
+  48 0016 D52F      		mov r29,r21
+  49 0018 C42F      		mov r28,r20
+  50               	.LM5:
+  51 001a 0E94 0000 		call ker_get_module
+  52 001e 9A83      		std Y+2,r25
+  53 0020 8983      		std Y+1,r24
+  54               	.LM6:
+  55 0022 892B      		or r24,r25
+  56 0024 19F4      		brne .L3
+  57               	.LM7:
+  58 0026 8DEF      		ldi r24,lo8(-3)
+  59 0028 9FEF      		ldi r25,hi8(-3)
+  60 002a 1CC0      		rjmp .L2
+  61               	.L3:
+  62               	.LM8:
+  63 002c 1883      		st Y,r17
+  64               	.LM9:
+  65 002e 1C82      		std Y+4,__zero_reg__
+  66 0030 1B82      		std Y+3,__zero_reg__
+  67               	.LM10:
+  68 0032 8091 0000 		lds r24,cb_list
+  69 0036 9091 0000 		lds r25,(cb_list)+1
+  70 003a 0097      		sbiw r24,0
+  71 003c 29F4      		brne .L4
+  72               	.LM11:
+  73 003e D093 0000 		sts (cb_list)+1,r29
+  74 0042 C093 0000 		sts cb_list,r28
+  75 0046 0CC0      		rjmp .L5
+  76               	.L4:
+  77               	.LBB2:
+  78               	.LM12:
+  79 0048 F92F      		mov r31,r25
+  80 004a E82F      		mov r30,r24
+  81               	.L11:
+  82               	.LM13:
+  83 004c 8381      		ldd r24,Z+3
+  84 004e 9481      		ldd r25,Z+4
+  85 0050 892B      		or r24,r25
+  86 0052 21F0      		breq .L10
+  87 0054 0380      		ldd __tmp_reg__,Z+3
+  88 0056 F481      		ldd r31,Z+4
+  89 0058 E02D      		mov r30,__tmp_reg__
+  90 005a F8CF      		rjmp .L11
+  91               	.L10:
+  92               	.LM14:
+  93 005c D483      		std Z+4,r29
+  94 005e C383      		std Z+3,r28
+  95               	.L5:
+  96               	.LBE2:
+  97               	.LM15:
+  98 0060 80E0      		ldi r24,lo8(0)
+  99 0062 90E0      		ldi r25,hi8(0)
+ 100               	.L2:
+ 101               	/* epilogue: frame size=0 */
+ 102 0064 DF91      		pop r29
+ 103 0066 CF91      		pop r28
+ 104 0068 1F91      		pop r17
+ 105 006a 0895      		ret
+ 106               	/* epilogue end (size=4) */
+ 107               	/* function ker_register_monitor size 47 (40) */
+ 108               	.LFE3:
+ 110               	.global	ker_deregister_monitor
+ 112               	ker_deregister_monitor:
+ 113               	.LFB4:
+ 114               	.LM16:
+ 115               	/* prologue: frame size=0 */
+ 116               	/* prologue end (size=0) */
+ 117               	.LM17:
+ 118 006c E091 0000 		lds r30,cb_list
+ 119 0070 F091 0000 		lds r31,(cb_list)+1
+ 120               	.LM18:
+ 121 0074 AE2F      		mov r26,r30
+ 122 0076 BF2F      		mov r27,r31
+ 123               	.L21:
+ 124               	.LM19:
+ 125 0078 3097      		sbiw r30,0
+ 126 007a D1F0      		breq .L20
+ 127               	.LM20:
+ 128 007c E817      		cp r30,r24
+ 129 007e F907      		cpc r31,r25
+ 130 0080 89F4      		brne .L15
+ 131 0082 8381      		ldd r24,Z+3
+ 132 0084 9481      		ldd r25,Z+4
+ 133               	.LM21:
+ 134 0086 EA17      		cp r30,r26
+ 135 0088 FB07      		cpc r31,r27
+ 136 008a 29F4      		brne .L16
+ 137               	.LM22:
+ 138 008c 9093 0000 		sts (cb_list)+1,r25
+ 139 0090 8093 0000 		sts cb_list,r24
+ 140 0094 04C0      		rjmp .L17
+ 141               	.L16:
+ 142               	.LM23:
+ 143 0096 FB2F      		mov r31,r27
+ 144 0098 EA2F      		mov r30,r26
+ 145 009a 9483      		std Z+4,r25
+ 146 009c 8383      		std Z+3,r24
+ 147               	.L17:
+ 148               	.LM24:
+ 149 009e 80E0      		ldi r24,lo8(0)
+ 150 00a0 90E0      		ldi r25,hi8(0)
+ 151 00a2 0895      		ret
+ 152               	.L15:
+ 153               	.LM25:
+ 154 00a4 AE2F      		mov r26,r30
+ 155 00a6 BF2F      		mov r27,r31
+ 156               	.LM26:
+ 157 00a8 0380      		ldd __tmp_reg__,Z+3
+ 158 00aa F481      		ldd r31,Z+4
+ 159 00ac E02D      		mov r30,__tmp_reg__
+ 160 00ae E4CF      		rjmp .L21
+ 161               	.L20:
+ 162               	.LM27:
+ 163 00b0 8AEE      		ldi r24,lo8(-22)
+ 164 00b2 9FEF      		ldi r25,hi8(-22)
+ 165               	.LM28:
+ 166 00b4 0895      		ret
+ 167               	/* epilogue: frame size=0 */
+ 168               	/* epilogue: noreturn */
+ 169               	/* epilogue end (size=0) */
+ 170               	/* function ker_deregister_monitor size 37 (37) */
+ 171               	.LFE4:
+ 173               	.global	monitor_deliver_incoming_msg_to_monitor
+ 175               	monitor_deliver_incoming_msg_to_monitor:
+ 176               	.LFB5:
+ 177               	.LM29:
+ 178               	/* prologue: frame size=0 */
+ 179 00b6 DF92      		push r13
+ 180 00b8 EF92      		push r14
+ 181 00ba FF92      		push r15
+ 182 00bc 0F93      		push r16
+ 183 00be 1F93      		push r17
+ 184 00c0 CF93      		push r28
+ 185 00c2 DF93      		push r29
+ 186               	/* prologue end (size=7) */
+ 187 00c4 E82E      		mov r14,r24
+ 188 00c6 F92E      		mov r15,r25
+ 189               	.LM30:
+ 190 00c8 4091 0000 		lds r20,cb_list
+ 191 00cc 5091 0000 		lds r21,(cb_list)+1
+ 192 00d0 4115      		cp r20,__zero_reg__
+ 193 00d2 5105      		cpc r21,__zero_reg__
+ 194 00d4 09F4      		brne .+2
+ 195 00d6 46C0      		rjmp .L22
+ 196               	.LM31:
+ 197 00d8 F92F      		mov r31,r25
+ 198 00da E82F      		mov r30,r24
+ 199 00dc 2481      		ldd r18,Z+4
+ 200 00de 3581      		ldd r19,Z+5
+ 201 00e0 8091 0000 		lds r24,node_address
+ 202 00e4 9091 0000 		lds r25,(node_address)+1
+ 203 00e8 2817      		cp r18,r24
+ 204 00ea 3907      		cpc r19,r25
+ 205 00ec 19F4      		brne .L24
+ 206               	.LM32:
+ 207 00ee 64E0      		ldi r22,lo8(4)
+ 208 00f0 D62E      		mov r13,r22
+ 209 00f2 02C0      		rjmp .L25
+ 210               	.L24:
+ 211               	.LM33:
+ 212 00f4 31E0      		ldi r19,lo8(1)
+ 213 00f6 D32E      		mov r13,r19
+ 214               	.L25:
+ 215               	.LM34:
+ 216 00f8 042F      		mov r16,r20
+ 217 00fa 152F      		mov r17,r21
+ 218               	.LM35:
+ 219 00fc 452B      		or r20,r21
+ 220 00fe 09F4      		brne .+2
+ 221 0100 31C0      		rjmp .L22
+ 222               	.L29:
+ 223               	.LM36:
+ 224 0102 F12F      		mov r31,r17
+ 225 0104 E02F      		mov r30,r16
+ 226 0106 8081      		ld r24,Z
+ 227 0108 8D21      		and r24,r13
+ 228 010a 29F1      		breq .L28
+ 229 010c C181      		ldd r28,Z+1
+ 230 010e D281      		ldd r29,Z+2
+ 231 0110 9C81      		ldd r25,Y+4
+ 232 0112 FF2D      		mov r31,r15
+ 233 0114 EE2D      		mov r30,r14
+ 234 0116 8081      		ld r24,Z
+ 235 0118 9817      		cp r25,r24
+ 236 011a E9F0      		breq .L28
+ 237               	.LBB3:
+ 238               	.LBB4:
+ 239               	.LM37:
+ 240 011c 8A81      		ldd r24,Y+2
+ 241 011e 9B81      		ldd r25,Y+3
+ 242 0120 AA27      		clr r26
+ 243 0122 BB27      		clr r27
+ 244 0124 880F      		lsl r24
+ 245 0126 991F      		rol r25
+ 246 0128 AA1F      		rol r26
+ 247 012a BB1F      		rol r27
+ 248 012c 0C96      		adiw r24,12
+ 249 012e A11D      		adc r26,__zero_reg__
+ 250 0130 B11D      		adc r27,__zero_reg__
+ 251               	/* #APP */
+ 252 0132 ABBF      		out 59, r26
+ 253 0134 F92F      		mov r31, r25
+ 254 0136 E82F      		mov r30, r24
+ 255 0138 D895      		elpm
+ 256 013a 202D      		mov r18, r0
+ 257 013c 0BB6      		in r0, 59
+ 258 013e 3196      		adiw r30, 1
+ 259 0140 011C      		adc r0, __zero_reg__
+ 260 0142 0BBE      		out 59, r0
+ 261 0144 D895      		elpm
+ 262 0146 302D      		mov r19, r0
+ 263               		
+ 264               	/* #NOAPP */
+ 265               	.LBE4:
+ 266               	.LM38:
+ 267 0148 7F2D      		mov r23,r15
+ 268 014a 6E2D      		mov r22,r14
+ 269 014c 8E81      		ldd r24,Y+6
+ 270 014e 9F81      		ldd r25,Y+7
+ 271 0150 E22F      		mov r30,r18
+ 272 0152 F32F      		mov r31,r19
+ 273 0154 0995      		icall
+ 274               	.L28:
+ 275               	.LBE3:
+ 276               	.LM39:
+ 277 0156 F12F      		mov r31,r17
+ 278 0158 E02F      		mov r30,r16
+ 279 015a 0381      		ldd r16,Z+3
+ 280 015c 1481      		ldd r17,Z+4
+ 281 015e 0115      		cp r16,__zero_reg__
+ 282 0160 1105      		cpc r17,__zero_reg__
+ 283 0162 79F6      		brne .L29
+ 284               	.L22:
+ 285               	/* epilogue: frame size=0 */
+ 286 0164 DF91      		pop r29
+ 287 0166 CF91      		pop r28
+ 288 0168 1F91      		pop r17
+ 289 016a 0F91      		pop r16
+ 290 016c FF90      		pop r15
+ 291 016e EF90      		pop r14
+ 292 0170 DF90      		pop r13
+ 293 0172 0895      		ret
+ 294               	/* epilogue end (size=8) */
+ 295               	/* function monitor_deliver_incoming_msg_to_monitor size 108 (93) */
+ 296               	.LFE5:
+ 298               	.global	monitor_deliver_outgoing_msg_to_monitor
+ 300               	monitor_deliver_outgoing_msg_to_monitor:
+ 301               	.LFB6:
+ 302               	.LM40:
+ 303               	/* prologue: frame size=0 */
+ 304 0174 EF92      		push r14
+ 305 0176 FF92      		push r15
+ 306 0178 0F93      		push r16
+ 307 017a 1F93      		push r17
+ 308 017c CF93      		push r28
+ 309 017e DF93      		push r29
+ 310               	/* prologue end (size=6) */
+ 311 0180 E82E      		mov r14,r24
+ 312 0182 F92E      		mov r15,r25
+ 313               	.LM41:
+ 314 0184 8091 0000 		lds r24,cb_list
+ 315 0188 9091 0000 		lds r25,(cb_list)+1
+ 316 018c 0097      		sbiw r24,0
+ 317 018e 09F4      		brne .+2
+ 318 0190 33C0      		rjmp .L31
+ 319               	.LM42:
+ 320 0192 082F      		mov r16,r24
+ 321 0194 192F      		mov r17,r25
+ 322               	.L36:
+ 323               	.LM43:
+ 324 0196 F12F      		mov r31,r17
+ 325 0198 E02F      		mov r30,r16
+ 326 019a 8081      		ld r24,Z
+ 327 019c 81FF      		sbrs r24,1
+ 328 019e 25C0      		rjmp .L35
+ 329 01a0 C181      		ldd r28,Z+1
+ 330 01a2 D281      		ldd r29,Z+2
+ 331 01a4 9C81      		ldd r25,Y+4
+ 332 01a6 FF2D      		mov r31,r15
+ 333 01a8 EE2D      		mov r30,r14
+ 334 01aa 8181      		ldd r24,Z+1
+ 335 01ac 9817      		cp r25,r24
+ 336 01ae E9F0      		breq .L35
+ 337               	.LBB5:
+ 338               	.LBB6:
+ 339               	.LM44:
+ 340 01b0 8A81      		ldd r24,Y+2
+ 341 01b2 9B81      		ldd r25,Y+3
+ 342 01b4 AA27      		clr r26
+ 343 01b6 BB27      		clr r27
+ 344 01b8 880F      		lsl r24
+ 345 01ba 991F      		rol r25
+ 346 01bc AA1F      		rol r26
+ 347 01be BB1F      		rol r27
+ 348 01c0 0C96      		adiw r24,12
+ 349 01c2 A11D      		adc r26,__zero_reg__
+ 350 01c4 B11D      		adc r27,__zero_reg__
+ 351               	/* #APP */
+ 352 01c6 ABBF      		out 59, r26
+ 353 01c8 F92F      		mov r31, r25
+ 354 01ca E82F      		mov r30, r24
+ 355 01cc D895      		elpm
+ 356 01ce 202D      		mov r18, r0
+ 357 01d0 0BB6      		in r0, 59
+ 358 01d2 3196      		adiw r30, 1
+ 359 01d4 011C      		adc r0, __zero_reg__
+ 360 01d6 0BBE      		out 59, r0
+ 361 01d8 D895      		elpm
+ 362 01da 302D      		mov r19, r0
+ 363               		
+ 364               	/* #NOAPP */
+ 365               	.LBE6:
+ 366               	.LM45:
+ 367 01dc 7F2D      		mov r23,r15
+ 368 01de 6E2D      		mov r22,r14
+ 369 01e0 8E81      		ldd r24,Y+6
+ 370 01e2 9F81      		ldd r25,Y+7
+ 371 01e4 E22F      		mov r30,r18
+ 372 01e6 F32F      		mov r31,r19
+ 373 01e8 0995      		icall
+ 374               	.L35:
+ 375               	.LBE5:
+ 376               	.LM46:
+ 377 01ea F12F      		mov r31,r17
+ 378 01ec E02F      		mov r30,r16
+ 379 01ee 0381      		ldd r16,Z+3
+ 380 01f0 1481      		ldd r17,Z+4
+ 381 01f2 0115      		cp r16,__zero_reg__
+ 382 01f4 1105      		cpc r17,__zero_reg__
+ 383 01f6 79F6      		brne .L36
+ 384               	.L31:
+ 385               	/* epilogue: frame size=0 */
+ 386 01f8 DF91      		pop r29
+ 387 01fa CF91      		pop r28
+ 388 01fc 1F91      		pop r17
+ 389 01fe 0F91      		pop r16
+ 390 0200 FF90      		pop r15
+ 391 0202 EF90      		pop r14
+ 392 0204 0895      		ret
+ 393               	/* epilogue end (size=7) */
+ 394               	/* function monitor_deliver_outgoing_msg_to_monitor size 86 (73) */
+ 395               	.LFE6:
+ 397               		.lcomm cb_list,2
+ 398               	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 monitor.c
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccOIdaaa.s:3      *ABS*:0000003f __SREG__
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccOIdaaa.s:4      *ABS*:0000003e __SP_H__
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccOIdaaa.s:5      *ABS*:0000003d __SP_L__
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccOIdaaa.s:6      *ABS*:00000000 __tmp_reg__
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccOIdaaa.s:7      *ABS*:00000001 __zero_reg__
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccOIdaaa.s:20     .text:00000000 monitor_init
+                             .bss:00000000 cb_list
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccOIdaaa.s:39     .text:0000000e ker_register_monitor
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccOIdaaa.s:112    .text:0000006c ker_deregister_monitor
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccOIdaaa.s:175    .text:000000b6 monitor_deliver_incoming_msg_to_monitor
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/ccOIdaaa.s:300    .text:00000174 monitor_deliver_outgoing_msg_to_monitor
+
+UNDEFINED SYMBOLS
+__do_copy_data
+__do_clear_bss
+ker_get_module
+node_address

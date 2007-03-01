@@ -1,0 +1,512 @@
+   1               		.file	"sos_info.c"
+   2               		.arch atmega103
+   3               	__SREG__ = 0x3f
+   4               	__SP_H__ = 0x3e
+   5               	__SP_L__ = 0x3d
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+   8               		.global __do_copy_data
+   9               		.global __do_clear_bss
+  17               	.Ltext0:
+  18               	.global	hw_type
+  19               		.data
+  22               	hw_type:
+  23 0000 01        		.byte	1
+  24               	.global	node_group_id
+  27               	node_group_id:
+  28 0001 01        		.byte	1
+  29               	.global	node_address
+  32               	node_address:
+  33 0002 0100      		.word	1
+  34               	.global	gps_loc
+  37               	gps_loc:
+  38 0004 02        		.byte	2
+  39 0005 00        		.byte	0
+  40 0006 00        		.byte	0
+  41 0007 00        		.byte	0
+  42 0008 00        		.byte	0
+  43 0009 00        		.byte	0
+  44 000a 00        		.byte	0
+  45 000b 00        		.byte	0
+  46 000c 0400      		.word	4
+  47 000e 0000      		.word	0
+  48               	.global	node_loc
+  51               	node_loc:
+  52 0010 0400      		.word	4
+  53 0012 0000      		.word	0
+  54 0014 0000      		.word	0
+  55 0016 0000      		.word	0
+  56               		.text
+  57               	.global	id_init
+  59               	id_init:
+  60               	.LFB15:
+  61               	.LM1:
+  62               	/* prologue: frame size=0 */
+  63               	/* prologue end (size=0) */
+  64               	.LM2:
+  65 0000 80E0      		ldi r24,lo8(0)
+  66 0002 90E0      		ldi r25,hi8(0)
+  67               	/* epilogue: frame size=0 */
+  68 0004 0895      		ret
+  69               	/* epilogue end (size=1) */
+  70               	/* function id_init size 3 (2) */
+  71               	.LFE15:
+  73               	.global	ker_set_id
+  75               	ker_set_id:
+  76               	.LFB16:
+  77               	.LM3:
+  78               	/* prologue: frame size=0 */
+  79               	/* prologue end (size=0) */
+  80               	.LM4:
+  81 0006 9093 0000 		sts (node_address)+1,r25
+  82 000a 8093 0000 		sts node_address,r24
+  83               	/* epilogue: frame size=0 */
+  84 000e 0895      		ret
+  85               	/* epilogue end (size=1) */
+  86               	/* function ker_set_id size 5 (4) */
+  87               	.LFE16:
+  89               	.global	ker_id
+  91               	ker_id:
+  92               	.LFB17:
+  93               	.LM5:
+  94               	/* prologue: frame size=0 */
+  95               	/* prologue end (size=0) */
+  96               	.LM6:
+  97 0010 8091 0000 		lds r24,node_address
+  98 0014 9091 0000 		lds r25,(node_address)+1
+  99               	/* epilogue: frame size=0 */
+ 100 0018 0895      		ret
+ 101               	/* epilogue end (size=1) */
+ 102               	/* function ker_id size 5 (4) */
+ 103               	.LFE17:
+ 105               	.global	ker_loc
+ 107               	ker_loc:
+ 108               	.LFB18:
+ 109               	.LM7:
+ 110               	/* prologue: frame size=0 */
+ 111 001a AF92      		push r10
+ 112 001c BF92      		push r11
+ 113 001e CF92      		push r12
+ 114 0020 DF92      		push r13
+ 115 0022 EF92      		push r14
+ 116 0024 FF92      		push r15
+ 117 0026 0F93      		push r16
+ 118 0028 1F93      		push r17
+ 119               	/* prologue end (size=8) */
+ 120               	.LM8:
+ 121 002a E091 0000 		lds r30,node_loc+7
+ 122 002e 2091 0000 		lds r18,node_loc
+ 123 0032 3091 0000 		lds r19,node_loc+1
+ 124 0036 4091 0000 		lds r20,node_loc+2
+ 125 003a 5091 0000 		lds r21,node_loc+3
+ 126 003e 6091 0000 		lds r22,node_loc+4
+ 127 0042 7091 0000 		lds r23,node_loc+5
+ 128 0046 8091 0000 		lds r24,node_loc+6
+ 129               	.LM9:
+ 130 004a 9E2F      		mov r25,r30
+ 131               	/* epilogue: frame size=0 */
+ 132 004c 1F91      		pop r17
+ 133 004e 0F91      		pop r16
+ 134 0050 FF90      		pop r15
+ 135 0052 EF90      		pop r14
+ 136 0054 DF90      		pop r13
+ 137 0056 CF90      		pop r12
+ 138 0058 BF90      		pop r11
+ 139 005a AF90      		pop r10
+ 140 005c 0895      		ret
+ 141               	/* epilogue end (size=9) */
+ 142               	/* function ker_loc size 34 (17) */
+ 143               	.LFE18:
+ 145               	.global	ker_gps
+ 147               	ker_gps:
+ 148               	.LFB19:
+ 149               	.LM10:
+ 150               	/* prologue: frame size=0 */
+ 151 005e CF93      		push r28
+ 152 0060 DF93      		push r29
+ 153               	/* prologue end (size=2) */
+ 154 0062 F92F      		mov r31,r25
+ 155 0064 E82F      		mov r30,r24
+ 156               	.LM11:
+ 157 0066 8CE0      		ldi r24,lo8(12)
+ 158 0068 A0E0      		ldi r26,lo8(gps_loc)
+ 159 006a B0E0      		ldi r27,hi8(gps_loc)
+ 160 006c CE2F      		mov r28,r30
+ 161 006e DF2F      		mov r29,r31
+ 162 0070 0D90      		ld __tmp_reg__,X+
+ 163 0072 0992      		st Y+,__tmp_reg__
+ 164 0074 8A95      		dec r24
+ 165 0076 E1F7      		brne .-8
+ 166               	.LM12:
+ 167 0078 8E2F      		mov r24,r30
+ 168 007a 9F2F      		mov r25,r31
+ 169               	/* epilogue: frame size=0 */
+ 170 007c DF91      		pop r29
+ 171 007e CF91      		pop r28
+ 172 0080 0895      		ret
+ 173               	/* epilogue end (size=3) */
+ 174               	/* function ker_gps size 18 (13) */
+ 175               	.LFE19:
+ 177               	.global	ker_loc_r2
+ 179               	ker_loc_r2:
+ 180               	.LFB20:
+ 181               	.LM13:
+ 182               	/* prologue: frame size=0 */
+ 183 0082 6F92      		push r6
+ 184 0084 7F92      		push r7
+ 185 0086 8F92      		push r8
+ 186 0088 9F92      		push r9
+ 187 008a AF92      		push r10
+ 188 008c BF92      		push r11
+ 189 008e CF92      		push r12
+ 190 0090 DF92      		push r13
+ 191 0092 EF92      		push r14
+ 192 0094 FF92      		push r15
+ 193 0096 0F93      		push r16
+ 194 0098 1F93      		push r17
+ 195 009a CF93      		push r28
+ 196 009c DF93      		push r29
+ 197               	/* prologue end (size=14) */
+ 198 009e 882E      		mov r8,r24
+ 199 00a0 992E      		mov r9,r25
+ 200               	.LM14:
+ 201 00a2 B92F      		mov r27,r25
+ 202 00a4 A82F      		mov r26,r24
+ 203 00a6 2D91      		ld r18,X+
+ 204 00a8 3C91      		ld r19,X
+ 205 00aa D72F      		mov r29,r23
+ 206 00ac C62F      		mov r28,r22
+ 207 00ae 8881      		ld r24,Y
+ 208 00b0 9981      		ldd r25,Y+1
+ 209 00b2 2817      		cp r18,r24
+ 210 00b4 3907      		cpc r19,r25
+ 211 00b6 29F0      		breq .L7
+ 212               	.LM15:
+ 213 00b8 2FEF      		ldi r18,lo8(-1)
+ 214 00ba 3FEF      		ldi r19,hi8(-1)
+ 215 00bc 4FEF      		ldi r20,hlo8(-1)
+ 216 00be 5FEF      		ldi r21,hhi8(-1)
+ 217 00c0 B8C0      		rjmp .L6
+ 218               	.L7:
+ 219               	.LM16:
+ 220 00c2 F92D      		mov r31,r9
+ 221 00c4 E82D      		mov r30,r8
+ 222 00c6 8281      		ldd r24,Z+2
+ 223 00c8 9381      		ldd r25,Z+3
+ 224 00ca D72F      		mov r29,r23
+ 225 00cc C62F      		mov r28,r22
+ 226 00ce 2A81      		ldd r18,Y+2
+ 227 00d0 3B81      		ldd r19,Y+3
+ 228 00d2 821B      		sub r24,r18
+ 229 00d4 930B      		sbc r25,r19
+ 230 00d6 A82F      		mov r26,r24
+ 231 00d8 B92F      		mov r27,r25
+ 232 00da CC27      		clr r28
+ 233 00dc B7FD      		sbrc r27,7
+ 234 00de C095      		com r28
+ 235 00e0 DC2F      		mov r29,r28
+ 236               	.LM17:
+ 237 00e2 8481      		ldd r24,Z+4
+ 238 00e4 9581      		ldd r25,Z+5
+ 239 00e6 F72F      		mov r31,r23
+ 240 00e8 E62F      		mov r30,r22
+ 241 00ea 2481      		ldd r18,Z+4
+ 242 00ec 3581      		ldd r19,Z+5
+ 243 00ee 821B      		sub r24,r18
+ 244 00f0 930B      		sbc r25,r19
+ 245 00f2 E82E      		mov r14,r24
+ 246 00f4 F92E      		mov r15,r25
+ 247 00f6 0027      		clr r16
+ 248 00f8 F7FC      		sbrc r15,7
+ 249 00fa 0095      		com r16
+ 250 00fc 102F      		mov r17,r16
+ 251               	.LM18:
+ 252 00fe F92D      		mov r31,r9
+ 253 0100 E82D      		mov r30,r8
+ 254 0102 8681      		ldd r24,Z+6
+ 255 0104 9781      		ldd r25,Z+7
+ 256 0106 F72F      		mov r31,r23
+ 257 0108 E62F      		mov r30,r22
+ 258 010a 2681      		ldd r18,Z+6
+ 259 010c 3781      		ldd r19,Z+7
+ 260 010e 821B      		sub r24,r18
+ 261 0110 930B      		sbc r25,r19
+ 262 0112 682E      		mov r6,r24
+ 263 0114 792E      		mov r7,r25
+ 264 0116 8824      		clr r8
+ 265 0118 77FC      		sbrc r7,7
+ 266 011a 8094      		com r8
+ 267 011c 982C      		mov r9,r8
+ 268               	.LM19:
+ 269 011e A030      		cpi r26,lo8(-16384)
+ 270 0120 F0EC      		ldi r31,hi8(-16384)
+ 271 0122 BF07      		cpc r27,r31
+ 272 0124 FFEF      		ldi r31,hlo8(-16384)
+ 273 0126 CF07      		cpc r28,r31
+ 274 0128 FFEF      		ldi r31,hhi8(-16384)
+ 275 012a DF07      		cpc r29,r31
+ 276 012c 24F4      		brge .L8
+ 277 012e A0E0      		ldi r26,lo8(-16384)
+ 278 0130 B0EC      		ldi r27,hi8(-16384)
+ 279 0132 CFEF      		ldi r28,hlo8(-16384)
+ 280 0134 DFEF      		ldi r29,hhi8(-16384)
+ 281               	.L8:
+ 282               	.LM20:
+ 283 0136 80E0      		ldi r24,lo8(-16384)
+ 284 0138 E816      		cp r14,r24
+ 285 013a 80EC      		ldi r24,hi8(-16384)
+ 286 013c F806      		cpc r15,r24
+ 287 013e 8FEF      		ldi r24,hlo8(-16384)
+ 288 0140 0807      		cpc r16,r24
+ 289 0142 8FEF      		ldi r24,hhi8(-16384)
+ 290 0144 1807      		cpc r17,r24
+ 291 0146 3CF4      		brge .L9
+ 292 0148 E12C      		mov r14,__zero_reg__
+ 293 014a 30EC      		ldi r19,hi8(-16384)
+ 294 014c F32E      		mov r15,r19
+ 295 014e 3FEF      		ldi r19,hlo8(-16384)
+ 296 0150 032F      		mov r16,r19
+ 297 0152 3FEF      		ldi r19,hhi8(-16384)
+ 298 0154 132F      		mov r17,r19
+ 299               	.L9:
+ 300               	.LM21:
+ 301 0156 E0E0      		ldi r30,lo8(-16384)
+ 302 0158 6E16      		cp r6,r30
+ 303 015a E0EC      		ldi r30,hi8(-16384)
+ 304 015c 7E06      		cpc r7,r30
+ 305 015e EFEF      		ldi r30,hlo8(-16384)
+ 306 0160 8E06      		cpc r8,r30
+ 307 0162 EFEF      		ldi r30,hhi8(-16384)
+ 308 0164 9E06      		cpc r9,r30
+ 309 0166 3CF4      		brge .L10
+ 310 0168 612C      		mov r6,__zero_reg__
+ 311 016a 20EC      		ldi r18,hi8(-16384)
+ 312 016c 722E      		mov r7,r18
+ 313 016e 2FEF      		ldi r18,hlo8(-16384)
+ 314 0170 822E      		mov r8,r18
+ 315 0172 2FEF      		ldi r18,hhi8(-16384)
+ 316 0174 922E      		mov r9,r18
+ 317               	.L10:
+ 318               	.LM22:
+ 319 0176 A130      		cpi r26,lo8(16385)
+ 320 0178 F0E4      		ldi r31,hi8(16385)
+ 321 017a BF07      		cpc r27,r31
+ 322 017c F0E0      		ldi r31,hlo8(16385)
+ 323 017e CF07      		cpc r28,r31
+ 324 0180 F0E0      		ldi r31,hhi8(16385)
+ 325 0182 DF07      		cpc r29,r31
+ 326 0184 24F0      		brlt .L11
+ 327 0186 A0E0      		ldi r26,lo8(16384)
+ 328 0188 B0E4      		ldi r27,hi8(16384)
+ 329 018a C0E0      		ldi r28,hlo8(16384)
+ 330 018c D0E0      		ldi r29,hhi8(16384)
+ 331               	.L11:
+ 332               	.LM23:
+ 333 018e 81E0      		ldi r24,lo8(16385)
+ 334 0190 E816      		cp r14,r24
+ 335 0192 80E4      		ldi r24,hi8(16385)
+ 336 0194 F806      		cpc r15,r24
+ 337 0196 80E0      		ldi r24,hlo8(16385)
+ 338 0198 0807      		cpc r16,r24
+ 339 019a 80E0      		ldi r24,hhi8(16385)
+ 340 019c 1807      		cpc r17,r24
+ 341 019e 2CF0      		brlt .L12
+ 342 01a0 E12C      		mov r14,__zero_reg__
+ 343 01a2 90E4      		ldi r25,hi8(16384)
+ 344 01a4 F92E      		mov r15,r25
+ 345 01a6 012D      		mov r16,__zero_reg__
+ 346 01a8 112D      		mov r17,__zero_reg__
+ 347               	.L12:
+ 348               	.LM24:
+ 349 01aa E1E0      		ldi r30,lo8(16385)
+ 350 01ac 6E16      		cp r6,r30
+ 351 01ae E0E4      		ldi r30,hi8(16385)
+ 352 01b0 7E06      		cpc r7,r30
+ 353 01b2 E0E0      		ldi r30,hlo8(16385)
+ 354 01b4 8E06      		cpc r8,r30
+ 355 01b6 E0E0      		ldi r30,hhi8(16385)
+ 356 01b8 9E06      		cpc r9,r30
+ 357 01ba 2CF0      		brlt .L13
+ 358 01bc 612C      		mov r6,__zero_reg__
+ 359 01be 80E4      		ldi r24,hi8(16384)
+ 360 01c0 782E      		mov r7,r24
+ 361 01c2 812C      		mov r8,__zero_reg__
+ 362 01c4 912C      		mov r9,__zero_reg__
+ 363               	.L13:
+ 364               	.LM25:
+ 365 01c6 2A2F      		mov r18,r26
+ 366 01c8 3B2F      		mov r19,r27
+ 367 01ca 4C2F      		mov r20,r28
+ 368 01cc 5D2F      		mov r21,r29
+ 369 01ce 6A2F      		mov r22,r26
+ 370 01d0 7B2F      		mov r23,r27
+ 371 01d2 8C2F      		mov r24,r28
+ 372 01d4 9D2F      		mov r25,r29
+ 373 01d6 0E94 0000 		call __mulsi3
+ 374 01da A62E      		mov r10,r22
+ 375 01dc B72E      		mov r11,r23
+ 376 01de C82E      		mov r12,r24
+ 377 01e0 D92E      		mov r13,r25
+ 378               	.LM26:
+ 379 01e2 512F      		mov r21,r17
+ 380 01e4 402F      		mov r20,r16
+ 381 01e6 3F2D      		mov r19,r15
+ 382 01e8 2E2D      		mov r18,r14
+ 383 01ea 912F      		mov r25,r17
+ 384 01ec 802F      		mov r24,r16
+ 385 01ee 7F2D      		mov r23,r15
+ 386 01f0 6E2D      		mov r22,r14
+ 387 01f2 0E94 0000 		call __mulsi3
+ 388 01f6 E62E      		mov r14,r22
+ 389 01f8 F72E      		mov r15,r23
+ 390 01fa 082F      		mov r16,r24
+ 391 01fc 192F      		mov r17,r25
+ 392               	.LM27:
+ 393 01fe 592D      		mov r21,r9
+ 394 0200 482D      		mov r20,r8
+ 395 0202 372D      		mov r19,r7
+ 396 0204 262D      		mov r18,r6
+ 397 0206 992D      		mov r25,r9
+ 398 0208 882D      		mov r24,r8
+ 399 020a 772D      		mov r23,r7
+ 400 020c 662D      		mov r22,r6
+ 401 020e 0E94 0000 		call __mulsi3
+ 402 0212 B92F      		mov r27,r25
+ 403 0214 A82F      		mov r26,r24
+ 404 0216 972F      		mov r25,r23
+ 405 0218 862F      		mov r24,r22
+ 406               	.LM28:
+ 407 021a 5D2D      		mov r21,r13
+ 408 021c 4C2D      		mov r20,r12
+ 409 021e 3B2D      		mov r19,r11
+ 410 0220 2A2D      		mov r18,r10
+ 411 0222 2E0D      		add r18,r14
+ 412 0224 3F1D      		adc r19,r15
+ 413 0226 401F      		adc r20,r16
+ 414 0228 511F      		adc r21,r17
+ 415 022a 280F      		add r18,r24
+ 416 022c 391F      		adc r19,r25
+ 417 022e 4A1F      		adc r20,r26
+ 418 0230 5B1F      		adc r21,r27
+ 419               	.L6:
+ 420               	.LM29:
+ 421 0232 952F      		mov r25,r21
+ 422 0234 842F      		mov r24,r20
+ 423 0236 732F      		mov r23,r19
+ 424 0238 622F      		mov r22,r18
+ 425               	/* epilogue: frame size=0 */
+ 426 023a DF91      		pop r29
+ 427 023c CF91      		pop r28
+ 428 023e 1F91      		pop r17
+ 429 0240 0F91      		pop r16
+ 430 0242 FF90      		pop r15
+ 431 0244 EF90      		pop r14
+ 432 0246 DF90      		pop r13
+ 433 0248 CF90      		pop r12
+ 434 024a BF90      		pop r11
+ 435 024c AF90      		pop r10
+ 436 024e 9F90      		pop r9
+ 437 0250 8F90      		pop r8
+ 438 0252 7F90      		pop r7
+ 439 0254 6F90      		pop r6
+ 440 0256 0895      		ret
+ 441               	/* epilogue end (size=15) */
+ 442               	/* function ker_loc_r2 size 235 (206) */
+ 443               	.LFE20:
+ 445               	.global	ker_uart_id
+ 447               	ker_uart_id:
+ 448               	.LFB21:
+ 449               	.LM30:
+ 450               	/* prologue: frame size=0 */
+ 451               	/* prologue end (size=0) */
+ 452               	.LM31:
+ 453 0258 8DEF      		ldi r24,lo8(-3)
+ 454 025a 9FEF      		ldi r25,hi8(-3)
+ 455               	/* epilogue: frame size=0 */
+ 456 025c 0895      		ret
+ 457               	/* epilogue end (size=1) */
+ 458               	/* function ker_uart_id size 3 (2) */
+ 459               	.LFE21:
+ 461               	.global	ker_i2c_id
+ 463               	ker_i2c_id:
+ 464               	.LFB22:
+ 465               	.LM32:
+ 466               	/* prologue: frame size=0 */
+ 467               	/* prologue end (size=0) */
+ 468               	.LM33:
+ 469 025e 81E0      		ldi r24,lo8(1)
+ 470 0260 90E0      		ldi r25,hi8(1)
+ 471               	/* epilogue: frame size=0 */
+ 472 0262 0895      		ret
+ 473               	/* epilogue end (size=1) */
+ 474               	/* function ker_i2c_id size 3 (2) */
+ 475               	.LFE22:
+ 477               	.global	ker_hw_type
+ 479               	ker_hw_type:
+ 480               	.LFB23:
+ 481               	.LM34:
+ 482               	/* prologue: frame size=0 */
+ 483               	/* prologue end (size=0) */
+ 484               	.LM35:
+ 485 0264 8091 0000 		lds r24,hw_type
+ 486               	.LM36:
+ 487 0268 9927      		clr r25
+ 488               	/* epilogue: frame size=0 */
+ 489 026a 0895      		ret
+ 490               	/* epilogue end (size=1) */
+ 491               	/* function ker_hw_type size 4 (3) */
+ 492               	.LFE23:
+ 494               	.global	ker_get_group
+ 496               	ker_get_group:
+ 497               	.LFB24:
+ 498               	.LM37:
+ 499               	/* prologue: frame size=0 */
+ 500               	/* prologue end (size=0) */
+ 501 026c 8091 0000 		lds r24,node_group_id
+ 502 0270 9927      		clr r25
+ 503               	/* epilogue: frame size=0 */
+ 504 0272 0895      		ret
+ 505               	/* epilogue end (size=1) */
+ 506               	/* function ker_get_group size 4 (3) */
+ 507               	.LFE24:
+ 509               	.global	ker_set_group
+ 511               	ker_set_group:
+ 512               	.LFB25:
+ 513               	.LM38:
+ 514               	/* prologue: frame size=0 */
+ 515               	/* prologue end (size=0) */
+ 516 0274 8093 0000 		sts node_group_id,r24
+ 517               	/* epilogue: frame size=0 */
+ 518 0278 0895      		ret
+ 519               	/* epilogue end (size=1) */
+ 520               	/* function ker_set_group size 3 (2) */
+ 521               	.LFE25:
+ 523               	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 sos_info.c
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc6Ddaaa.s:3      *ABS*:0000003f __SREG__
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc6Ddaaa.s:4      *ABS*:0000003e __SP_H__
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc6Ddaaa.s:5      *ABS*:0000003d __SP_L__
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc6Ddaaa.s:6      *ABS*:00000000 __tmp_reg__
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc6Ddaaa.s:7      *ABS*:00000001 __zero_reg__
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc6Ddaaa.s:22     .data:00000000 hw_type
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc6Ddaaa.s:27     .data:00000001 node_group_id
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc6Ddaaa.s:32     .data:00000002 node_address
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc6Ddaaa.s:37     .data:00000004 gps_loc
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc6Ddaaa.s:51     .data:00000010 node_loc
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc6Ddaaa.s:59     .text:00000000 id_init
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc6Ddaaa.s:75     .text:00000006 ker_set_id
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc6Ddaaa.s:91     .text:00000010 ker_id
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc6Ddaaa.s:107    .text:0000001a ker_loc
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc6Ddaaa.s:147    .text:0000005e ker_gps
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc6Ddaaa.s:179    .text:00000082 ker_loc_r2
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc6Ddaaa.s:447    .text:00000258 ker_uart_id
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc6Ddaaa.s:463    .text:0000025e ker_i2c_id
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc6Ddaaa.s:479    .text:00000264 ker_hw_type
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc6Ddaaa.s:496    .text:0000026c ker_get_group
+c:\DOCUME~1\jlhsu\LOCALS~1\Temp/cc6Ddaaa.s:511    .text:00000274 ker_set_group
+
+UNDEFINED SYMBOLS
+__do_copy_data
+__do_clear_bss
+__mulsi3
