@@ -1,0 +1,108 @@
+Archive member included because of file (symbol)
+
+/usr/local/lib/gcc/avr/3.4.3/avr5/libgcc.a(_copy_data.o)
+                              blink.o (__do_copy_data)
+/usr/local/lib/gcc/avr/3.4.3/avr5/libgcc.a(_clear_bss.o)
+                              blink.o (__do_clear_bss)
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+text             0x00000000         0x00020000         xr
+data             0x00800060         0x0000ffa0         rw !x
+eeprom           0x00810000         0x00010000         rw !x
+
+Linker script and memory map
+
+Address of section .data set to 0x800100
+LOAD blink.o
+
+.text           0x00000000       0x6a
+ *(.progmem*)
+ .progmem.data  0x00000000        0xe blink.o
+                0x0000000e                . = ALIGN (0x2)
+ *(.text)
+ .text          0x0000000e       0x5c blink.o
+                0x0000006a                . = ALIGN (0x2)
+ *(.text.*)
+                0x0000006a                . = ALIGN (0x2)
+ *(.module)
+                0x0000006a                . = ALIGN (0x2)
+                0x0000006a                _etext = .
+
+.nouse          0x0000006a       0x26 load address 0x0000006a
+ *(.vectors)
+                0x0000006a                __ctors_start = .
+ *(.ctors)
+                0x0000006a                __ctors_end = .
+                0x0000006a                __dtors_start = .
+ *(.dtors)
+                0x0000006a                __dtors_end = .
+ *(.progmem.gcc*)
+ *(.init0)
+ *(.init1)
+ *(.init2)
+ *(.init3)
+ *(.init4)
+ .init4         0x0000006a       0x16 /usr/local/lib/gcc/avr/3.4.3/avr5/libgcc.a(_copy_data.o)
+                0x0000006a                __do_copy_data
+ .init4         0x00000080       0x10 /usr/local/lib/gcc/avr/3.4.3/avr5/libgcc.a(_clear_bss.o)
+                0x00000080                __do_clear_bss
+ *(.init5)
+ *(.init6)
+ *(.init7)
+ *(.init8)
+ *(.init9)
+ *(.fini9)
+ *(.fini8)
+ *(.fini7)
+ *(.fini6)
+ *(.fini5)
+ *(.fini4)
+ *(.fini3)
+ *(.fini2)
+ *(.fini1)
+ *(.fini0)
+
+.data           0x00800100        0x0 load address 0x00000090
+                0x00800100                PROVIDE (__data_start, .)
+ *(.data)
+ *(.gnu.linkonce.d*)
+                0x00800100                . = ALIGN (0x2)
+                0x00800100                _edata = .
+                0x00800100                PROVIDE (__data_end, .)
+
+.bss            0x00800100        0x0
+                0x00800100                PROVIDE (__bss_start, .)
+ *(.bss)
+ *(COMMON)
+                0x00800100                PROVIDE (__bss_end, .)
+                0x00000090                __data_load_start = LOADADDR (.data)
+                0x00000090                __data_load_end = (__data_load_start + SIZEOF (.data))
+
+.noinit         0x00800100        0x0
+                0x00800100                PROVIDE (__noinit_start, .)
+ *(.noinit*)
+                0x00800100                PROVIDE (__noinit_end, .)
+                0x00800100                _end = .
+                0x00800100                PROVIDE (__heap_start, .)
+
+.eeprom         0x00810000        0x0 load address 0x0000006a
+ *(.eeprom*)
+                0x00810000                __eeprom_end = .
+LOAD /usr/local/lib/gcc/avr/3.4.3/avr5/libgcc.a
+LOAD /usr/local/lib/gcc/avr/3.4.3/../../../../avr/lib/avr5/libc.a
+OUTPUT(blink.elf elf32-avr)
+
+Cross Reference Table
+
+Symbol                                            File
+__bss_end                                         /usr/local/lib/gcc/avr/3.4.3/avr5/libgcc.a(_clear_bss.o)
+__bss_start                                       /usr/local/lib/gcc/avr/3.4.3/avr5/libgcc.a(_clear_bss.o)
+__data_end                                        /usr/local/lib/gcc/avr/3.4.3/avr5/libgcc.a(_copy_data.o)
+__data_load_start                                 /usr/local/lib/gcc/avr/3.4.3/avr5/libgcc.a(_copy_data.o)
+__data_start                                      /usr/local/lib/gcc/avr/3.4.3/avr5/libgcc.a(_copy_data.o)
+__do_clear_bss                                    /usr/local/lib/gcc/avr/3.4.3/avr5/libgcc.a(_clear_bss.o)
+                                                  blink.o
+__do_copy_data                                    /usr/local/lib/gcc/avr/3.4.3/avr5/libgcc.a(_copy_data.o)
+                                                  blink.o

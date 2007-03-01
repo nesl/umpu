@@ -1,0 +1,92 @@
+   1               		.file	"blink.c"
+   2               		.arch atmega128
+   3               	__SREG__ = 0x3f
+   4               	__SP_H__ = 0x3e
+   5               	__SP_L__ = 0x3d
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+   8               		.global __do_copy_data
+   9               		.global __do_clear_bss
+  10               		.section	.progmem.data,"a",@progbits
+  13               	mod_header:
+  14 0000 80        		.byte	-128
+  15 0001 02        		.byte	2
+  16 0002 00        		.skip 1,0
+  17 0003 00        		.byte	0
+  18 0004 00        		.byte	0
+  19 0005 00        		.skip 1,0
+  20 0006 01        		.byte	1
+  21 0007 01        		.byte	1
+  22 0008 8000      		.word	128
+  23 000a 0000      		.skip 2,0
+  24 000c 0000      		.word	pm(blink_msg_handler)
+  25               		.text
+  27               	blink_msg_handler:
+  28               	/* prologue: frame size=0 */
+  29               	/* prologue end (size=0) */
+  30 0000 DC01      		movw r26,r24
+  31 0002 FB01      		movw r30,r22
+  32 0004 8681      		ldd r24,Z+6
+  33 0006 9927      		clr r25
+  34 0008 8230      		cpi r24,2
+  35 000a 9105      		cpc r25,__zero_reg__
+  36 000c E9F0      		breq .L8
+  37 000e 8330      		cpi r24,3
+  38 0010 9105      		cpc r25,__zero_reg__
+  39 0012 1CF4      		brge .L11
+  40 0014 892B      		or r24,r25
+  41 0016 21F0      		breq .L3
+  42 0018 1BC0      		rjmp .L10
+  43               	.L11:
+  44 001a 0697      		sbiw r24,6
+  45 001c 89F0      		breq .L6
+  46 001e 18C0      		rjmp .L10
+  47               	.L3:
+  48 0020 8081      		ld r24,Z
+  49 0022 8C93      		st X,r24
+  50 0024 FD01      		movw r30,r26
+  51 0026 1182      		std Z+1,__zero_reg__
+  52 0028 87E0      		ldi r24,lo8(7)
+  53 002a 0E94 6600 		call 204
+  54 002e 20E0      		ldi r18,lo8(0)
+  55 0030 40E0      		ldi r20,lo8(1024)
+  56 0032 54E0      		ldi r21,hi8(1024)
+  57 0034 60E0      		ldi r22,hlo8(1024)
+  58 0036 70E0      		ldi r23,hhi8(1024)
+  59 0038 822F      		mov r24,r18
+  60 003a 0E94 5000 		call 160
+  61 003e 0BC0      		rjmp .L2
+  62               	.L6:
+  63 0040 80E0      		ldi r24,lo8(0)
+  64 0042 0E94 5400 		call 168
+  65 0046 07C0      		rjmp .L2
+  66               	.L8:
+  67 0048 88E0      		ldi r24,lo8(8)
+  68 004a 0E94 6600 		call 204
+  69 004e 03C0      		rjmp .L2
+  70               	.L10:
+  71 0050 8AEE      		ldi r24,lo8(-22)
+  72 0052 9FEF      		ldi r25,hi8(-22)
+  73 0054 0895      		ret
+  74               	.L2:
+  75 0056 80E0      		ldi r24,lo8(0)
+  76 0058 90E0      		ldi r25,hi8(0)
+  77 005a 0895      		ret
+  78               	/* epilogue: frame size=0 */
+  79               	/* epilogue: noreturn */
+  80               	/* epilogue end (size=0) */
+  81               	/* function blink_msg_handler size 47 (47) */
+  83               	/* File "blink.c": code   47 = 0x002f (  47), prologues   0, epilogues   0 */
+DEFINED SYMBOLS
+                            *ABS*:00000000 blink.c
+                            *ABS*:0000003f __SREG__
+                            *ABS*:0000003e __SP_H__
+                            *ABS*:0000003d __SP_L__
+                            *ABS*:00000000 __tmp_reg__
+                            *ABS*:00000001 __zero_reg__
+/cygdrive/c/DOCUME~1/jlhsu/LOCALS~1/Temp/cc3eJMmf.s:13     .progmem.data:00000000 mod_header
+/cygdrive/c/DOCUME~1/jlhsu/LOCALS~1/Temp/cc3eJMmf.s:27     .text:00000000 blink_msg_handler
+
+UNDEFINED SYMBOLS
+__do_copy_data
+__do_clear_bss

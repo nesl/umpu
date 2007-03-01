@@ -1,0 +1,97 @@
+
+blink.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .data         00000000  00800100  00800100  00000034  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  1 .nouse        00000026  0000006a  0000006a  00000034  2**0
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+  2 .text         0000006a  00000000  00000000  0000005a  2**0
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+  3 .bss          00000000  00800100  00800100  000000c4  2**0
+                  ALLOC
+  4 .noinit       00000000  00800100  00800100  000000c4  2**0
+                  CONTENTS
+  5 .eeprom       00000000  00810000  00810000  000000c4  2**0
+                  CONTENTS
+Disassembly of section .nouse:
+
+0000006a <__ctors_end>:
+  6a:	10 e0       	ldi	r17, 0x00	; 0
+  6c:	a0 e0       	ldi	r26, 0x00	; 0
+  6e:	b0 e0       	ldi	r27, 0x00	; 0
+  70:	e0 e0       	ldi	r30, 0x00	; 0
+  72:	f0 e0       	ldi	r31, 0x00	; 0
+  74:	02 c0       	rjmp	.+4      	; 0x7a
+
+00000076 <.do_copy_data_loop>:
+  76:	05 90       	lpm	r0, Z+
+  78:	0d 92       	st	X+, r0
+
+0000007a <.do_copy_data_start>:
+  7a:	a0 30       	cpi	r26, 0x00	; 0
+  7c:	b1 07       	cpc	r27, r17
+  7e:	d9 f7       	brne	.-10     	; 0x76
+
+00000080 <__do_clear_bss>:
+  80:	10 e0       	ldi	r17, 0x00	; 0
+  82:	a0 e0       	ldi	r26, 0x00	; 0
+  84:	b0 e0       	ldi	r27, 0x00	; 0
+  86:	01 c0       	rjmp	.+2      	; 0x8a
+
+00000088 <.do_clear_bss_loop>:
+  88:	1d 92       	st	X+, r1
+
+0000008a <.do_clear_bss_start>:
+  8a:	a0 30       	cpi	r26, 0x00	; 0
+  8c:	b1 07       	cpc	r27, r17
+  8e:	e1 f7       	brne	.-8      	; 0x88
+Disassembly of section .text:
+
+00000000 <mod_header>:
+   0:	80 02 00 00 00 00 01 01 80 00 00 00 00 00           ..............
+
+0000000e <blink_msg_handler>:
+   e:	dc 01       	movw	r26, r24
+  10:	fb 01       	movw	r30, r22
+  12:	86 81       	ldd	r24, Z+6	; 0x06
+  14:	99 27       	eor	r25, r25
+  16:	82 30       	cpi	r24, 0x02	; 2
+  18:	91 05       	cpc	r25, r1
+  1a:	e9 f0       	breq	.+58     	; 0x56
+  1c:	83 30       	cpi	r24, 0x03	; 3
+  1e:	91 05       	cpc	r25, r1
+  20:	1c f4       	brge	.+6      	; 0x28
+  22:	89 2b       	or	r24, r25
+  24:	21 f0       	breq	.+8      	; 0x2e
+  26:	1b c0       	rjmp	.+54     	; 0x5e
+  28:	06 97       	sbiw	r24, 0x06	; 6
+  2a:	89 f0       	breq	.+34     	; 0x4e
+  2c:	18 c0       	rjmp	.+48     	; 0x5e
+  2e:	80 81       	ld	r24, Z
+  30:	8c 93       	st	X, r24
+  32:	fd 01       	movw	r30, r26
+  34:	11 82       	std	Z+1, r1	; 0x01
+  36:	87 e0       	ldi	r24, 0x07	; 7
+  38:	0e 94 66 00 	call	0xcc
+  3c:	20 e0       	ldi	r18, 0x00	; 0
+  3e:	40 e0       	ldi	r20, 0x00	; 0
+  40:	54 e0       	ldi	r21, 0x04	; 4
+  42:	60 e0       	ldi	r22, 0x00	; 0
+  44:	70 e0       	ldi	r23, 0x00	; 0
+  46:	82 2f       	mov	r24, r18
+  48:	0e 94 50 00 	call	0xa0
+  4c:	0b c0       	rjmp	.+22     	; 0x64
+  4e:	80 e0       	ldi	r24, 0x00	; 0
+  50:	0e 94 54 00 	call	0xa8
+  54:	07 c0       	rjmp	.+14     	; 0x64
+  56:	88 e0       	ldi	r24, 0x08	; 8
+  58:	0e 94 66 00 	call	0xcc
+  5c:	03 c0       	rjmp	.+6      	; 0x64
+  5e:	8a ee       	ldi	r24, 0xEA	; 234
+  60:	9f ef       	ldi	r25, 0xFF	; 255
+  62:	08 95       	ret
+  64:	80 e0       	ldi	r24, 0x00	; 0
+  66:	90 e0       	ldi	r25, 0x00	; 0
+  68:	08 95       	ret
