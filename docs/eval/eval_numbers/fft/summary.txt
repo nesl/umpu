@@ -1,5 +1,5 @@
 sample size		Protection		time
-16			enabled			4.51ms
-32			enabled			4.69ms
-16			disabled		3.86ms
-32			disabled		3.96ms
+16			enabled			3.520112ms
+32			enabled			8.408688ms
+16			disabled		3.441496ms
+32			disabled		8.235584ms
