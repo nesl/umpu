@@ -12,6 +12,9 @@ PORTB = 0x00; \
 
 #define EVAL_STOP()  PORTB = 0x5A
 
+#define FFT_BEGIN() SET_BIT(4)
+#define FFT_DONE()  CLEAR_BIT(4)
+
 #define UART_RECV_ISR_BEGIN() SET_BIT(0)
 #define UART_RECV_ISR_DONE()  CLEAR_BIT(0)
 
@@ -26,6 +29,9 @@ PORTB = 0x00; \
 #else
 #define EVAL_START()
 #define EVAL_STOP()
+
+#define FFT_BEGIN()
+#define FFT_DONE()
 
 #define UART_RECV_ISR_BEGIN() 
 #define UART_RECV_ISR_DONE() 
