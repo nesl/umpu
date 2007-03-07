@@ -52,7 +52,43 @@ int8_t buf_writer(void* state, Message* msg)
   switch (msg->type){
   case MSG_INIT:
     {
-      sys_post_value(TEST_FFT_FIX_PID, MSG_FFT_DONE, 0, 0);
+      uint8_t i;
+      unit8_t* buffer;
+
+      buffer = sys_malloc(96);
+
+      DDRB = 0xFF;
+      PORTB = 0x50;
+      for (i = 0; i < 16; i++) {
+	buffer[i] = 1;
+      }
+      PORTB = 0x51;
+      PORTB = 0x60;
+      for (i = 0; i < 32; i++) {
+	buffer[i] = 2;
+      }
+      PORTB = 0x61;
+      PORTB = 0x70;
+      for (i = 0; i < 48; i++) {
+	buffer[i] = 3;
+      }
+      PORTB = 0x71;
+      PORTB = 0x80;
+      for (i = 0; i < 64; i++) {
+	buffer[i] = 4;
+      }
+      PORTB = 0x81;
+      PORTB = 0x90;
+      for (i = 0; i < 80; i++) {
+	buffer[i] = 5;
+      }
+      PORTB = 0x91;
+      PORTB = 0xa0;
+      for (i = 0; i < 96; i++) {
+	buffer[i] = 6;
+      }
+      PORTB = 0xa1;
+
       break;
     }
 
