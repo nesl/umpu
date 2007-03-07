@@ -3,6 +3,7 @@
 PROJ = outlier_avg
 ROOTDIR = ../../..
 
+DEFS+= -DNO_SOS_UART
 
 SUPPORTLIST = mica2 micaz avrora
 

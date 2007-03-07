@@ -24,9 +24,7 @@ KER_OBJS += $(KER_SRCS:.c=.o)
 KER_ASM_OBJS += $(KER_ASM_SRCS:.S=.o)
 
 # UART Driver Build Definitions
-ifeq ($(MODE),sfi)
 UART_DRV_DEFS +=  -D_MODULE_ -D_UART_DRIVER_
-endif
 
 UART_DRV_OBJS += $(UART_DRV_SRCS:.c=.o)
 UART_DRV_ASM_OBJS += $(UART_DRV_ASM_SRCS:.S=.o)

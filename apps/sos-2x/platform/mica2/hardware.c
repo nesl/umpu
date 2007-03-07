@@ -69,8 +69,7 @@
 //-------------------------------------------------------------------------
 void hardware_init(void){
 
-  // Setting portb and starting the evaluation
-  DDRB = 0xff;
+  // Starting the evaluation
   EVAL_START();
 
   // LEDS

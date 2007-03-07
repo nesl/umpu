@@ -6,11 +6,15 @@
 
 #ifdef UMPU_EVAL 
 #define EVAL_START() {\
+DDRB = 0xFF; \
 PORTB = 0xFF; \
 PORTB = 0x00; \
 }
 
 #define EVAL_STOP()  PORTB = 0x5A
+
+#define AVG_BEGIN() SET_BIT(5)
+#define AVG_DONE()  CLEAR_BIT(5)
 
 #define FFT_BEGIN() SET_BIT(4)
 #define FFT_DONE()  CLEAR_BIT(4)

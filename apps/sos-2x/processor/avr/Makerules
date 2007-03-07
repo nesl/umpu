@@ -26,12 +26,7 @@ KER_ASM_SRCS += sos_fnptr_call.S sys_jmptable.S
 # Uart Sources
 UART_DRV_SRCS += uart_system.c uart.c uart_hal.c
 
-ifeq ($(MODE),sfi)
 UART_DRV_ASM_SRCS += uart_driver.S
-endif
-
-
-
 
 
 ###############################################################

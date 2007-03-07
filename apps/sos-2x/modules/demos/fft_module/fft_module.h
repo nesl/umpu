@@ -7,8 +7,8 @@
 #ifndef _FFT_MODULE_H_
 #define _FFT_MODULE_H_
 
-#define FFT_SIZE  16
-#define log2FFT   4
+#define FFT_SIZE  32
+#define log2FFT   5
 #define N         (2 * FFT_SIZE)
 #define log2N     (log2FFT + 1)
 

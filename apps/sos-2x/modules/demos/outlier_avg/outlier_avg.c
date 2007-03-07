@@ -5,6 +5,7 @@
  * \brief Compute the average after removing outliers
  */
 
+#include <umpu_eval.h>
 #include <sys_module.h>
 #include <led.h>
 //#include <sensordrivers/mts310/include/mts3xxsb.h>
@@ -18,7 +19,7 @@
 
 
 #ifdef SOS_SFI
-#define OUTLIER_DOM_ID SFI_DOM1
+#define OUTLIER_DOM_ID SFI_DOM2
 #endif
 
 
@@ -61,7 +62,7 @@ int8_t outlier_detection_module(void *state, Message *msg)
 	{
 	  uint8_t i;
 	  int32_t number_threshold, average;
-
+	  
 	  s->pid = msg->did;
 	  s->size = MAX_SIZE;
 	  s->index = 0;
@@ -80,11 +81,14 @@ int8_t outlier_detection_module(void *state, Message *msg)
 	  s->photo_data[2] =  200;
 	  s->photo_data[3] = 1003;
 
-	  for (i = 0; i < MAX_SIZE; i++)
+	  for (i = 0; i < MAX_SIZE; i++) {
 		s->readings[s->index++] = s->photo_data[i] * FLOAT_PRECISION;
+	  }
 
 	  // Begin Evaluation
 	  sys_led(LED_RED_TOGGLE);			
+	  AVG_BEGIN();
+	  
 	  if (s->index == s->size) {
 		number_threshold = s->size * ((1 * FLOAT_PRECISION) - s->param_fraction);
 		DEBUG("SOS OUTLIER: Outlier called with args s:%d n:%d p:%d \n",
@@ -96,7 +100,7 @@ int8_t outlier_detection_module(void *state, Message *msg)
 		DEBUG("SOS OUTLIER: Finished a round.\n");
 	  }
 	  // End Evaluation
-
+	  AVG_DONE();
 
 	  break;
 	}

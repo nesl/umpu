@@ -76,6 +76,9 @@ int8_t outlier_detection_module(void *state, Message *msg)
 		s->readings[s->index++] = s->photo_data[i] * FLOAT_PRECISION;
 
 	  // Begin Evaluation
+	  DDRB = 0xFF;
+	  PORTB = 0x50;
+
 	  sys_led(LED_RED_TOGGLE);			
 	  if (s->index == s->size) {
 		number_threshold = s->size * ((1 * FLOAT_PRECISION) - s->param_fraction);
@@ -88,7 +91,7 @@ int8_t outlier_detection_module(void *state, Message *msg)
 		DEBUG("SOS OUTLIER: Finished a round.\n");
 	  }
 	  // End Evaluation
-
+	  PORTB = 0x51;
 
 	  break;
 	}
