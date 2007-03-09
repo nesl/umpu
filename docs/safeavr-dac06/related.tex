@@ -1,0 +1,53 @@
+%=======================================================================
+% RELATED WORK
+%=======================================================================
+\section{Related Work}
+\label{sec:related}
+%
+Hardware-assisted protection is vastly popular on standard computing platforms~\cite{qin-hpca05-safemem, witchel-asplos02-mondrian}. 
+%
+Memory management units provide page level protection in almost all desktop systems.
+%
+MMUs are found in some high-end embedded processors as well.
+%
+Mondrian Memory Protection (MMP)~\cite{witchel-asplos02-mondrian} inspects memory accesses at the instruction level from within the processor pipeline to provide word-level protection.
+%
+It uses fairly complex and expensive hardware extensions to reduce overhead of monitoring all accesses.
+%
+SafeMem~\cite{qin-hpca05-safemem} exploits existing ECC memory protection to guard memory regions and detect any illegal accesses through ECC violations.
+%
+However, these techniques significant resources to be performed on tiny embedded processors.
+
+%
+Hardware support for memory safe execution of embedded software was recently proposed in~\cite{divya06codes}.
+%
+This technique uses CCured~\cite{ccured02necula}, a tool that generates type safe C programs through pointer inference techniques.
+%
+Extensions to the instruction set architecture speed up the run-time bounds checking operations performed by CCured.
+%
+Our techniques apply directly to machine instructions and are therefore agnostic to programming languages.
+%
+Also, our hardware extensions do not modify the processor instruction set architecture.
+%
+Hence, we can continue to use existing compilers.
+%
+Custom modifications to compilers can become the source of new bugs.
+%
+
+Many software based approaches for memory protection have been proposed.
+%
+Type-safe languages such as Virgil~\cite{titzer06virgil} can flag illegal accesses at compile or run-time.
+%
+They provide fine-grained memory protection of individual objects.
+%
+Type-safe languages do not interface with code written in non type-safe languages.
+%
+However, most of the software developed for embedded systems is written in unsafe languages such as C (or even assembly for low-level drivers). 
+%
+Popular programming language NesC~\cite{gay03nesc}, contains minimal extensions to C (such as the \texttt{atomic} keyword) to prevent race-conditions that can cause memory corruption.
+%
+ASVM~\cite{asvm05nsdi} can also be used for providing memory protection. 
+%
+Software-based fault isolation for embedded processors has been proposed in ~\cite{ram06emnets}.
+%
+All the software based approaches have a significantly higher overhead than custom hardware extensions.

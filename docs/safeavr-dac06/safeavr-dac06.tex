@@ -1,0 +1,50 @@
+% DAC Paper
+\documentclass{sig-alternate}
+\usepackage{subfigure}
+
+\pagestyle{empty}
+
+%
+\begin{document}
+
+% Do not want to print date
+\date{}
+
+\title{A System For Coarse Grained Memory Protection In Tiny Embedded Processors}
+
+\numberofauthors{1}
+
+\maketitle
+\thispagestyle{empty}
+
+
+\begin{abstract}
+\input{abstract}
+\end{abstract}
+%
+
+\vspace{1mm}
+\noindent
+{\bf Categories and Subject Descriptors:} C.3 {[Special - \\Purpose and Application-Based Systems]}: {Real-time and embedded systems}
+
+\vspace{1mm}
+\noindent
+{\bf General Terms:} Performance, Design, Reliability
+
+\vspace{1mm}
+\noindent
+{\bf Keywords:} Memory Protection, HW SW Codesign
+
+\input{introduction}
+\input{memmap}
+\input{crossdomlink}
+\input{evaluation}
+\input{related}
+\input{conclusion}
+
+
+%Bibliography
+\bibliographystyle{abbrv}
+\bibliography{safeavr-dac06-bib}
+
+\end{document}

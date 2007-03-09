@@ -1,0 +1,180 @@
+%=========================================================================
+% EVALUATION
+%=========================================================================
+\section{Evaluation}
+\label{sec:eval}
+In this section, we will analyze the protection benefits and overheads introduced by our methodology.
+%
+We have implemented the hardware components of our design by making extensions to the AVR instruction set architecture.
+%
+The VHDL model of the extended processor is synthesizable.
+%
+We have instantiated the processor on Xilinx Vertex 2 Pro XC2VP30 FPGA.
+%
+Our performance overheads are measured using Modelsim 6.0 simulator.
+%
+The software library and applications were compiled using \texttt{avr-gcc} cross compiler.
+%
+%\subsection{Micro-Benchmarks}
+%
+\subsection{Performance Overhead}
+%
+We first present micro-benchmarks that measure CPU overhead introduced by the protection mechanism.
+%
+Table~\ref{tab:microbmperf} contains the overhead of run-time checks present in our mechanism.
+%
+We compare our overhead with a completely software based approach to memory protection through binary rewrites proposed in~\cite{ram06emnets} for the AVR architecture.
+%
+The software based approach also introduces identical run-time checks except that they are implemented in assembly language without any modifications to the processor architecture.
+%
+The results clearly indicate the superior performance of run-time checkers implemented in hardware.
+%
+\begin{table}[htdp]
+\centering
+\small{
+\begin{tabular}{|l|c|c|}
+	\hline
+	Function Name & AVR Extension & AVR Binary Rewrite\\
+	\hline
+	Memmap Checker & 1 & 65\\
+	Cross Domain Call & 5 & 65\\
+	Cross Domain Ret & 5 & 28\\
+	Save Ret Addr & 0 & 38\\
+	Restore Ret Addr & 0 & 38\\
+	\hline
+\end{tabular}}
+\caption{Overhead (CPU cycles) of Memory Protection Routines}
+\label{tab:microbmperf}
+\end{table}
+%
+
+The high overhead of software based memory map checker is mainly due to complex bit shift operations that are required to translate write addresses to memory map lookup.
+%
+Cross domain call and return have an overhead of five clock cycles when implemented in hardware.
+%
+The overhead occurs because the current domain identity, stack bound and return address have to be pushed to the safe stack before they can be updated with new values.
+%
+The total information that needs to be pushed to the stack is five bytes and only one byte can be written every clock cycle.
+%
+Similarly on the cross domain return, the five clock cycles are expended in restoring the values read from the safe stack.
+%
+Saving and restoring return addresses to the safe stack does not introduce any added overhead.
+%
+This is because the hardware unit for safe stack simply takes over the address bus when the processor is pushing the return address to the run-time stack.
+%
+By stealing the address bus from the processor, the hardware unit is able to simply redirect the store of the return addresses to the safe stack.
+
+Next we evaluate the software library.
+%
+Performance overhead is also introduced by updates to memory map during allocation, free and transfer of memory within the system.
+%
+Table~\ref{tab:malloc_comparison} compares the overhead of memory allocation routines in the presence and absence of the protection mechanism.
+%
+Relatively higher overhead of \texttt{change\_own} and \texttt{free} calls is due additional checks that are introduced to prevent illegal ownership transfer or freeing of memory blocks by non-owners.
+%
+\begin{table}[htdp]
+\centering
+\small{
+\begin{tabular}{|l|c|c|}
+	\hline
+	Function Name & Normal & Protected \\
+	\hline
+	malloc  & 343 & 610\\
+	free & 138 & 425\\
+	change\_own & 55 & 365 \\
+	\hline
+\end{tabular}}
+\caption{Overhead (CPU cycles) of memory allocation routines}
+\label{tab:malloc_comparison}
+\end{table}
+%
+
+\subsection{Resource Utilization}
+%
+Resource utilization can be partitioned into sections.
+%
+The resource utilization of the software library and the overhead of hardware checkers.
+%
+
+%
+%Code memory usage increases by about 15\% in protected kernel relative to unprotected kernel.
+%
+%Increase is mainly due to memory map API and jump table used by cross domain call mechanism.
+%
+%There is no significant change in program memory usage going from two protection domains to multiple protection domains.
+%
+%Data memory usage increases by 5\% and 9.5\% in two-domain and multi-domain systems respectively, relative to unprotected kernel.
+%
+%This is the maximum possible overhead as the memory map stores layout and ownership information of entire address space.
+%
+Code and data memory usage of the software library is shown in Table~\ref{tab:swlibsize}.
+%
+Maximum memory map size is 256 bytes for multi-domain protection.
+%
+This represents an overhead of 6.25\%.
+%
+However, by modifying data layout, portion of address space that requires memory map for protection can be reduced.
+%
+For example, memory map can be configured only to protect the heap and safe-stack.
+%
+By abutting these two data-structures, size of memory map required can be reduced to 140 bytes for multi-domain protection.
+%
+For two domain protection, the overhead can be reduced to only 70 bytes (1.7\%).
+%
+The total code memory usage of the software library is only 3674 bytes (2.8\%).
+%
+\begin{table}[htdp]
+\centering
+\small{
+\begin{tabular}{|l|c|c|}
+	\hline
+	SW Component & FLASH (B) & RAM (B)\\
+	\hline
+	Dynamic Memory & 1204 & 2054\\
+	Memory Map & 422 & 256 \\
+	Jump Table & 2048 & 0 \\
+	\hline
+\end{tabular}}
+\caption{FLASH and RAM overhead of software library}
+\label{tab:swlibsize}
+\end{table}
+%
+
+The hardware overhead of our mechanism is shown in Table~\ref{tab:hwsize}.
+%
+These results were computed by synthesizing our processor on Xilinx ISE 8.2i.
+%
+Most of the additions to the core area are in the memory map decoder that maintains a barrel shifter to support arbitrary bit-shifts in a single clock cycles.
+%
+We can eliminate this overhead if the processor is synthesized for a fixed block size and number of protection domains.
+%
+The overall increase in the core area is about 32\%.
+%
+This represents a modest increase in the overall area of the chip as the core occupies only a small fraction of the overall area.
+%
+Bulk of the chip area is occupied by SRAM and FLASH memories.
+%
+\begin{table}[htdp]
+\centering
+\small{
+\begin{tabular}{|l|c|c|}
+	\hline
+	HW Component & Ext. Gate Count & Orig. Gate Count\\
+	\hline
+	AVR Core & 22498 & 16419\\
+	Fetch Decoder & 6783 & 6685\\
+	MMC & 2284 & N/A \\
+	Safe Stack & 1749 & N/A \\
+	Domain Tracker & 541 & N/A \\
+	\hline
+\end{tabular}}
+\caption{Gate count overhead of hardware extensions}
+\label{tab:hwsize}
+\end{table}
+%
+
+
+
+
+
+

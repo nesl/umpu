@@ -1,0 +1,48 @@
+\makeatletter
+\global\def\section{\@startsection {section}{1}{\z@}%
+                                   {-2ex \@plus -1ex \@minus -.1ex}%
+                                   {1ex \@plus.2ex}%
+                                   {\normalfont\bfseries\scshape\fontsize{11}{13}\selectfont}}
+\global\def\subsection{\@startsection{subsection}{2}{\z@}%
+                                     {-2ex\@plus -1ex \@minus -.1ex}%
+                                     {1ex \@plus .2ex}%
+                                     {\normalfont\bfseries\fontsize{11}{13}\selectfont}}
+\global\def\subsubsection{\@startsection{subsubsection}{3}{\z@}%
+                                     {-2ex\@plus -1ex \@minus -.1ex}%
+                                     {1ex \@plus .2ex}%
+                                     {\normalfont\itshape\fontsize{11}{13}\selectfont}}
+
+% \@maketitle fix -- less vertical space at top
+\global\def\@maketitle{%
+  \newpage
+  \null
+  \vskip -0.31in%
+  \null
+  \begin{center}%
+  \let \footnote \thanks
+    {\LARGE \@title \par}%
+    \vskip 0.75em%
+    {\large
+      \lineskip .5em%
+      \begin{tabular}[t]{c}%
+        \@author
+      \end{tabular}\par}%
+    \vskip 1em%
+    {\large \@date}%
+  \end{center}%
+  \par
+  \vskip 0.75em}
+
+% French people are nice
+\frenchspacing
+
+\makeatother
+\topmargin=-0.5in
+\textheight=9.0in
+\textwidth=6.5in
+\oddsidemargin=0.0in
+\evensidemargin=0.0in
+\columnsep=0.25in
+% margins
+\renewcommand{\topfraction}{1.00}
+\renewcommand{\textfraction}{0.20}

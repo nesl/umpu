@@ -1,0 +1,31 @@
+%===========================================================================
+% CONCLUSION
+%===========================================================================
+\section{Conclusion}
+\label{sec:conclude}
+%
+In this paper, we have proposed a hardware software co-design approach for providing memory protection in tiny embedded processors.
+%
+Though we have implemented the protection technology for the AVR microcontroller, our general approach is applicable to other RISC architectures such as TI MSP or ARM.
+%
+Through a careful partitioning of the protection techniques, we have significantly improved performance by moving compute intensive operations into hardware.
+%
+Our hardware is very flexible, it can accommodate various configuration parameters.
+%
+The software library provides a standard programming interface.
+%
+Moreover, our approach does not modify the instruction set architecture of the processor; hence we do not need to modify the cross compiler.
+%
+These features ensure that our software library can be incorporated into existing projects with minimal modifications; a very practical benefit to the system developers.
+%
+We are still exploring the design space of possible protection architectures.
+%
+The resource utilization of our design can be further reduced by synthesizing hardware units that are pre-configured for a particular block size and number of protection domains.
+%
+An interesting area of future work is to explore software techniques such as virtual machines or type-safe languages  that can benefit from modest hardware extensions.
+%
+Software reliability is an emerging concern in the domain of tiny embedded processors.
+%
+Limited resources preclude the application of existing approaches used in desktop processors.
+%
+We believe that hardware software co-design techniques are a promising avenue to explore for creating robust software for tiny embedded processors. 
