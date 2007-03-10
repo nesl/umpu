@@ -1,0 +1,561 @@
+%%%%%%%%%%%%%%%%%%%
+% Related Work
+%%%%%%%%%%%%%%%%%%%
+\section{Related Work}
+\label{sec:related}
+%
+This section reviews other systems that provide memory protection.
+%
+The systems are broadly classified based on their application
+domains.
+%
+We focus first on sensor networks and then survey the more general
+space of desktop and server computing systems.
+%
+%=====================================================================
+\subsection{Sensor Networks}
+%
+As sensor networks are being envisioned for long-term deployments,
+there is an emerging interest to address reliability as primary design
+concern~\cite{tkernel06sensys,regehr06utos,dutta05ipsn}.
+%-------------------------------------------------------------
+\subsubsection{Naturalization - \emph{t-kernel}}
+%
+\emph{t-kernel}~\cite{tkernel06sensys}, a runtime for Mica motes, also
+rewrites binaries to make them safe for execution.
+%
+Harbor and \emph{t-kernel} represent different points in the design space of
+software-based protection mechanisms.
+%
+\emph{t-kernel} enforces a strong isolation boundary between the application and
+the kernel.
+%
+Through a process called \emph{naturalization}, the application binary is
+rewritten on the sensor node to guarantee that the \emph{t-kernel} can
+always safely regain control of the processor, even, for example, in the
+presence of application infinite loops that could otherwise hang the
+system.
+%
+The rewritten application binary contains an entire TinyOS operating system
+image, in contrast to Harbor, where a sensor node can protect multiple
+modules from one another.
+%
+
+
+\emph{t-kernel} also implements software-based differentiated
+virtual memory,
+%
+which translates the addresses for all memory accesses made by a program
+into the heap segment.
+%
+The overhead of virtual memory is unpredictable and can be very
+high in the event of a swap from external flash.
+%
+Harbor does not implement virtual memory, but does enforce isolation at a
+finer granularity than \emph{t-kernel}.
+%
+In particular, Harbor can protect application modules from
+one another.
+%
+
+Harbor does not address control flow isolation, except as required to
+enforce memory isolation; in particular, it cannot force a buggy module
+stuck in an infinite loop to relinquish control of the CPU.
+%
+\emph{t-kernel} requires external flash memory, whereas Harbor makes use of
+on-chip flash memory only.
+%
+%-------------------------------------------------------------
+\subsubsection{Safe OS Extensions - UTOS}
+%
+Safe TinyOS~\cite{regehr06utos} uses CCured~\cite{ccured02necula} and static
+analysis techniques to provide memory safety to TinyOS applications.
+%
+CCured performs complex pointer analysis to mark pointers as safe or
+unsafe.
+%
+Much driver code performs arbitrary typecasts that can cause CCured to
+fail or conservatively mark pointers as unsafe, which introduces a
+performance penalty as the CCured run-time performs bounds checks on
+unsafe pointers during code execution.
+%
+CCured provides memory safety at a much finer granularity than Harbor.
+%
+
+The UTOS framework allows untrusted extensions to
+safely interface with Safe TinyOS components.
+%
+UTOS extensions are made type-safe and memory-safe using CCured and a
+backend service that copies buffers when they are exchanged between the
+extension and the Safe TinyOS core.
+%
+Extensions are not allowed to interact with one another.
+%
+Harbor allows safe buffer transfers without copying, and allows extensions
+to interact, but its current simple runtime check infrastructure introduces
+overhead that CCured can sometimes avoid.
+%
+
+The UTOS backend service also mediates resource requests and prevents any
+extension from starving other extensions in the system.
+%
+Harbor does not make any guarantees on fair resource allocation.
+%
+%-----------------------------------------------------------------
+\subsubsection{Application Specific Virtual Machines - Mat\'e}
+%
+Application Specific Virtual Machines (ASVM) such as
+Mat\'e~\cite{asvm05nsdi}~\cite{levis02mate} and
+Agilla~\cite{agilla05ipsn} are domain specific interpreters that
+execute high-level application scripts.
+%
+Both Harbor and ASVM provide memory safety to applications, albeit
+through different mechanisms.
+%
+Harbor isolates applications from one another.
+%
+ASVM performs type and bounds checks on all memory accesses.
+%
+ASVM's checks are in some ways more stringent than Harbor's protection,
+since they also prevent scripts from corrupting \emph{their own}
+memory.
+%
+
+However, errors in ASVM's native code implementation might corrupt any
+memory on the node.
+%
+Further, for efficiency, ASVMs are designed to be easily extensible to
+customize the interpreters for a specific application domain.
+%
+The extensions can also be introduced dynamically~\cite{balani06dvm}.
+%
+The ASVM extensions implement powerful high level opcodes that perform
+complex operations.
+%
+The extensions are implemented in non-type safe languages and can be
+buggy.
+%
+ASVM can use Harbor's isolation to become more robust to errors in
+extensions.
+
+
+The trade-offs between ASVM and Harbor are evaluated in detail in
+Section~\ref{sec:eval}.
+%
+Harbor has a significantly lower execution overhead compared to ASVM.
+%
+But the run-time checks introduced by Harbor increase the code-size.
+%
+%-----------------------------------------------------------------
+\subsubsection{Type Safe Languages - Virgil}
+%
+Type safe languages provide memory safety at a fine granularity.
+%
+Type-safe languages for resource constrained microcontrolleres is an
+emerging area of research.
+%
+Most of the software developed for embedded systems is written in
+unsafe languages such as C (or even assembly for low-level drivers). 
+%
+Popular sensor network programming language NesC~\cite{gay03nesc},
+contains minimal extensions to C (such as the \texttt{atomic} keyword)
+to prevent race-conditions.
+%
+However, it does not address memory safety.
+
+
+A common criticism of safe languages or unsafe languages retrofitted
+with type information~\cite{ccured02necula} is their excessive CPU and
+memory consumption.
+%
+This often makes them unsuitable for resource constrained sensor
+nodes.
+%
+Virgil~\cite{titzer06virgil} is a new programming language that
+attempts to address some of these concerns.
+%
+By explicitly separating the initialization time from run-time, Virgil
+allows an application to build complex data structures during
+compilation and then run directly on bare hardware without a virtual
+machine on a language run-time.
+%
+The separation allows the entire program heap to be available at
+compile time and enables new optimizations that reduce memory size.
+%
+Virgil does not support dynamic memory allocation.
+%
+Therefore, it is currently suited for building application specific
+static operating system images such as TinyOS~\cite{levis05t2}.
+%
+An interesting area of future research is to explore safe languages
+(such as Virgil) as a primary extensibility mechanism for dynamic
+sensor operating systems such as SOS~\cite{ram05sos}.
+%
+SPIN project~\cite{spin95sosp} at Univ. of Washington has similar
+goals for the desktop operating systems.
+
+Finally, a safe language restricts an implementation to a single
+language; it ignores a large base of existing code.
+%
+Harbor operates on compiled binaries and is therefore independent of
+any programming language and is applicable to all the existing code
+base.
+%
+Type safe languages require unsafe extensions to interface to
+low-level hardware\footnote{Virgil extends type-safety to the
+  hardware}, though these extensions could be used sparingly.
+%
+Another problem with type-safe languages is the size of the system
+that needs to be trusted.
+%
+A complete language compiler and run-time consists of an optimizer
+that uses complex analysis to improve run-time efficiency.
+%
+This is a large and complicated code base, all of which needs to be
+trusted.
+%
+In contrast, for Harbor, only the run-time components and the simple
+verifier needs to be trusted.
+%
+The size of this system is considerably smaller than the size of a
+compiler.
+%
+% VM*~\cite{vmstar05sensys} is a virtual machine construction kit
+% targets resource constrained sensor nodes and supports a subset of the
+% JAVA programming language.
+% %
+% The VM* framework automatically generates an application specific
+% virtual machine.
+% %
+% The virtual machine is optimized to include only parts of the
+% interpreter and the run-time that are needed.
+% %
+% A native API exposes the OS and hardware services to the JAVA
+% applications.
+% %
+% VM* addresses the development of applications in JAVA but the
+% underlying operating system and device drivers are still written in
+% non type-safe languages such as C or assembly.
+% %
+% JAVA applications in VM* are type-safe.
+% %
+% Unlike Harbor and UTOS, the VM* applications are not isolated from the
+% operating system.
+%
+%Sympathy, a debugging framework, has focussed on developing
+%network-level protocols to diagnose/localize
+%problems~\cite{nithya05sympathy} 
+%
+%We can leverage Sympathy framework to send diagnostic information to
+%the basestation whenever an exception is triggered in Harbor
+%
+%At present, hardware support in sensor nodes to achieve high
+%dependability is absent, with reboot of the entire node being the
+%most common approach~\cite{dutta05ipsn}.
+%
+%
+%=========================================================================
+\subsection{Software-based Techniques}
+%
+The design considerations for an embedded sensor system are vastly
+different from a desktop/server system.
+%
+Still some of the features in Harbor have been motivated from the
+large range of software-based memory protection techniques proposed
+for desktop/server systems.
+%
+%------------------------------------------------------------
+\subsubsection{Software-based Fault Isolation (SFI)}
+%
+Software-based Fault Isolation (SFI) is a general technique that
+restricts the address range of stores, jumps and calls by modifying a
+program binary.
+%
+The key challenge to SFI is to introduce the restrictions efficiently, and in
+a manner that they cannot be bypassed by maliciously designed input
+code.
+%
+SFI was originally proposed by Wahbe et. al.~\cite{wahbe93sfi} (called
+``sandboxing'').
+%
+The pseudo-code for to sandbox an address is shown in
+Figure~\ref{fig:sbxpseudocode}.
+%
+
+\begin{figure}
+ \begin{tabbing}
+  \texttt{dedi}\=\texttt{cated-reg} $\Leftarrow$ \texttt{target-reg \&
+    and-mask-reg} \\
+  \>\emph{Use dedicated register} \texttt{and-mask-reg} \emph{to clear
+    segment identifier bits.}\\
+  \texttt{dedicated-reg} $\Leftarrow$ \texttt{target-reg |
+    segment-reg} \\
+  \>\emph{Use dedicated register} \texttt{segment-reg} \emph{to set
+    segment identifier bits.}\\
+  \texttt{store instruction uses dedicated-reg}
+ \end{tabbing}
+ \caption{Assembly pseudo code to sandbox address in
+   \texttt{target-addr}}
+ \label{fig:sbxpseudocode}
+\end{figure}
+%
+
+Sandboxing enforces static partitioning on an application's address
+space to enable safe sharing of the address space by multiple
+cooperative modules.
+%
+By choosing address space boundaries to be powers of 2, sandboxing
+restrictions are efficiently introduced through bit-masks.
+%
+%Specifically, the target address of a store instruction is forced to belong to its domain.
+%
+Dedicated registers guarantee that checks cannot be bypassed by
+jumping into the middle of a sandbox sequence.
+%
+In addition, Wahbe et. al. also designed a low-latency cross fault
+domain communication mechanism.
+%
+
+Harbor strives to enforce similar restrictions as SFI; disallow
+stores and jumps to addresses outside the module's domain.
+%
+However, the architectural limitations of the embedded processors
+motivate new design approaches.
+%
+First, the absence of virtual memory in embedded processors limits the
+total address space to the available physical memory.
+%
+The on-chip SRAM in AVR microcontroller~\cite{avrdatasheet} is a meagre 4 Kb.
+%
+Therefore, static partitioning of address space is infeasible; it
+would lead to excessing internal fragmentation of the limited memory.
+%
+Second, all the software domains on an embedded processor share a
+common run-time stack.
+%
+SFI implementations for desktop processors setup a separate stack for
+each domain within their allocated address space.
+%
+Protecting the shared run-time stack is a design challenge for Harbor.
+%
+Third, the instruction set architectures of embedded processors have
+limited capabilities.
+%
+For instance, in AVR, the load and store operations can use only three
+pair of registers for addressing.
+%
+Therefore, it is often infeasible to set aside a dedicated register
+pair for sandboxing.
+%
+Techniques different from SFI have to be employed to ensure that
+Harbor checks are not circumvented.
+%
+Fourth, there is no support for privileged instructions in an embedded
+processor.
+%
+Since embedded software runs directly ``on metal'', therefore Harbor
+has to detect and disallow certain potentially unsafe opcodes such
+as store to program memory.
+%
+
+
+Many variations of SFI have emerged since Wahbe's original
+implementation of this technique for two RISC architectures, the MIPS
+and Alpha.
+%
+In particular, the x86 implementations of SFI also face one similar
+constraint as Harbor; the lack of sufficient registers in the
+architecture to set aside a dedicated register.
+%
+MiSFIT~\cite{small97misfit}, an assembly language re-writer designed
+to isolated faults in C++ code written for an extensible operating
+system, uses a hash table of legal jump targets.
+%
+Control flow is re-directed through a check that ensures that jump
+targets appear in the hash table.
+%
+This eliminates the need for dedicated registers.
+%
+PittSFIeld~\cite{pittsfield} divides the program memory into chunks of
+16 bytes\footnote{Any size that is a power of 2 would suffice.} and
+ensures through padding with \texttt{NOPS} that control flow does not
+change except at an entry or exit of a chunk boundary.
+%
+The sandboxing sequence is inserted entirely within a chunk and
+therefore cannot be circumvented.
+
+
+\subsubsection{Control Flow Integrity (CFI)}
+%
+Control Flow Integrity (CFI)~\cite{cfi05msr} policy dictates that
+software execution must follow the path of a \emph{Control Flow Graph}
+(CFG) determined ahead of time.
+%
+CFI has more general goals than SFI that focuses solely on restricting a
+program's jumps.
+%
+CFI is implemented by labelling each potential jump target by a
+uniquely encoded \texttt{NOP} sequence.
+%
+All computed control transfers check for the appropriate tag before
+transferring control.
+%
+XFI~\cite{xfi06osdi} builds on the CFI foundations to offer a
+flexible, generalized and more efficient form of software-based fault
+isolation (SFI).
+%
+Further, XFI uses a two-stack execution model to ensure verifiable
+control flow integrity.
+%The two-stack execution model used by Harbor to ensure module control flow
+%integrity was motivated by XFI~\cite{xfi06osdi}, a high-performance variant
+%of SFI.
+%
+XFI's scoped stack holds data accessible only in the static scope of
+each function, including return addresses and most local variables.
+%
+A separate allocation stack stores data that may be shared within the
+functions in a module.
+%
+The two-stack execution model used by Harbor for ensuring control flow
+integrity within a module was motivated by XFI.
+%
+%--------------------------------------------------------------------
+\subsubsection{Safe OS Extensions}
+%
+Our work is also related to several other efforts in the
+desktop/server space to isolate kernel modules such as device drivers
+either using hardware support (Nooks)~\cite{swift05nooks} or through type-safe
+languages (SPIN)~\cite{spin95sosp} or software fault isolation
+(ExoKernel)~\cite{exo97sosp}.
+%
+Nooks separates modules into lightweight protection domains by
+managing separate page-tables for each module.
+%
+Our approach is similar to Nooks in that it maintains memory ownership
+information, and relies on standard interfaces to control flow and
+access of resources.
+%
+%=======================================================================
+\subsection{Hardware-based Approaches}
+%
+Page-based virtual memory systems have become the dominant form of
+memory management in the modern general-purpose computer systems.
+%
+The coarse granularity of page-based protection, its high performance
+overhead and complexity does not make it a popular choice in the
+low-end embedded microcontrollers.
+%
+We review the current state of art in hardware based memory protection
+and compare it with UMPU, a hardware-assisted fault isolation system.
+%
+\subsubsection{Memory Protection Units (MPU)}
+\label{sec:mpu}
+%
+Memory Protection Unit (MPU) is used to statically partition memory
+and set individual protection attributes for each partition.
+%
+The partitions are contiguous segments within the address space
+defined by a pair of base and bounds registers.
+%
+The most common protection attributes are shown in
+Table~\ref{tab:armprotattr}.
+%
+\begin{table}[htdp]
+\centering
+\small{
+\begin{tabular}{|c|l|}
+	\hline
+	Code & Mode Description\\
+	\hline
+        00 & No Access \\
+        01 & Privileged Mode Access Only \\
+        10 & Privileged Mode Full Access, User Mode Read Only \\
+        11 & Full Access\\
+	\hline
+\end{tabular}}
+\caption{ARM940T Protection Attributes Descriptions}
+\label{tab:armprotattr}
+\end{table}
+%
+
+The protection model of MPU is not suited for the embedded sensor
+software running on low-end microcontrollers.
+%
+MPU defines only two protection domains viz. User-mode and Supervisor
+mode.
+%
+This is sufficient for protecting the kernel from the applications but
+not the applications from one another.
+%
+The static partitioning of address space into contiguous regions is
+infeasible for the low-end microcontrollers with very limited memory
+footprint.
+%
+Further, the number of partitions is also limited.
+%
+
+However, MPU has a lower memory footprint than UMPU because the
+partitioning information can be stored in registers instead of
+maintaining a memory map.
+%
+MPU introduces no performance overhead while UMPU incurs a single
+clock cycle penalty for memory map accesses.
+%
+MPU's are used in embedded processors such as ARM
+940T~\cite{arm940tds} and Infineon TC1775~\cite{inftc1775ds}.
+%--------------------------------------------------------------------
+\subsubsection{Mondriaan Memory Protection}
+%
+Mondriaan Memory Protection (MMP)~\cite{witchel-asplos02-mondrian}
+creates hardware enforced protection domains within a single address
+space.
+%
+MMP inspects memory accesses at the instruction level from within the
+processor pipeline to provide word-level protection.
+%
+MMP is designed for high performance desktop architectures and it uses
+fairly complex and expensive hardware extensions to reduce overhead of
+monitoring all accesses.
+%
+MMP also maintains a table of access permissions within memory for
+every address space.
+%
+However, the tables are significantly larger that Harbor memory map as
+MMP protection is more flexible and fine-grained.
+%
+Further, as chip area and cost are not dominant concerns, MMP
+implements an expensive Protection Lookaside Buffer (PLB) to reduce
+the overhead of checks introduced during memory accesses.
+%
+%------------------------------------------------------------------
+\subsubsection{Hardware Accelerated Checkers}
+%
+Divya et. al.~\cite{divya06ccured} propose a system that enhances the
+CCured~\cite{ccured02necula} run-time checks by performing them in
+hardware.
+%
+A group of \texttt{XCHECK} custom instructions are added to the
+Xtensa~\cite{xtensads}, a customizable processor from Tensilica Inc.
+%
+The \texttt{XCHECK} instructions are inserted into the CCured modified
+source code using a source transformation tool.
+%
+UMPU has a similar motivation; using hardware accelerators for
+improving performance.
+%
+UMPU does not enforce fine-grained type-safety, it only focuses on
+fault isolation.
+%
+%------------------------------------------------------------------
+\subsection{Summary}
+%
+This section positions Harbor in the category of fault isolation for
+resource constrained microcontrollers with limited address space.
+%
+Harbor isolation is more fine-grained than other approaches for sensor
+networks.
+%
+The design of Harbor, though motivated by systems in the
+desktop/server domains, introduces new techniques to address the
+constraints of the embedded domain.
+

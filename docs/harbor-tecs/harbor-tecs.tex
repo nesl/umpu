@@ -1,0 +1,62 @@
+% Harbor Journal Paper
+\documentclass[acmtocl,acmnow]{acmtrans2m}
+\usepackage{graphicx,amsmath,subfigure}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newdef{definition}[theorem]{Definition}
+\newdef{remark}[theorem]{Remark}
+
+
+           
+\markboth{...}{...}
+
+\title{Memory Protection in Resource Constrained Sensor Nodes}
+            
+\author{Ram Kumar, Akhilesh Singhania, Eddie Kohler, Mani Srivastava}
+            
+\begin{abstract} 
+\input{abstract}
+\end{abstract}
+            
+
+
+\category{C.3}{Special Purpose and Application-Based Systems}{Real-time and embedded systems}
+            
+\terms{Performance, Design, Reliability} 
+            
+\keywords{Software Fault Isolation, Memory Protection}
+            
+\begin{document}
+            
+%\begin{bottomstuff} 
+%...
+%\end{bottomstuff}
+            
+\maketitle
+
+
+\input {introduction}
+\input {related}
+\input {sysoverview}
+\input {memmap}
+\input {cfmgr}
+\input {binrewriterverifier}
+\input {umpu}
+\input {eval}
+\input {conclusion}
+
+
+\bibliographystyle{unsrt}
+\bibliography{harbor-tecs}
+
+
+%\begin{received}
+%...
+%\end{received}
+\end{document}
+
+

@@ -1,0 +1,71 @@
+ %%%%%%%%%%%%%%%%%%
+ % conclusion
+ %%%%%%%%%%%%%%%%%%
+\section{Conclusion}
+\label{sec:conclude}
+%
+In this paper, we have explored the challenges in providing memory
+protection in resource constrained embedded sensor nodes.
+%
+We have designed the Harbor memory protection scheme that creates and
+enforces protection domains within a limited address space.
+%
+We have implemented the Harbor primitives in software to isolate the
+dynamically loadable modules and the kernel in the SOS operating
+system.
+%
+Even though the embodiment of the scheme is specific to SOS, the
+general approach is applicable elsewhere.
+%
+By partitioning the Harbor primitives into hardware and software
+components, we have designed a low-cost Micro-Memory Protection Unit
+(UMPU) for tiny embedded processors.
+%
+We have implemented UMPU for the AVR ATMEGA103 microcontroller.
+%
+
+There is a large space of protection architectures that can be
+designed using Harbor components.
+%
+A detailed exploration of the design space with an evaluation of the
+various overheads is necessary to pick the most appropriate operating
+point for a given system.
+%
+We believe that a complete system for memory protection would require
+combination of two or more software based approaches.
+% 
+For example, a system composed of ASVM with memory safe extensions
+creates a flexible and safe environment for executing high level
+scripts.
+%
+Of particular interest is the combination of static analysis with
+Harbor's run-time checks.
+%
+Static analysis can eliminate a lot of run-time checks that currently
+occur in Harbor.
+%
+However, this increases the complexity of the verifier which cannot be
+implemented on the sensor nodes.
+%
+An alternative could be to implement the verifier on the microservers
+in a tiered sensor network.
+%
+It may be feasible to implement the sandboxing tool on the
+microserver in which case the verifier can be removed.
+%
+UMPU can also benefit from static analysis.
+%
+By extending the instruction set, we can incorporate a safe store
+instruction that incurs an overhead of run-time check.
+%
+However, safe store instruction is only introduced where static
+analysis cannot determine the validity of a store operation.
+%
+The exploration of the design space consisting of low cost hardware
+accelerators, static analysis and binary transformation tools, and a
+software run time for memory protection is very promising indeed.
+%
+We envision that the application of these techniques will create
+robust software that would enable long term sensor network
+deployments.
+
