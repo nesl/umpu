@@ -206,6 +206,25 @@
   \def\@permissionCodeTwo{0400} 
 }
 
+
+\DeclareOption{acmtecs}{
+  \typeout{}
+  \typeout{Using ACM, TODAES option: 2001/06/01 by Marco Aiello et al.}
+  \typeout{}
+  \global\@acmjacmfalse  
+  \global\@acmtoclfalse
+  %\global\@acmtodaesfalse
+  \global\@acmtodsfalse
+  \global\@acmtogsfalse
+  \global\@acmtomsfalse
+  \global\@acmtoplasfalse
+  \global\@acmtodaestrue
+  \def\@journalName{ACM Transactions on Embedded Computing Systems}
+  \def\@journalNameShort{tecs}        
+  \def\@permissionCodeOne{1084-4309} 
+  \def\@permissionCodeTwo{0400} 
+}
+
 \DeclareOption{acmtods}{
   \typeout{}
   \typeout{Using ACM, TODS's option: 2001/06/01 by Marco Aiello et al.}
