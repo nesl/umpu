@@ -18,10 +18,11 @@ Memory map checks are done for \texttt{store} instructions by hardware accelerat
 %
 We preserve control flow integrity by maintaining a \textit{Safe stack} that stores return addresses in a protected memory region.
 %
-Domain switches within a single address space is done with the help of a cross domain linker tool that generates a software jump table.
+Cross domain function calls are redirected through a software based jump table.
+%Domain switches within a single address space is done with the help of a cross domain linker tool that generates a software jump table.
 %
 Enhancements to the microcontroller \texttt{call} and \texttt{return} instructions use the jump table to track the current active domain.
 %
 We have implemented our scheme on a VHDL model of ATMEGA103 microcontroller.
 %
-Our evaluations show that embedded applications can enjoy the benefits of memory protection through modest increase in cost and area of the microcontroller.
+Our evaluations show that embedded applications can enjoy the benefits of memory protection with minimal impact on performance and a modest increase in the area of the microcontroller.

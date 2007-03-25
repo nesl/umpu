@@ -84,7 +84,9 @@ The final firmware image is composed of multiple software modules that need to b
 %
 A cross domain linking mechanism (described in Section~\ref{sec:cross_domain_linking}) installs the software modules in separate protection domains.
 %
-The cross domain linker generates a software jump table that assists the processor in determining the identity of the currently active domain.
+The cross domain calls are redirected through a software jump table.
+%
+The redirection assists the processor in determining the identity of the currently active domain.
 %
 The Memory Map (described in Section~\ref{sec:memmap}) tracks layout and ownership information for the protected address space.
 %

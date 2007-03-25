@@ -4,11 +4,53 @@
 \section{Related Work}
 \label{sec:related}
 %
-Hardware-assisted protection is vastly popular on standard computing platforms~\cite{qin-hpca05-safemem, witchel-asplos02-mondrian}. 
+Page-based virtual memory systems have become the dominant form of
+memory management in the modern general-purpose computer systems.
 %
-Memory management units provide page level protection in almost all desktop systems.
+While the process model of the virtual memory systems deliver protection for embedded applications, they also increase overhead in memory consumption and processor performance.
 %
-MMUs are found in some high-end embedded processors as well.
+The memory consumption increases due to the need to store address translation tables.
+%
+The processor performance is impacted because the context switch has a high overhead; page tables have to be setup for the new context.
+%
+To improve performance of virtual memory, architectural features such as Translation Lookaside Buffers (TLBs) and virtual-mapped caches are used that further increase the area, cost and complexity of the chip.
+%
+For example, the addition of MMU and cache in an ARM7TDMI core~\cite{arm7tdmi} increases its area ten fold and its power consumption two fold. 
+%
+Therefore, current MMU designs will never be used in the low end price sensitive microcontrollers.
+
+%
+Memory protection units (MPU) provide hardware assisted protection in  embedded processors such as ARM
+940T~\cite{arm940tds} and Infineon TC1775~\cite{inftc1775ds}.
+%
+MPU can statically partitions memory and set individual protection attributes for each partition.
+%
+The partitions are contiguous segments within the address space defined by a pair of base and bounds registers.
+%
+The protection model of MPU is not suited for the complex embedded
+software (such as operating systems) running on low-end microcontrollers.
+%
+MPU defines only two protection domains viz. User-mode and Supervisor
+mode.
+%
+This is sufficient for protecting the kernel from the applications but
+not the applications from one another.
+%
+The static partitioning of address space into contiguous regions is
+infeasible for the low-end microcontrollers with very limited memory
+footprint.
+%
+Further, the number of partitions is also limited.
+%
+However, MPU has a lower memory footprint than UMPU because the
+partitioning information can be stored in registers instead of
+maintaining a memory map.
+%
+MPU introduces no performance overhead while UMPU incurs a single
+clock cycle penalty for memory map accesses.
+%
+
+
 %
 Mondrian Memory Protection (MMP)~\cite{witchel-asplos02-mondrian} inspects memory accesses at the instruction level from within the processor pipeline to provide word-level protection.
 %
@@ -19,7 +61,7 @@ SafeMem~\cite{qin-hpca05-safemem} exploits existing ECC memory protection to gua
 However, these techniques significant resources to be performed on tiny embedded processors.
 
 %
-Hardware support for memory safe execution of embedded software was recently proposed in~\cite{divya06codes}.
+Hardware support for memory safe execution of embedded software was recently proposed in~\cite{divya06ccured}.
 %
 This technique uses CCured~\cite{ccured02necula}, a tool that generates type safe C programs through pointer inference techniques.
 %
@@ -48,6 +90,6 @@ Popular programming language NesC~\cite{gay03nesc}, contains minimal extensions 
 %
 ASVM~\cite{asvm05nsdi} can also be used for providing memory protection. 
 %
-Software-based fault isolation for embedded processors has been proposed in ~\cite{ram06emnets}.
+Software-based fault isolation for embedded processors has been proposed in ~\cite{ram07harbor}.
 %
 All the software based approaches have a significantly higher overhead than custom hardware extensions.
