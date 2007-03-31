@@ -7,11 +7,11 @@
 Page-based virtual memory systems have become the dominant form of
 memory management in the modern general-purpose computer systems.
 %
-While the process model of the virtual memory systems deliver protection for embedded applications, they also increase overhead in memory consumption and processor performance.
+While the process model of the virtual memory systems delivers protection for embedded applications, it also increases the overhead in memory consumption and processor performance.
 %
 The memory consumption increases due to the need to store address translation tables.
 %
-The processor performance is impacted because the context switch has a high overhead; page tables have to be setup for the new context.
+The processor performance is impacted because context switches have a high overhead; page tables have to be setup for the new context.
 %
 To improve performance of virtual memory, architectural features such as Translation Lookaside Buffers (TLBs) and virtual-mapped caches are used that further increase the area, cost and complexity of the chip.
 %
@@ -23,7 +23,7 @@ Therefore, current MMU designs will never be used in the low end price sensitive
 Memory protection units (MPU) provide hardware assisted protection in  embedded processors such as ARM
 940T~\cite{arm940tds} and Infineon TC1775~\cite{inftc1775ds}.
 %
-MPU can statically partitions memory and set individual protection attributes for each partition.
+MPU can statically partition memory and set individual protection attributes for each partition.
 %
 The partitions are contiguous segments within the address space defined by a pair of base and bounds registers.
 %
@@ -58,7 +58,7 @@ It uses fairly complex and expensive hardware extensions to reduce overhead of m
 %
 SafeMem~\cite{qin-hpca05-safemem} exploits existing ECC memory protection to guard memory regions and detect any illegal accesses through ECC violations.
 %
-However, these techniques significant resources to be performed on tiny embedded processors.
+However, these techniques require significant resources to be performed on tiny embedded processors.
 
 %
 Hardware support for memory safe execution of embedded software was recently proposed in~\cite{divya06ccured}.
@@ -73,7 +73,7 @@ Also, our hardware extensions do not modify the processor instruction set archit
 %
 Hence, we can continue to use existing compilers.
 %
-Custom modifications to compilers can become the source of new bugs.
+Custom modifications to compilers can become a source of new bugs.
 %
 
 Many software based approaches for memory protection have been proposed.

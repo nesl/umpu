@@ -75,9 +75,9 @@ Linking could be done statically or dynamically on the embedded processor~\cite{
 %
 Domain tracking is performed in hardware by extending the implementation of \texttt{call} and \texttt{return} instructions.
 %
-Each domain is allocated one complete page of flash memory for storing its jump table.
+Each domain is allocated one complete page of flash memory to store its jump table.
 %
-In AVR architecture this imposes a limit of 128 functions that can be exported by every domain.
+In the AVR architecture this imposes a limit of 128 functions that can be exported by every domain.
 %
 This limit can be easily extended by allocating more space to the jump table.
 %
