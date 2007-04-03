@@ -3,12 +3,24 @@
 \usepackage{subfigure}
 
 \pagestyle{empty}
-
+\frenchspacing
 %
 \begin{document}
-
+\conferenceinfo{DAC'07,}{June 4 -8, 2007, San Diego, California, USA.}
+\CopyrightYear{2007}
+\crdata{978-1-59593-638-7/07/0004}
 % Do not want to print date
 \date{}
+\toappear{
+This paper is based on research funded in part by UCLA CENS, NSF
+under award 0520006, U.S. ONR under award N000140610253, U.S. ARL and the
+U.K. MoD under Agreement W911NF-06-3-0002.
+Any opinions expressed
+in this paper are  those of the authors and do not necessarily reflect the views
+of the funding agencies.
+\the\boilerplate\par
+{\confname{\the\conf}} \the\confinfo\par \the\copyrightetc.}
+
 
 \title{A System For Coarse Grained Memory Protection In Tiny Embedded Processors}
 
@@ -39,7 +51,7 @@
 
 \vspace{1mm}
 \noindent
-{\bf Keywords:} Memory Protection, HW SW Codesign
+{\bf Keywords:} Memory Protection, Software Fault Isolation
 
 \input{introduction}
 \input{memmap}
