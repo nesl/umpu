@@ -5,8 +5,8 @@
 \label{sec:umpu}
 %
 A completely software-based approach to memory protection incurs a
-large performance penalty despite the performance optimizations
-(Section~\ref{sec:bitmasklut}).
+large performance penalty despite the performance optimizations.
+%(Section~\ref{sec:bitmasklut}).
 %
 A detailed discussion of the overheads can be found in
 Section~\ref{sec:eval}.
@@ -16,19 +16,20 @@ Harbor may not be tolerable in certain performance sensitive
 applications such as Vango~\cite{ben06vango}.
 %
 In this section, we extend the ideas of Harbor memory protection to
-design a memory protection unit for tiny embedded processors
+design a memory protection unit for embedded processors like those
 %
 %Tiny embedded processors refers to the severely resource constrained
 %8-bit and 16-bit microcontrollers 
-commonly found in mote class sensor nodes%.
+commonly found in mote class sensor nodes
 %
 %Examples of such microcontrollers are 
 such as Atmel's ATMEGA128L~\cite{avrdatasheet} or TI's
 MSP430~\cite{mspdatasheet}.
-
-
-We present Micro Memory Protection Unit (UMPU) that is designed for
-resource constrained tiny embedded processors.
+%
+We call the result a \emph{micro memory protection unit}, or UMPU.
+%
+%We present Micro Memory Protection Unit (UMPU) that is designed for
+%resource constrained tiny embedded processors.
 %
 Our approach is motivated by the fault isolation principles of Harbor
 and is fundamentally different from memory protection units found in
@@ -36,21 +37,21 @@ some of the higher-end embedded processors (Section~\ref{sec:mpu}).
 %
 We do not partition the address space of the microcontroller.
 %
-Available memory on microcontrollers is severely limited.
+%Available memory on microcontrollers is severely limited.
 %
-For example, ATMEGA128 AVR has only 4 KB of on-chip RAM.
+%For example, ATMEGA128 AVR has only 4 KB of on-chip RAM.
 %
-In most systems~\cite{hill02micro}, this is the total available memory.
+%In most systems~\cite{hill02micro}, this is the total available memory.
 %
-Static partitioning would further limit the memory that is available
-to individual software components.
+%Static partitioning would further limit the memory that is available
+%to individual software components.
 %
 Instead we rely on Harbor's Memory Map data structure to efficiently
 record ownership and layout information of the entire address space.
 %
 
-The key difference between UMPU and any software-based fault isolation (SFI)
-system is that UMPU does not rewrite binary to introduce run-time
+The key difference between UMPU and any software-based fault isolation
+system is that UMPU does not rewrite the binary to introduce run-time
 checks.
 %
 UMPU instead enhances the implementation of \texttt{store, call} and
@@ -58,8 +59,7 @@ UMPU instead enhances the implementation of \texttt{store, call} and
 run-time checks in hardware.
 %
 This minimizes the performance overhead of performing run-time checks
-in software and also eliminates the binary rewrite step of SFI which
-can be quite error prone.
+in software and also eliminates the binary rewrite step of SFI.
 
 \begin{figure}[htbp]
    \centering
@@ -69,19 +69,19 @@ can be quite error prone.
    \label{fig:umpuoverview}
 \end{figure}
 %
-UMPU can be viewed as a hardware software co-design approach to memory
+UMPU can be viewed as a hardware/software co-design approach to memory
 protection (Figure~\ref{fig:umpuoverview}).
 %
 Low cost architecture extensions and a software run-time library work
 together to isolate different software components running on an
 embedded processor.
 %
-UMPU can be implemented entirely in software (as shown in already)
-albeit a performance overhead.
+%UMPU can be implemented entirely in software (as shown already)
+%albeit a performance overhead.
 %
 Simple enhancements to the microcontroller core enable us to perform
-critical operations in hardware thereby improving performance
-significantly.
+critical operations in hardware, thereby improving Harbor's
+performance significantly.
 %
 %-----------------------------------------------------------
 \subsection{UMPU Overview}
@@ -95,20 +95,22 @@ need to be protected from one another.
 %The software components are installed in separate protection domains.
 %
 A cross domain linking mechanism described in
-(Section~\ref{sec:cross_domain_linking}) installs the software modules
+Section~\ref{sec:cross_domain_linking} installs the software modules
 in separate protection domains.
 %
-The cross domain linker generates a software jump table that assists
-the domain tracker within the processor in determining the identity of 
-the currently active domain.
+%The cross domain linker generates 
+A software jump table assists the domain tracker within the processor
+in determining the identity of the currently active domain.
 %
-The Control flow controller (Section~\ref{sec:cfctrl}) ensures control flow integrity through a cross domain call unit and a domain bounds checker.
+The \emph{Control flow controller} (Section~\ref{sec:cfctrl}) ensures control flow integrity through a cross domain call unit and a domain bounds checker.
 %
 A safe stack located in protected memory stores UMPU state information during cross domain calls.
 %
-Memory map (described in Section~\ref{sec:memmap}) tracks layout and ownership information for the protected address space.
+The memory map tracks layout and ownership information for the protected address space.
 %
-The firmware image running on the processor, checked by the  memory map controller (Section~\ref{sec:mmc}) is guaranteed to be memory safe.
+The firmware image running on the processor, checked by the  memory
+map controller (Section~\ref{sec:mmc}) is guaranteed to be memory
+safe.
 %
 %The safe stack stores the return addresses in protected memory and 
 %ensures control flow integrity within a module.
@@ -124,7 +126,7 @@ initializing the configuration registers.
 It also initializes the memory map.
 %
 The UMPU configuration registers are made read only when the control
-flow leaves the trusted domain thereby avoiding any chance of
+flow leaves the trusted domain, thereby avoiding any chance of
 corruption.
 %
 The protection is enabled by setting the \texttt{UMPU\_EN} bit in the
@@ -135,18 +137,18 @@ The protection is enabled by setting the \texttt{UMPU\_EN} bit in the
 \subsection{Memory Map Controller}
 \label{sec:mmc}
 %
-Memory map controller (MMC) is a functional unit that interacts with
+The memory map controller (MMC) is a functional unit that interacts with
 the memory map to validate memory accesses made by software
 components.
 %
 It enforces the protection model that we described earlier; programs
 can write only into their domain.
 %
-MMC intercepts the signals generated by the CPU for writing into the
+The MMC intercepts the signals generated by the CPU for writing into
 data memory (Figure~\ref{fig:mmcramcpu}).
 %
-If the write address is valid, then the MMC writes directly into the
-data memory.
+If the write address is valid, then the MMC writes directly into data
+memory.
 %
 \begin{figure}[htbp]
    \centering
@@ -179,7 +181,7 @@ data memory.
 %-----------------------------------------------------------------
 \subsubsection{MMC Operation}
 %
-We describe the operation of MMC by explaining the different steps in
+We describe the MMC's operation of MMC by explaining the steps in
 the execution of a store instruction.
 %
 Regular store operation takes two clock cycles on AVR.
@@ -195,7 +197,7 @@ This is illustrated in Figure~\ref{fig:mmcopst}.
 In the protected mode, the store operation requires an additional
 clock cycle (Figure~\ref{fig:mmcopsafest}).
 %
-The operation in the first clock cycle is similar to a regular store;
+The operation in the first clock cycle is similar to a regular store:
 instruction decoding followed by a read of the data to be written from
 the register file.
 %
@@ -204,13 +206,13 @@ In the subsequent clock cycles, the MMC performs three operations.
 First, it stalls the processor execution and takes control of the
 address bus to memory.
 %
-This occurs in the second cycle of the clock waveform shown in
-Figure~\ref{fig:mmcopsafest}.
+This occurs in the second cycle.
+%Figure~\ref{fig:mmcopsafest}.
 %
 In the same clock cycle it performs an address translation operation
 to determine the address of the permissions in the memory map.
 %
-Address translation is implemented as combinational logic as shown in
+Address translation is implemented as combinational logic, as shown in
 Figure~\ref{fig:umpuaddrtans}.
 %
 Memory map permissions are also read in this cycle as the MMC unit has
@@ -246,9 +248,9 @@ asserted.
 \subsubsection{MMC Software Library}
 \label{sec:mmc_for_protection}
 %
-The software library is responsible for the initialization of MMC.
+The software library is responsible for the initialization of the MMC.
 %
-Memory map controller is configurable through a set of
+The memory map controller is configurable through a set of
 programmable registers shown in Table~\ref{tab:mmap_config_regs}.
 %
 The registers are accessible only from the trusted domain.
@@ -258,7 +260,7 @@ software library; the library appropriately initializes the registers
 \texttt{mem\_prot\_base} and \texttt{mem\_prot\_top}.
 %
 It provides macros to initialize the \texttt{mem\_map\_config}
-register that configures the block size and the number of protection
+register, which configures the block size and the number of protection
 domains available in the system.
 %
 Our design is flexible to accommodate different block sizes and number
@@ -284,9 +286,9 @@ of domains.
 The software library also manages the memory map.
 %
 It provides custom implementations of the \texttt{malloc},
-\texttt{free} and \texttt{change\_own} calls that are carefully
-designed to protect against some common programming bugs discussed in
-Section~\ref{sec:mmap_for_protection}.
+\texttt{free} and \texttt{change\_own} calls, as described.
+% that are carefully designed to protect against some common
+% programming bugs discussed in Section~\ref{sec:mmap_for_protection}.
 %
 A special read-only register contains the identity of the currently
 execution domain.
@@ -304,7 +306,7 @@ this register during a call to \texttt{malloc}.
 \subsection{Control Flow Controller}
 \label{sec:cfctrl}
 %
-Control Flow Controller (CFC) ensures that control can never flow out of
+The control flow controller (CFC) ensures that control can never flow out of
 a domain, except via calls to functions exported by other domains, and
 via returns to calls from other domains.
 %
@@ -314,17 +316,20 @@ function exported by some other domain.
 %
 %In this section, we describe the different functional units that constitute the Control Flow controller.
 %
-The CFC comprises of software run-time components, desktop tools and hardware functional units that work together to ensure control flow integrity.
+The CFC comprises software run-time components, desktop tools, and
+hardware functional units that work together to ensure control flow
+integrity.
 %
-The Cross domain linker (Section~\ref{sec:cross_domain_linking}) sets up the domains and the jump table in the program memory.
+The cross domain linker (Section~\ref{sec:cross_domain_linking}) sets up the domains and the jump table in the program memory.
 %
-The Cross Domain Call Unit (Section~\ref{sec:cdcunit}) implements the
+The cross domain call unit (Section~\ref{sec:cdcunit}) implements the
 cross domain call mechanism using the domain tracker
 (Section~\ref{sec:domtracker}) and a safe stack
 (Section~\ref{sec:umpuss}).
-
 %
-The Domain Bounds Checker (Section~\ref{sec:dombndschecker}) ensures that the control flow never leaves a domain except through valid points.
+The domain bounds checker (Section~\ref{sec:dombndschecker}) ensures
+that the control flow never leaves a domain except through valid
+points.
 %
 This section describes all the components of CFC.
 %This section describes the design of CFC components and the linking mechanism used to implement cross domain calls.
@@ -332,43 +337,59 @@ This section describes all the components of CFC.
 \subsubsection{Cross Domain Linking}
 \label{sec:cross_domain_linking}
 %
-The set of functions exported by a domain are parsed by a cross domain
-linker tool that automatically generates a jump table in the
-flash memory.
+Cross domain linking is a mechanism by which the function calls frome
+one domain to another are linked through a jump table,
 %
-The jump table as described in Section~\ref{sec:crossdomcall}, is
-similar in design to the processor interrupt vector table.
+as described in Section~\ref{sec:crossdomcall}.
 %
-Each entry in jump table is an instruction to jump to a valid exported
-function.
+%is similar in design to the processor interrupt vector table.
 %
-Each domain has its own jump table that contains all functions that it
-exports. 
+%Each entry in jump table is an instruction to jump to a valid
+%exported function.
+%
+% Each domain has its own jump table that contains all functions that
+% it exports. 
 
-The current implementation of the cross domain linker simply parses a
-header file that contains all the functions exported by a domain.
+
+%The set of functions exported by a domain are parsed by a cross domain
+%linker tool that automatically generates a jump table in the
+%flash memory.
 %
-It then generates a jump table using the symbol names of the exported
-functions.
+In the current implementation, the jump table is generated manually
+and cross domain functions are invoked through wrappers that
+call into the jump table.
 %
-All the references to the exported functions are replaced by references to
-the corresponding entries in the jump table.
+This process can be automated if the programming language
+contains semantics that define an interface for a module (for
+e.g. NesC) or the system has provision for explicitly recording an interface
+(e.g. a module header in SOS).
+%The current implementation of the cross domain linker simply parses a
+%header file that contains all the functions exported by a domain.
 %
-The linker can be improved if the programming language contains
-semantics that define an interface.
+%It then generates a jump table using the symbol names of the exported
+%functions.
 %
-An example of such a language that is popular in sensor networks is
-NesC~\cite{gay03nesc}.
+%All the references to the exported functions are replaced by references to
+%the corresponding entries in the jump table.
+%
+%The linker can be improved if the programming language contains
+%semantics that define an interface.
+%
+%An example of such a language that is popular in sensor networks is
+%NesC~\cite{gay03nesc}.
 %-----------------------------------------------------------
 \subsubsection{Cross Domain Call Unit}
 \label{sec:cdcunit}
 %
-This section describes the design and implementation of the Cross domain call unit in UMPU.
+This section describes the design and implementation of the cross domain call unit in UMPU.
 %
-The operations performed during the cross domain call are similar to the Harbor's cross domain call described in Section~\ref{sec:crossdomcall}.
+The operations performed during the cross domain call are similar to
+the Harbor's cross domain call described in
+Section~\ref{sec:crossdomcall}.
 %
 
-A cross domain call is triggered whenever the control flow reaches the jump table through any of the call instructions.
+A cross domain call is triggered whenever the control flow reaches the
+jump table through any of the call instructions.
 %
 As shown in Figure~\ref{fig:cdcinit}, the base address of the jump
 table is stored in the UMPU register
@@ -472,7 +493,7 @@ The hardware does not check whether the safe stack is protected or not.
 %
 The size of the safe stack is set during initialization.
 %
-The hardware checks to ensure that there is no overflow of safe stack.
+The hardware checks to ensure that safe stack does not overflow.
 %
 %-----------------------------------------------------------
 \subsubsection{Domain Bounds Checker}
@@ -492,14 +513,14 @@ loader~\cite{ram05sos}.
 But the end result of either mechanism is that there is no overlap in
 the address space of any modules.
 %
-Based on this assumption, the domain bounds checker comprises of two
+Based on this assumption, the domain bounds checker comprises two
 components (Figure~\ref{fig:dombndscheck}).
 %
-First, a \emph{Domain Bounds Table} that stores the lower and upper
+First, a \emph{domain bounds table} stores the lower and upper
 address bounds for every domain.
 %
-Second, a \emph{PC Bounds Checker} implemented as a combinational logic
-block which ensures that the program counter always lies within the
+Second, a \emph{PC bounds checker}, implemented as a combinational
+logic block, ensures that the program counter always lies within the
 bounds of the current domain or in the jump table.
 %
 \begin{figure}[htbp]
@@ -562,13 +583,13 @@ during a cross domain call.
 %
 The functional unit performs two checks.
 %
-The first check is an extension to the Memory map controller shown in
+The first check is an extension to the memory map controller shown in
 Figure~\ref{fig:stackbndscheck}.
 %
 All store instructions whose address is greater than the current stack
 bound and lesser than the run-time stack base address are invalid.
 %
-\texttt{MMC\_STACK\_PANIC} signal is generated upon an invalid stack
+An \texttt{MMC\_STACK\_PANIC} signal is generated upon an invalid stack
 access.
 %
 The \texttt{stack\_base} register is set to the initial value
@@ -594,21 +615,26 @@ A \texttt{STACK\_UNDERFLOW\_PANIC} is generated upon error.
 \subsubsection{Stack Overflow Protection}
 A simple stack overflow check is also implemented that
 triggers a panic when the stack pointer exceeds a pre-initialized
-upper bounds.
+upper bound.
 %-------------------------------------------
 \subsubsection{Return Address Protection}
 %
-The stack bounds protection cannot prevent the corruption to the stack that is internal to the domain.
+Stack bounds protection cannot prevent stack corruption internal to the domain.
 %
 Such corruption can modify the return addresses stored on the run-time stack.
 %
-Note that the domain bounds checker will detect such a corruption if the return address lies outside the domain bounds.
+The domain bounds checker will detect such corruption if the return address lies outside the domain bounds;
 %
-However, the control flow integrity within the domain is not preserved as the return address could be any arbitrary value within the bounds of the domain.
+however, control flow integrity within the domain is not preserved as
+the return address could be any arbitrary value within the bounds of
+the domain.
 %
-UMPU preserves control flow integrity within a domain by copying the return address to the safe stack in the implementation of the call instruction.
+UMPU preserves control flow integrity within a domain by copying the
+return address to the safe stack in the implementation of the call
+instruction.
 %
-Correspondingly, the implementation of the return instruction is also modified to use the return address present in the safe stack.
+Correspondingly, the implementation of the return instruction is also
+modified to use the return address present in the safe stack.
 %
 Return address protection increases the run-time size of the safe stack.
 %
@@ -616,8 +642,8 @@ Return address protection increases the run-time size of the safe stack.
 \subsection{Interrupt Handler Unit}
 \label{sec:umpuintr}
 %
-The interrupt handling in the processor is modified to incorporate the
-memory protection extensions.
+The processor's interrupt handling is modified to incorporate memory
+protection extensions.
 %
 In UMPU, by default, all the interrupts are handled in the trusted domain.
 %
@@ -626,10 +652,10 @@ ensure that no interrupt handler is located outside the trusted
 domain.
 %
 When the processor begins handling a pending interrupt, it generates a
-signal that triggers the UMPU Interrupt Handler Unit.
+signal that triggers the UMPU interrupt handler unit.
 %
-The processor is stalled for a single clock cycle by the Interrupt
-Handler Unit and the domain tracker is signaled to update the current
+The processor is stalled for a single clock cycle by the interrupt
+handler unit while the domain tracker is signaled to update the current
 domain ID to the trusted domain.
 %
 The previous domain ID is pushed onto the safe stack.
@@ -643,8 +669,8 @@ domain.
 But cross domain calls in the interrupt handler can transfer control
 to the other domains.
 %
-Therefore, all the domains can process the interrupts despite their
-origin in the trusted domain.
+Therefore, any domain can process the interrupt despite its origin in
+the trusted domain.
 %
 
 All processors have a special \texttt{reti} instruction to return from
@@ -670,14 +696,14 @@ registration table in FLASH/RAM.
 %------------------------------------------------------------
 \subsection{UMPU Exception Controller}
 %
-We have implemented an exception mechanism in UMPU to allow the
+We implemented an exception mechanism in UMPU to allow the
 embedded software to perform suitable recovery in the event of a panic
 condition.
 %
-The UMPU Exception Controller monitors all the panic signals that can
+The UMPU exception controller monitors all the panic signals that can
 be generated by the various UMPU extensions.
 %
-Whenever, any panic signal goes high, it generates an interrupt
+Whenever any panic signal goes high, it generates an interrupt
 condition.
 %
 The interrupt is set to have the highest priority.
@@ -722,18 +748,18 @@ the conditions that trigger them.
 %------------------------------------------------------------
 \subsection{Configurable Soft-Core}
 %
-The UMPU extensions have been designed with a lot of flexibility that
-enables them to be configurable by software at run-time.
+The UMPU extensions are
+%have been designed with a lot of flexibility that enables them to be 
+configurable by software at run-time.
 %
 For example, the block size used in the memory map can be set by
-the software in the trusted domain during initialization.
+the software in the trusted domain.
 %
-This adds complexity to the design of the UMPU extensions as the
-functional units have to be designed to accommodate inputs of arbitrary
-length.
+This adds complexity to the design of the UMPU extensions, as the
+functional units must accommodate inputs of arbitrary length.
 %
-An instance of such a functional unit is a variable length shifter that
-needs to be introduced to support the address translation operations.
+An instance of such a functional unit is a variable length shifter
+needed to support address translation operations.
 %
 There are many similar examples in the other UMPU extensions as well.
 

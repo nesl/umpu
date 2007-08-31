@@ -4,13 +4,26 @@
 \section{Conclusion}
 \label{sec:conclude}
 %
-In this paper, we have explored the challenges in providing memory
+Memory protection is an enabling technology for creating robust
+software systems.
+%
+Protection mechanisms were introduced in mainframes in the sixties and
+desktops in the eighties.
+%
+The complexity of the sensor software motivates the need for
+protection in embedded systems.
+%
+The design constraints of the embedded domain motivate new
+advancements in software and architecture technology to create robust
+systems.
+%
+In this thesis, we have explored the challenges in providing memory
 protection in resource constrained embedded sensor nodes.
 %
-We have designed the Harbor memory protection scheme that creates and
+We designed the Harbor memory protection scheme that creates and
 enforces protection domains within a limited address space.
 %
-We have implemented the Harbor primitives in software to isolate the
+We implemented the Harbor primitives in software to isolate the
 dynamically loadable modules and the kernel in the SOS operating
 system.
 %
@@ -18,12 +31,15 @@ Even though the embodiment of the scheme is specific to SOS, the
 general approach is applicable elsewhere.
 %
 By partitioning the Harbor primitives into hardware and software
-components, we have designed a low-cost Micro-Memory Protection Unit
+components, we designed a low-cost Micro-Memory Protection Unit
 (UMPU) for tiny embedded processors.
 %
 We have implemented UMPU for the AVR ATMEGA103 microcontroller.
 %
 
+\subsection{Future Work}
+\label{sec:verifydesignspace}
+%
 There is a large space of protection architectures that can be
 designed using Harbor components.
 %
@@ -38,32 +54,62 @@ For example, a system composed of ASVM with memory safe extensions
 creates a flexible and safe environment for executing high level
 scripts.
 %
-Of particular interest is the combination of static analysis with
-Harbor's run-time checks.
+
+The Harbor design also allows trading off execution overhead, and code size
+increase, against the complexity of the verifier.
 %
-Static analysis can eliminate a lot of run-time checks that currently
-occur in Harbor.
+Performance and code size increase are directly proportional to the
+number of operations that are sandboxed.
 %
-However, this increases the complexity of the verifier which cannot be
-implemented on the sensor nodes.
+The current implementation sandboxes \textit{all} unsafe operations.
 %
-An alternative could be to implement the verifier on the microservers
+This severely penalizes performance and code size but reduces the
+complexity of the verifier, which requires only a single pass over the
+entire binary and maintains no additional state.
+%
+Static analysis on the binary can reduce the number of operations
+sandboxed by adding single checks that safely protect a series of
+potentially unsafe operations.
+%
+However, the safety of such a check is harder to verify using a simple
+verifier.
+%A single check can be used to protect a series of potentially unsafe operations.
+%
+%A complex verifier can permit direct execution of potentially unsafe operations (such as stores) that have been protected by earlier checks.
+%
+An interesting area of future work is to explore this design space to
+develop a rewriter--verifier combination that consumes limited
+resources but improve performance, and reduces code size, of sandboxed
+binaries.
+
+
+%Of particular interest is the combination of static analysis with
+%Harbor's run-time checks.
+%
+%Static analysis can eliminate a lot of run-time checks that currently
+%occur in Harbor.
+%
+%However, this increases the complexity of the verifier which cannot be
+%implemented on the sensor nodes.
+%
+Another alternative is to implement the verifier on the microservers 
 in a tiered sensor network.
 %
-It may be feasible to implement the sandboxing tool on the
-microserver in which case the verifier can be removed.
+The verified binary can be distributed to a mote cluster through a
+secure protocol.
 %
-UMPU can also benefit from static analysis.
+
+%UMPU can also benefit from static analysis.
 %
-By extending the instruction set, we can incorporate a safe store
-instruction that incurs an overhead of run-time check.
+%By extending the instruction set, we can incorporate a safe store
+%instruction that incurs an overhead of run-time check.
 %
-However, safe store instruction is only introduced where static
-analysis cannot determine the validity of a store operation.
+%However, safe store instruction is only introduced where static
+%analysis cannot determine the validity of a store operation.
 %
-The exploration of the design space consisting of low cost hardware
-accelerators, static analysis and binary transformation tools, and a
-software run time for memory protection is very promising indeed.
+%This involes an exploration of the design space consisting of low cost hardware
+%accelerators, static analysis and binary transformation tools, and a
+%software run time for memory protection.
 %
 We envision that the application of these techniques will create
 robust software that would enable long term sensor network

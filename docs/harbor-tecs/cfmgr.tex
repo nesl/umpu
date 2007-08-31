@@ -1,27 +1,24 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CONTROL FLOW MANAGER
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
 \section{Control Flow Manager}
 \label{sec:cfmgr}
 %
-Programming errors can cause a module to corrupt its own state, even with
-protection domains.
+Harbor needs to manage the control flow within the system for two
+reasons.
 %
-%% The protection domains cannot
-%% prevent such internal memory corruption.
+First, the run-time needs to track the identity of the domain
+that is currently executing.
 %
-Unfortunately, a user module's control flow might be affected by internal memory
-corruption.
+This information is required to validate memory accesses.
 %
-For example, function pointers (commonly used to implement callbacks)
-are stored in RAM.
+Second, the code within the trusted domain, such as the memory map API
+needs to be protected from being executed accidentally by other
+domains.
 %
-Return addresses to function call sites are stored in stack.
-%
-Corruption of these values might cause the processor to execute
-arbitrary code, including the memory map API,
-%
-violating one of the requirements of using the memory map for
-protection.
-%% ; restricting memory map access to single trusted domain
-%% (Refer Section~\ref{subsec:mmap_for_protection}).
+This is achieved by enforcing restrictions on the control flow within
+the system.
 %
 The \emph{control flow manager} ensures that control can never flow out of
 a domain except via calls to functions exported by the kernel or modules in
@@ -31,20 +28,53 @@ Conversely, control flow can enter a domain only through an exported
 function or through the return site of a call that was made to a
 function exported by some other domain.
 %
-The control flow manager also tracks the identity of the currently
-executing domain.
+These conditions can be verified statically for most cases.
 %
-This information is required by the memory map checker to validate write
-accesses.
+However, a user module's control flow might also be affected by internal memory
+corruption.
 %
-Harbor's \emph{cross domain call} mechanism is used
+Unfortunately, programming errors can cause a module to corrupt its own state, even with
+protection domains.
+%
+%% The protection domains cannot
+%% prevent such internal memory corruption.
+%
+%
+For example, function pointers (commonly used to implement callbacks)
+are stored in RAM.
+%
+Return addresses to function call sites are stored in stack.
+%
+Corruption of these values might cause the processor to execute
+arbitrary code, thereby violating the control flow restrictions.
+%including the memory map API,
+%
+%violating one of the requirements of using the memory map for
+%protection.
+%% ; restricting memory map access to single trusted domain
+%% (Refer Section~\ref{subsec:mmap_for_protection}).
+%
+%
+%The control flow manager also tracks the identity of the currently
+%executing domain.
+%
+%This information is required by the memory map checker to validate write
+%accesses.
+%
+The control flow manager enforces the restrictions on control flow
+through three main components.
+%
+\emph{cross domain call} mechanism is used
 to transfer control safely from a caller to a callee domain.
 %
 A corresponding \emph{cross domain return} mechanism restores control back to
 a caller domain. 
 %
 Control flow integrity within a domain is preserved through a \emph{safe stack}
-that stores return addresses.
+that stores return addresses in protected memory.
+%
+\emph{Stack Bounds} are used to prevent the corruption of the shared
+run-time stack across domains.
 %
 %==============================================================================
 % CROSS DOMAIN CALL
@@ -79,11 +109,12 @@ The cross domain call mechanism tries to optimize the performance of these opera
 \begin{figure}[htbp]
    \centering
    \includegraphics[height=2.0in, keepaspectratio=true]{figures/cross_domain_call_step.eps} 
-   \caption[Cross domain call operation]{Cross Domain Call: (1) Control flow enters cross domain
-     call stub (2) Stub stores domain ID, stack bound and return
-     addresses on the safe stack (3) Stub jumps into an address in
-     jump table (4) Jump table redirects to call implementation in new
-   domain}
+   \caption[Cross domain call operation]{Cross domain call: (1) All
+     cross domain function calls are redirected through the stub. (2)
+     The stub stores domain ID, stack bound and return addresses on
+     the safe stack. (3) The control flow jumps into an address in
+     jump table. (4) The jump table redirects to the call
+     implementation in new domain}
    \label{fig:cross_domain_call}
 \end{figure}
 
@@ -121,9 +152,9 @@ are redirected through the corresponding domain's jump table.
 %
 This is illustrated in Figure~\ref{fig:cross_domain_call}.
 %
-The jump table mechanism is independent of the process used for
-dynamic linking (exporting and subscribing to functions), which might use
-several other techniques~\cite{dunkels06linking}.
+%The jump table mechanism is independent of the process used for
+%dynamic linking (exporting and subscribing to functions), which might use
+%several other techniques~\cite{dunkels06linking}.
 %
 
 Each domain is currently allocated one page of internal flash memory for
@@ -276,12 +307,13 @@ The implementation of the cross domain call stub only uses the
 caller-saved registers described by the \texttt{avr-gcc} ABI.
 %
 
-Harbor currently disallows all computed branches except for cross
-module calls.  This ensures that applications cannot avoid memory and/or
-control flow checks, but also prevents certain implementations of control
-flow structures like \texttt{switch}.
-
-
+The software implementation of Harbor currently disallows all computed
+branches except for cross module calls.  
+%
+This ensures that applications cannot avoid memory and/or control flow
+checks, but also prevents certain implementations of control flow
+structures like \texttt{switch}.
+%
 %==============================================================================
 % STACK PROTECTION
 %==============================================================================
@@ -359,6 +391,19 @@ in the SOS system.
 %=============================================================================
 % SAFE STACK
 %==============================================================================
+%
+\begin{figure}[htbp]
+   \centering
+   \includegraphics[height=2.0in, keepaspectratio=true]{figures/safe_stack.eps} 
+   \caption[Using safe stack for storing return address]{Safe stack
+     usage for return address protection. (1) All function calls are redirected
+     into the \texttt{func\_entry\_stub}. (2) The stub copies return
+     address from run-time stack to safe stack. (3) All returns are
+     redirected into the \texttt{func\_exit\_stub}. (4) The stub
+     restores copied return address from safe stack to run-time stack.}
+   \label{fig:safestack}
+\end{figure}
+%
 \subsection{Safe Stack}
 \label{subsec:safe_stack}
 %
@@ -426,17 +471,6 @@ We do not modify the run-time stack in any manner as this would corrupt data
 frames setup by functions for storing local data and function
 arguments.
 %
-\begin{figure}[htbp]
-   \centering
-   \includegraphics[width=5.3in, keepaspectratio=true]{figures/safe_stack.eps} 
-   \caption[Using safe stack for storing return address]{Using safe
-     stack for storing return address (1) All calls are redirected
-     into the \texttt{func\_entry\_stub} (2) The stub copies return
-     address from run-time stack to safe stack (3) All returns are
-     redirected into the \texttt{func\_exit\_stub} (4) The stub
-     restores copied return address from safe stack to run-time stack}
-   \label{fig:safestack}
-\end{figure}
 
 The safe stack can be placed anywhere in data memory as long as it is
 protected from accidental writes and overflow.
@@ -445,6 +479,12 @@ We usually place the safe stack at the end of all global data in the
 system and make it grow upwards.
 %
 The run-time stack and safe stack thus approach one another.
+%
+%The software implementation of Harbor does not prevent stack overflow
+%corruption.
+%
+Stack overflow corruption is prevented by checking push operations.
+
 %
 %Therefore, all return addresses are checked.
 %
@@ -459,3 +499,10 @@ The run-time stack and safe stack thus approach one another.
 %Calls to static addresses are verified at load time.
 %
 %All checks are introduced through a binary rewriter.
+\subsection{Summary}
+%
+Control Flow Manager are a set of components that together ensure that
+the memory access checks are not circumvented.
+%
+It also provides the run-time that tracks the identity of the current
+active domain in the system.

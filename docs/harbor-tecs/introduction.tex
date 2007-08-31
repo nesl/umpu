@@ -4,6 +4,10 @@
 \section{Introduction}
 \label{sec:introduction}
 %
+This paper explores the challenges in providing fault isolation
+through memory protection on resource constrained embedded systems
+such as sensor nodes.
+%
 Sensor networks have promise for many industrial, commercial, and
 medical applications.
 %
@@ -50,7 +54,7 @@ on hardware with very limited debugging support.
 Therefore, programming errors are quite common and can impact the network.
 
 
-Mote-class sensor nodes have a very simple architecture.
+Mote-class sensor nodes~\cite{jasonhillthesis} have a very simple architecture.
 %
 All primary memory is accessible to all programs running
 on a node via a single address space.
@@ -66,7 +70,7 @@ Sometimes even 32-bit ARM processor cores omit an MMU to minimize system cost an
 We expect MMU designs will continue to be absent from low-cost low-power
 microcontrollers.
 %
-Therefore, there is a need for new advancements in the software and architecture
+Therefore, there is a need for new advancements in software and architecture
 technology to make robust sensor node applications.
 %
 %==================================================================
@@ -118,27 +122,24 @@ In this paper, we have designed two systems that introduce these restrictions.
 %
 The first system re-writes machine instructions of a compiled binary.
 %
-This software only technique, first proposed by Wahbe et al.~\cite{wahbe93sfi}, is
-known as software-based fault isolation, SFI, or ``sandboxing''.
+This software only technique, first proposed by Wahbe et
+al.~\cite{wahbe93sfi}, is known as software-based fault isolation,
+SFI, or ``sandboxing''.
 %
-The second system modifies processor architecture to enforce memory
-access restrictions.
+The second system modifies the processor architecture to enforce memory
+access restrictions and is applicable to system-on-chip embedded
+systems using processor cores.
 %
-
 
 %==================================================================
 \subsection{Contributions of the Paper}
 %
 We improve the reliability of embedded sensor software by isolating
-the modules from one another.
+the domains from one another.
 %
-This paper investigates the challenges in implementing fault-isolation
+This paper investigates the challenges in implementing fault isolation
 on resource-constrained embedded sensor nodes.
 %
-Motes' limited address space precludes static address space partitioning:
-there is not enough memory available to assign each software module a
-single contiguous range of addresses.
- %
 Scarce memory resources require Harbor to have a very small memory
 footprint.
 %
@@ -146,30 +147,35 @@ Limited computational capabilities also encouraged us to limit Harbor's
 CPU overhead.
 %
 The contribution of our work has been to design techniques that make
-sandboxing feasible on embedded sensor nodes.
+sandboxing feasible on embedded sensor nodes despite these
+constraints.
+%
+In particular, these techniques are:
 %
 \begin{itemize}
 %
-\item{\emph{Memory map} data structure efficiently maintains
+\item{A \emph{Memory map} data structure that efficiently maintains
 fine-grained ownership and layout information for the entire address
 space.
 %
+Motes' limited address space precludes static address space
+partitioning: there is not enough memory available to assign each
+domain a single contiguous range of addresses.
+%
 The memory map can be tuned to match available resources and protection
-requirements of a system.
+requirements.
 %
 }
 %
-\item{\textit{Safe stack} in protected memory preserves control flow
-integrity within a domain by storing function return addresses.
+\item{A \textit{Safe stack} in protected memory preserves control flow
+integrity~\cite{xfi06osdi} within a domain by storing function return addresses.
 %
 The conventional run-time stack, which stores local data, function
-parameters, and so forth and is
-%
-is shared by all the domains, is protected
-from corruption via \emph{stack bounds}.
+parameters, and so forth and is shared by all the domains, is
+protected from corruption via \emph{stack bounds}.
 %
 The alternative of maintaining a separate stack per
-domain is not possible due to address space limitations.
+domain is not desirable due to address space limitations.
 %
 }
 %
@@ -196,9 +202,11 @@ similarly that memory is accessed only as expected.
 %
 These techniques are easily incorporated into existing systems.
 %
-We have designed two systems that use the Harbor fault isolation
+We have designed and evaluated two systems that use the Harbor fault isolation
 techniques.
 %
+Our experiments show that memory protection through fault isolation is
+feasible on resource constrained sensor nodes.
 
 % \begin{figure}[htbp]
 %     \centering
@@ -213,11 +221,11 @@ techniques.
 \subsubsection{Memory Protection in SOS Operating System}
 %
 SOS~\cite{ram05sos} is an operating system for sensor nodes in which a
-statically compiled kernel is installed on the node and the
-application level functionality is implemented by a set of dynamically
-loadable binary modules.
+statically compiled kernel is installed on the node, and application
+level functionality is implemented by a set of dynamically loadable
+binary modules.
 %
-We use Harbor memory protection to isolate the binary modules running
+We use Harbor memory protection to isolate binary modules running
 on SOS.
 %
 Run-time checks are introduced in a SOS module by a \emph{binary rewriter} and
@@ -227,11 +235,11 @@ node.
 To minimize the module code size, the run-time checks are not inlined.
 %
 Modules invoke the run-time checks by calling or jumping into the
-appropriate routines located in the trusted domain (SOS kernel), and
+appropriate routines located in the trusted domain (the SOS kernel).
 %
 %% Thus, it is not possible to circumvent checks as 
-all potentially unsafe operations are replaced by calls to
-corresponding checks.
+All potentially unsafe operations such as stores to memory are replaced
+by calls to corresponding checks.
 %
 %Calls to the checks are introduced by a \emph{binary rewriter} and verified
 %independently by a \emph{verifier} running on every sensor node.
@@ -239,12 +247,12 @@ corresponding checks.
 Harbor's correctness depends only upon the correctness of the
 verifier and the Harbor runtime, and not on the rewriter.
 %
-The design of the verifier affects the system's performance
-(Section~\ref{sec:writeverify}).
+%The design of the verifier affects the system's performance
+%(Section~\ref{sec:writeverify}).
 %
 %So far, we have only 
-We have evaluated a simple verifier that maintains no additional
-state.
+We have designed a simple verifier that requires constant state
+information for a binary.
 %
 %Exploring the design space of verifiers and evaluating their impact on
 %performance is a challenge that remains to be addressed.
@@ -259,19 +267,26 @@ its performance was evaluated by executing complex software systems
 such as SOS.
 %
 The careful hardware software co-design of UMPU results in significant
-performance improvement over software-only implementation with minimal
+performance improvement over a software-only implementation with minimal
 increase to the area and cost of AVR.
 %
 AVR enhanced with UMPU extensions is instruction set compatible with
 regular AVR microcontrollers.
 %
-This design feature has a practical value as the existing
+This design feature has practical value, as the existing
 toolchains for the AVR architecture can be used with UMPU.
 %
 %
-An additional benefit of UMPU is that it eliminates the binary
-re-writing required by the software-only implementation that can be
-error-prone.
+%An additional benefit of UMPU is that it eliminates the binary
+%rewriting required by the software-only implementation that can be
+%error-prone.
+%
+
+Harbor protection mechanism can be applied in general to a large class
+of resource constrained embedded systems.
+%
+In this paper, we will focus primarily on the application of Harbor
+protection to embedded sensor networks.
 %
 %----------------------------------------------------------------------------
 %
@@ -283,12 +298,12 @@ collection application module that had been in use for several months.
 A common programming mistake in SOS is to forget to check the error code
 returned by a cross-domain function call.
 %
-In the Surge data collection module, under certain conditions, the invalid result of a
-failed function call to the Tree routing module was being used to
-determine an offset into a buffer.
+In the Surge data collection module~\cite{woo03surge}, under certain
+conditions, the invalid result of a failed function call to the Tree
+routing module was being used to determine an offset into a buffer.
 %
 Subsequently, the data was being written to an incorrect memory
-location which would cause some of the nodes in the network to crash.
+location, which would cause some of the nodes in the network to crash.
 %
 Harbor was successfully able to prevent the corruption and signal the
 invalid access.
@@ -308,26 +323,28 @@ A system that can guarantee memory protection is indispensable for
 building robust embedded software.
 %
 %============================================================
-\subsection{Paper Outline}
+%\subsection{Paper Outline}
 %
+
+
 This paper is structured as follows.
 %
 Section~\ref{sec:related} gives an overview of related work,
 examining previous work on software reliability in sensor networks,
 software based fault isolation techniques and hardware based
 approaches to memory protection in embedded and desktop systems.
-
-Section~\ref{sec:background} provides a background on the SOS
-operating system and presents an overview of the Harbor memory
-protection primitives and their role in
+%
+There is also a background on the SOS operating system. 
+%and presents an overview of the Harbor memory
+%protection primitives and their role in
 %system that is designed to sandbox 
-sandboxing the dynamically loadable SOS modules.
+%sandboxing the dynamically loadable SOS modules.
 
-Section~\ref{sec:memmap} explains the Memory Map data structure that
+Section~\ref{sec:memmap} explains the memory map data structure, which
 contains fine grained ownership and layout information for every block
 within the address space of the sensor node. 
 %
-Section~\ref{sec:cfmgr} discusses the Control Flow Manager that
+Section~\ref{sec:cfmgr} discusses the Control Flow Manager, which
 ensures the integrity of control flow within a protection domain
 despite memory corruption localized to a domain.
 

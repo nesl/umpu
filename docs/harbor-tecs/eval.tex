@@ -66,7 +66,7 @@ However, \texttt{avr-gcc} does not have stable support for dedicated registers.
 	\texttt{func\_exit\_stub} & 38~cyc\\
 	\hline
 \end{tabular}}
-\caption{CPU Overhead of Memory Protection Routines}
+\caption{CPU Overhead of Memory Protection Routines for 8 Byte Blocks.}
 \label{tab:harbor_routines}
 \end{table}
 
@@ -160,7 +160,7 @@ stores layout and ownership information for the entire address space.
 By modifying data layout, the portion of address space that requires a
 memory map can be reduced.
 %
-For example, in SOS, memory map is needed only for the heap and the safe
+For example, in SOS, the memory map is needed only for the heap and the safe
 stack; by abutting these data structures, the memory map can be
 reduced to 70 or 140~bytes for 2- and 8-domain protection, respectively.
 %
@@ -192,18 +192,18 @@ reduced to 70 or 140~bytes for 2- and 8-domain protection, respectively.
 	\hline
 	Module & Raw & \multicolumn{2}{c|}{$\Delta$ (2 or 8 domains)} \\
 	\hline
-	Blink\raise1pt\hbox{\strut} & \XX{}150 B & \XX{}+48 B & +32\%\\
-		% 150B -> 198B
-	Tree Routing & \X{}2820 B & +1658 B & +59\%\\
-		% 2820B -> 4478B
-	Surge & \XX{}542 B & \X{}+350 B & +65\%\\
-		% 542B -> 892B
-	Outlier Det. & \X{}1312 B & \X{}+738 B & +56\% \\
-		% 1312B -> 2050B
-	DVM & 13072 B & +6652 B & +51\%\\
-		% 13072B -> 19724B
-	FFT & \X{}3016 B & \X{}+894 B & +30\% \\
-		% 3016B -> 3910B
+	Blink\raise1pt\hbox{\strut} & \XX{}150 B & \XX{}+53 B & +35\%\\
+		% 150B -> 203B
+	Tree Routing & \X{}2820 B & +2024 B & +72\%\\
+		% 2820B -> 4844B
+	Surge & \XX{}542 B & \X{}+366 B & +68\%\\
+		% 542B -> 908B
+	Outlier Det. & \X{}1312 B & \X{}+838 B & +64\% \\
+		% 1312B -> 2150B
+	DVM & 13072 B & +8216 B & +63\%\\
+		% 13072B -> 21288B
+	FFT & \X{}3016 B & \X{}+1094 B & +36\% \\
+		% 3016B -> 4110B
 	\hline
 \end{tabular}}
 \caption{Code Size Increase of Mica2 SOS Modules}
@@ -277,7 +277,7 @@ The \texttt{write\_access\_check} implemented by the memory map
 controller requires one clock cycle to read the appropriate memory map
 byte from RAM.
 %
-The address translation operation and the permission checking is
+Address translation and permission checking are
 implemented by combinational logic units that do not introduce any overhead.
 %
 
@@ -309,7 +309,7 @@ The memory map software library in UMPU is identical in functionality
 and implementation to the Harbor memory map API.
 %
 Therefore, the CPU overhead of the memory management functions (\texttt{malloc},
-\texttt{free} and \texttt{change\_own}) is same as the corresponding
+\texttt{free} and \texttt{change\_own}) is similar to the corresponding
 Harbor's functions (Table~\ref{tab:malloc_comparison}).
 %
 %---------------------------------------------------------------------------
@@ -373,12 +373,12 @@ core in a typical sensor node processor after the introduction of the
 protection mechanisms.
 %
 The Spec node~\cite{jasonhillthesis}, is a single chip implementation
-of a sensor node comprising of a RISC CPU core, SRAM, 900 MHz RF
-Transceiver, collection of communication hardware accelerators and an
+of a sensor node comprising a RISC CPU core, SRAM, a 900 MHz RF
+transceiver, a collection of communication hardware accelerators, and an
 analog-digital converter.
 %
-The RISC CPU core used in Spec is similar to the AVR core comprising
-of 8-bit datapath and 16-bit instructions.
+The RISC CPU core used in Spec is similar to the AVR core, comprising
+an 8-bit datapath and 16-bit instructions.
 %
 It also has 32 8-bit general purpose registers.
 %
@@ -391,21 +391,21 @@ The total die area of the Spec node is 6.25 mm$^2$.
 %
 Therefore, the fraction of die area occupied by the CPU core will
 increase from 6.27\% to 10.28\% in the Spec node equipped with UMPU
-extensions (Figure~\ref{fig:dieareacmp}).
+extensions.% (Figure~\ref{fig:dieareacmp}).
 %
 This is a negligible increase in the fraction of area occupied.
 %
 The packing efficiency of logic in a chip is never 100\%.
 %
-Therefore, the UMPU extensions can be accommodated without any increase
-to the chip die area.
+%Therefore, the UMPU extensions can be accommodated without any
+%increase to the chip die area.
 %
-\begin{figure}[htbp]
-  \centering
-   \includegraphics[height = 1.15in, keepaspectratio=true]{figures/areacomp.eps} 
-   \caption{Area overhead comparison}
-   \label{fig:dieareacmp}
-\end{figure}
+%\begin{figure}[htbp]
+%  \centering
+%   \includegraphics[height = 1.15in, keepaspectratio=true]{figures/areacomp.eps} 
+%   \caption{Area overhead comparison}
+%   \label{fig:dieareacmp}
+%\end{figure}
 
 %
 We next measure the fraction of the total increase in the gate count
@@ -413,7 +413,7 @@ due to the various UMPU components (Table~\ref{tab:umpuareacomp}).
 %
 \begin{table}[htdp]
 \centering
-\tiny{\def\X{\hphantom{0}}\def\XX{\X\X}\def\XXX{\XX\X}\def\Y{\raise1pt\hbox{\strut}}
+\small{\def\X{\hphantom{0}}\def\XX{\X\X}\def\XXX{\XX\X}\def\Y{\raise1pt\hbox{\strut}}
 \begin{tabular}{|l|c|c|}
 	\hline
         \hline
@@ -453,8 +453,8 @@ due to the various UMPU components (Table~\ref{tab:umpuareacomp}).
 \end{table}
 
 %
-The maximum increase in the area occurs due to the Domain Bounds
-Checker.
+The maximum increase in the area occurs due to the domain bounds
+checker.
 %
 We store the domain bounds in a register file to improve the
 performance of UMPU during cross domain calls and returns.
@@ -465,7 +465,7 @@ a look-up table within RAM or FLASH (Section~\ref{sec:dombndschecker})
 %--------------------------------------------------------------------------
 \subsection{Relative Application Performance}
 %
-In this section, we measure Harbor performance impact on
+In this section, we measure Harbor's performance impact on
 applications.
 %
 We also compare the performance of the software only implementation of
@@ -503,7 +503,7 @@ on ATMEGA128.
 This is primarily due to enhanced instruction set of ATMEGA128 which
 in particular supports hardware accelerated 8 bit multiplication.
 %
-FFT routine contains a lot of multiplication operations.
+FFT contains a lot of multiplication operations.
 %
 The execution of FFT with UMPU protection takes 8.41~ms; a slowdown
 factor of only 1.02.
@@ -746,13 +746,13 @@ physical environment.
 %
 Efficient interrupt handling is critical to ensure a reactive system.
 %
-In this subsection, we evaluate the performance impact of memory
+In this section, we evaluate the performance impact of memory
 protection on the serial driver's interrupt service routine.
 %
-We isolate the Serial Stack from the SOS kernel and install it in a
+We isolate the serial stack from the SOS kernel and install it in a
 separate protection domain.
 %
-The Serial Stack in SOS is a complex system comprising of multiple
+The serial stack in SOS is a complex system comprising multiple
 layers (shown in Figure~\ref{fig:serialstack}) that implements the
 High-Level Data Link Control (HDLC) protocol for communication between
 a pair of nodes.

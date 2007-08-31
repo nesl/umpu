@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % SOS Background
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-\section{Harbor Memory Protection for SOS}
+\section{Background --- SOS Operating System}
 \label{sec:background}
 % 
 The initial motivation of our work was to provide memory protection
@@ -17,7 +17,7 @@ This brief introduction to SOS is useful to fully understand the
 implementation of our scheme.
 % 
 %===================================================
-\subsection{SOS Operating System}
+%\subsection{SOS Operating System}
 % 
 %% Unique resource tradeoffs in the nodes, the distributed and
 %% collaborative nature of applications and the remote unattended
@@ -53,7 +53,7 @@ loadable binary modules~\cite{ram05sos}.
 % 
 %% The embodiment of the scheme is specific to SOS, however it can
 %% easily be applied to the other existing run-times as well
-%% (Section~\ref{sec:conclude}).
+%% (Subsection~\ref{sec:conclude}).
 % 
 % any operating system that supports dynamically loadable binary
 % modules.
@@ -79,10 +79,10 @@ Examples of modules are routing protocols, sensor drivers, application
 programs, and so forth.
 %
 %----------------------------------------------------------
-\subsubsection{Module Linking}
+\subsection{Module Linking}
 \label{sec:soslinking}
 %
-An SOS module upon loading, is linked with the kernel and other
+Any SOS module is linked upon loading with the kernel and other
 modules in the system. 
 %
 %Modules communicate with one another through asynchronous message
@@ -90,7 +90,7 @@ modules in the system.
 %(Figure~\ref{fig:sos_mod_interactions}).
 %
 The SOS kernel provides a rich set of services such as software
-timers, networking, sensor I/O etc. that are accessible via a system
+timers, networking, sensor I/O, etc., accessible via a system
 call API.
 %
 The kernel maintains a jump table in program memory that stores the
@@ -98,7 +98,7 @@ addresses of system calls (Figure~\ref{fig:sosjmptbl}).
 %
 The modules are pre-linked to the jump table entries.
 %
-Thus they do not have to carry any linking information which reduces
+Thus they do not have to carry any linking information, which reduces
 their size.
 %
 This design also provides flexibility to change the kernel independent
@@ -137,7 +137,7 @@ function pairs when a module is loaded.
 %   \label{fig:sosjmptbl}
 % \end{figure}
 %----------------------------------------------------------
-\subsubsection{Message Passing}
+\subsection{Message Passing}
 %
 The modules in SOS can communicate with other modules and the kernel
 through message passing.
@@ -173,7 +173,7 @@ SOS requires cooperative scheduling to share the processor between
 multiple executing modules.
 %
 %---------------------------------------------------------
-\subsubsection{Dynamic Memory Allocation}
+\subsection{Dynamic Memory Allocation}
 % 
 The SOS kernel supports dynamic memory allocation.
 % 
@@ -182,6 +182,9 @@ be dispatched to other modules.
 % 
 Memory is allocated using a block-based first-fit scheme to minimize
 the overhead of the allocation process.
+%
+The size of the block is platform dependant and is 8 bytes for Mica2
+sensor node.
 % 
 Limited memory forces SOS kernel and user modules to share a common
 allocation heap; any static partitioning would be too conservative.
@@ -194,106 +197,33 @@ A block's ownership can also be transferred, allowing
 % 
 buffers to pass easily through various modules in the system.
 % 
-%================================================================
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[height = 1.0in,
-  keepaspectratio=true]{figures/domains.eps} 
-  \caption{Protection Domains}
-  \label{fig:prot_domains}
-\end{figure}
-%
-\subsection{Protection Domains}
-% 
-User modules' wild writes can easily corrupt operating system state
-and trigger severe failure conditions.
-% 
-Harbor aims to prevent this systemwide corruption by
-% 
-preventing user modules
-from corrupting memory in different \emph{protection domains}.
-% 
-% We propose an approach to provide software based memory protection
-% and implement it in SOS operating system.
-% 
-These protection domains are
-% 
-distinct subsets of a sensor node's overall data memory address space
-(Figure~\ref{fig:prot_domains}), created and enforced by Harbor.
-% 
-Each module resides in exactly one domain; SOS kernel state resides in
-its own, separate domain.
-% 
-The kernel can read and write any domain, but each module can only write
-into its own domain.
-% 
-(This simple design precludes writable shared memory regions, but SOS did
-not previously support such regions anyway.)
-% 
-The number of protection domains is subject to a tradeoff between space
-efficiency and fault protection.
-%
-Harbor's space overhead is minimized when there are two domains, one
-for the kernel and one for all user modules.
-%
-This protects kernel state from user wild writes, but allows any
-module to corrupt any other module's state.
-%
-Alternatively, each module might store its state in a separate
-protection domain.
-% 
-No assumptions are made about layout of state within a domain.
-% 
-Run-time checks restrict user modules from writing to memory outside
-their domains.
-% 
-Checks are added to each memory write, and to jumps and other control
-flow transfers.  
-%
-The latter checks prevent applications from avoiding the former
-checks.
-
-
-The domain protection model does not address all possible memory corruption
-faults; for example,
-% 
-modules can still corrupt their own state.
-% 
-This form of corruption, though undesirable, is less serious than
-corruption across domains, and stable kernel can always ensure a clean
-re-start of user modules when corruption is detected.
-% 
-On other hand, a corrupted kernel has truly unpredictable behavior,
-leaving complete system reboot through a watchdog or grenade timer as
-the only possible means of recovery~\cite{dutta05ipsn}.
-%
 % 
 %====================================================================== 
-\subsection{System Components}
-% 
-Harbor's four components are shown in Figure~\ref{fig:sys_overview}.
-% 
-%% We first describe overall system operation.
-% 
-The system's input consists of raw user module binaries generated by a
-cross-compiler toolchain.
-% 
-The \emph{binary rewriter} is a desktop application that statically
-analyzes these binaries for potentially unsafe operations and inserts
-run-time checks to sandbox them.
-% 
-The sandboxed binary is then distributed to a network of sensor nodes.
-% 
-A \emph{verifier} running on each node verifies that incoming binaries
-are correctly sandboxed.
-% 
-Verified binaries admitted for execution interact closely
-with Harbor's run-time components, the \emph{memory map manager} and \emph{control flow
-  manager}.
-%
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[height = 2.0in, keepaspectratio=true]{figures/sysoverview.eps} 
-  \caption{System Overview}
-  \label{fig:sys_overview}
-\end{figure}
+% \subsection{System Components}
+% % 
+% Harbor's four components are shown in Figure~\ref{fig:sys_overview}.
+% % 
+% %% We first describe overall system operation.
+% % 
+% The system's input consists of raw user module binaries generated by a
+% cross-compiler toolchain.
+% % 
+% The \emph{binary rewriter} is a desktop application that statically
+% analyzes these binaries for potentially unsafe operations and inserts
+% run-time checks to sandbox them.
+% % 
+% The sandboxed binary is then distributed to a network of sensor nodes.
+% % 
+% A \emph{verifier} running on each node verifies that incoming binaries
+% are correctly sandboxed.
+% % 
+% Verified binaries admitted for execution interact closely
+% with Harbor's run-time components, the \emph{memory map manager} and \emph{control flow
+%   manager}.
+% %
+% \begin{figure}[htbp]
+%   \centering
+%   \includegraphics[height = 2.0in, keepaspectratio=true]{figures/sysoverview.eps} 
+%   \caption{System Overview}
+%   \label{fig:sys_overview}
+% \end{figure}

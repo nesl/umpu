@@ -1,15 +1,13 @@
-%%%%%%%%%%%%%%%%%
-% ABSTRACT
-%%%%%%%%%%%%%%%%% 
 \noindent
-Many sensor nodes contain resource constrained microcontrollers where user
-level applications, operating system components, and device drivers share
-a single address space with no form of hardware memory protection.
+Many embedded systems such as sensor nodes contain resource
+constrained microcontrollers where user level applications, operating
+system components, and device drivers share a single address space
+with no form of hardware memory protection.
 %
 Programming errors in one application can easily corrupt the state of
 the operating system or other applications.
 %
-In this thesis, we propose \textit{Harbor}, a memory protection system that
+In this paper, we propose \textit{Harbor}, a memory protection system that
 prevents many forms of memory corruption.
 %
 We use fault isolation (``sandboxing'') to restrict application memory
@@ -30,8 +28,15 @@ Run-time checks validate computed control flow instructions.
 %
 Cross domain calls perform low-overhead control transfers between domains.
 %
-Checks are introduced by rewriting an application's compiled
-binary. 
+We have designed two systems based on Harbor memory protection.
+
+%
+We have implemented the Harbor run-time in the SOS operating system to
+sandbox dynamically loadable binary modules.
+%
+Checks are introduced by rewriting a module's
+%an application's 
+compiled binary. 
 %
 The sandboxed result is verified on the sensor node before it is admitted
 for execution. 
@@ -42,7 +47,6 @@ correctness of this verifier and the Harbor runtime.
 %Sensor nodes only need to trust the correctness of the verifier in
 % the overall system.
 %
-We have implemented and tested Harbor on the SOS operating system.
 %
 Harbor detected and prevented memory corruption caused by programming
 errors  in application modules that had been in use for several
@@ -55,12 +59,12 @@ We partition the Harbor protection primitives into hardware and
 software components to design a Micro Memory Protection Unit (UMPU)
 for resource constrained embedded processors.
 %
-The hardware-software co-design approach offers the benefits of protection with a
-minimal performance impact.
+The hardware-software co-design approach offers the benefits of
+protection with modest increase in CPU utilization for all applications.
 %
 UMPU's area overhead is modest and can be easily accommodated without
 increasing the die area of a chip.
 %
 UMPU extensions require no modifications to the instruction set of the embedded
-processor thereby making it usable with the existing toolchains; a very
-practical feature of the design.
+processor, making it usable with existing toolchains. 
+%a very practical feature of the design.
