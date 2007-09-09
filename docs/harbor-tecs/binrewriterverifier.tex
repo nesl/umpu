@@ -29,13 +29,13 @@ A \emph{verifier} running on each node inspects the sandboxed binary
 to ensure that sufficient checks have been introduced to prevent any
 possible protection violation.
 %
-Verified binaries admitted for execution interact closely with
-Harbor's run-time components, the \emph{memory map manager} and
-\emph{control flow manager}.
+%Verified binaries admitted for execution interact closely with
+%Harbor's run-time components, the \emph{memory map manager} and
+%\emph{control flow manager}.
 %
 \begin{figure}[htbp]
   \centering
-  \includegraphics[height = 2.0in, keepaspectratio=true]{figures/sysoverview.eps} 
+  \includegraphics[height = 1.5in, keepaspectratio=true]{figures/sysoverview.eps} 
   \caption{Sandbox System Overview}
   \label{fig:sys_overview}
 \end{figure}
@@ -88,25 +88,22 @@ need to trust any external component.
 %==============================================================================
 \subsection{Sandboxed Operations}
 %
-Five types of operations are protected by the sandboxer.
+The sandboxer performs the following transformations.
 %
-\begin{enumerate}
+First, all forms of store instructions are sandboxed by a call to the
+memory map checker.
 %
-\item{All forms of store instructions are sandboxed by a call to the
-memory map checker.}
+Second, all function call entry points are instrumented with calls to
+the function entry stub, which uses the safe stack.
 %
-\item{All function call entry points are instrumented with calls to
-the function entry stub, which uses the safe stack.}
+Third, all return instructions are redirected to the function exit stub.
 %
-\item{All return instructions are redirected to the function exit stub.}
+Fourth, all computed calls are redirected to a stub that checks if
+the destination is in the jump table.
 %
-\item{All computed calls are redirected to a stub that checks if
-the destination is in the jump table.} 
+Fifth, the beginning of each basic block is marked by a special
+\texttt{NOP} symbol.
 %
-\item{The beginning of each basic block is marked by a special
-\texttt{NOP} symbol.}
-%
-\end{enumerate}
 
 An example of the sequence of instructions introduced by the rewriter for
 the AVR architecture is shown in Figure~\ref{fig:inlinechecks}.
@@ -123,30 +120,30 @@ branch targets.
 
 \begin{figure}[htbp]
    \centering
-   \includegraphics[height=1.75in, keepaspectratio=true]{figures/rewriter.eps} 
+   \includegraphics[height=1.5in, keepaspectratio=true]{figures/rewriter.eps} 
    \caption{Inline Checks}
    \label{fig:inlinechecks}
 \end{figure}
 %
 
-The rewriter reads ELF object files.
-%
-It uses symbol table information to
-distinguish binary data representing code and constants.
-%
-Upon sandboxing, the rewriter outputs a new ELF object file.
-%
-The symbol table and the relocation records in the output ELF file are
-suitably modified to reflect their updated positions within the
-sandboxed code.
-%
-Since linkers such as \texttt{avr-ld} link object files in ELF format,
-%
-the binary rewriter can be used to sandbox only portions
-of the complete binary.
-%
-For example, only the device drivers in the final image of an
-operating system might be sandboxed before installion.
+% The rewriter reads ELF object files.
+% %
+% It uses symbol table information to
+% distinguish binary data representing code and constants.
+% %
+% Upon sandboxing, the rewriter outputs a new ELF object file.
+% %
+% The symbol table and the relocation records in the output ELF file are
+% suitably modified to reflect their updated positions within the
+% sandboxed code.
+% %
+% Since linkers such as \texttt{avr-ld} link object files in ELF format,
+% %
+% the binary rewriter can be used to sandbox only portions
+% of the complete binary.
+% %
+% For example, only the device drivers in the final image of an
+% operating system might be sandboxed before installion.
 %
 
 %

@@ -2,18 +2,94 @@
 % MEMORY MAP SECTION
 %===========================================================
 \section{Memory Map Manager}
-\label{chap:memmap}
+\label{sec:memmap}
 %
+\subsection{SOS Operating System}
+\label{sec:background}
+% 
+The initial motivation of our work was to provide memory protection
+for mote-class sensor nodes running the SOS operating system.
+% 
+% The design ideas of Harbor are generally applicable however its
+% implementation and evaluation are specific to SOS.
+% 
+We have implemented and evaluated Harbor's protection mechanisms on
+SOS, although the ideas should apply elsewhere.
+% 
+This brief introduction to SOS is useful to fully understand the
+implementation of our scheme.
+% 
+%===================================================
+%\subsection{SOS Operating System}
+% 
+%% Unique resource tradeoffs in the nodes, the distributed and
+%% collaborative nature of applications and the remote unattended
+%% operation of sensor networks motivate the design of a new class of
+%% operating system and run-times.
+% 
+%TinyOS~\cite{levis05t2}, the most popular operating system for sensor
+%networks, uses reusable software components to implement common
+%services, but each node runs a statically linked system image.
+% 
+%% The components are written in the NesC~\cite{gay03nesc} programming
+%% language.
+% 
+%% Mat\'e~\cite{asvm05nsdi}, an application specific virtual machine
+%% on top of TinyOS provides limited flexibility to re-task a deployed
+%% network using high-level scripts.
+% 
+SOS has a traditional operating system architecture: a kernel is
+installed on all nodes, and
+% 
+% The rest of the system and 
+application level functionality is implemented by a set of dynamically
+loadable binary modules~\cite{ram05sos}.
+% 
+% In contrast to TinyOS, SOS maintains modularity at the binary level
+% without any loss in efficiency.
+% 
+% This property of SOS makes it particularly attractive to explore
+% techniques for isolating software faults.
+% 
+%% We have implemented the memory protection mechanism on the SOS
+%% operating system.
+% 
+%% The embodiment of the scheme is specific to SOS, however it can
+%% easily be applied to the other existing run-times as well
+%% (subsection~\ref{sec:conclude}).
+% 
+% any operating system that supports dynamically loadable binary
+% modules.
+% 
+% This brief introduction to SOS is useful to fully understand the
+% implementation of our scheme.
+% 
+% 
+% 
+The kernel is relatively well tested; we assume it is free of
+programming errors.
+% 
+Modules are position independent binaries that implement a specific
+task or function, and are less well tested by comparison.
+% 
+Modules operate on their own state, which is dynamically allocated at
+run-time.
+% 
+An application in SOS is composed of one or more modules interacting
+via asynchronous messages or function calls.
+% 
+Examples of modules are routing protocols, sensor drivers, application
+programs, and so forth.
 %=================================================================
 \subsection{Protection Domains}
 % 
 User modules' wild writes can easily corrupt operating system state
 and trigger severe failure conditions.
 % 
-Harbor aims to prevent this systemwide corruption by
+Harbor aims to prevent this systemwide corruption through \emph{protection domains}.
 % 
-preventing user modules
-from corrupting memory in different \emph{protection domains}.
+%preventing user modules
+%from corrupting memory in different
 % 
 % We propose an approach to provide software based memory protection
 % and implement it in SOS operating system.
@@ -52,12 +128,12 @@ their domains.
 Checks are added to each memory write, and to jumps and other control
 flow transfers.  
 %
-The latter checks prevent applications from avoiding the former
+The control flow checks prevent applications from avoiding the former memory access
 checks.
 %================================================================
 \begin{figure}[htbp]
   \centering
-  \includegraphics[height = 1.0in,
+  \includegraphics[height = 0.5in,
   keepaspectratio=true]{figures/domains.eps} 
   \caption{Protection Domains}
   \label{fig:prot_domains}
@@ -80,16 +156,16 @@ the only possible means of recovery~\cite{dutta05ipsn}.
 
 
 Creating and enforcing protection domains is a challenging task on
-resource constrained embedded platforms.
+resource constrained embedded platforms (Section~\ref{subsec:sfi})
 %
-Initial SFI designs allowed a sandboxed module to access a single
-contiguous range of memory~\cite{wahbe93sfi}.
-%
-Motes' limited physical memory and absence
-of virtual memory precludes this partitioning; such a partition would
-constrain applications by severely limiting available memory and lead
-to internal fragmentation, extremely wasteful on severely resource
-constrained platforms.
+% Initial SFI designs allowed a sandboxed module to access a single
+% contiguous range of memory~\cite{wahbe93sfi}.
+% %
+% Motes' limited physical memory and absence
+% of virtual memory precludes this partitioning; such a partition would
+% constrain applications by severely limiting available memory and lead
+% to internal fragmentation, extremely wasteful on severely resource
+% constrained platforms.
 %
 %% Static contiguous partitioning is only possible in desktop systems
 %% with large address spaces~\cite{wahbe93sfi}.
@@ -211,7 +287,7 @@ This design was chosen to minimize memory footprint.
 %
 \begin{figure}[htbp]
   \centering
-  \includegraphics[height=2.0in,
+  \includegraphics[height=1.5in,
   keepaspectratio=true]{figures/memaddrtrans.eps}
   \caption{Address to memory map translation (8-domain mode)}
   \label{fig:addr_memmap_translate}
@@ -286,7 +362,7 @@ Pseudocode for a write access check in a system with 8-domain protection is show
 %
 \begin{figure} [htbp]
   \centering
-  \begin{small}
+  \begin{tiny}
 \begin{verbatim}
 write_access_check(addr_t addr, data_t data) {
    // Check is for writes outside stack region
@@ -315,7 +391,7 @@ write_access_check(addr_t addr, data_t data) {
    } 
 }
 \end{verbatim}
-      \end{small}
+      \end{tiny}
   \vskip-\baselineskip
   \caption{Pseudocode for Memory Map Checker (8-domain protection)}
   \label{fig:checker}
@@ -343,19 +419,20 @@ check described in Section~\ref{subsec:stackguard}.
 %
 
 %
-\begin{figure}[htpb]
- \centering
-  \mbox{
-    \subfigure[Memory map byte for two
-    domains]{\label{fig:memmaptwodoms}\includegraphics[width=2in,
-      keepaspectratio = true]{figures/memmaptwodoms.eps}}
-    \hspace{0.2in}
-    \subfigure[Bit-Mask Lookup
-    Table]{\label{fig:perm_lut}\includegraphics[height=1.5in,
-      keepaspectratio = true]{Figures/perms_lut_opt.eps}}
-  }
-  \caption{Memory Map Checker Optimizations (2-domains)}
-\end{figure}   
+% \begin{figure}[htpb]
+%  \centering
+%   \mbox{
+%     \subfigure[Memory map byte for two
+%     domains]{\label{fig:memmaptwodoms}\includegraphics[width=2in,
+%       keepaspectratio = true]{figures/memmaptwodoms.eps}}
+%     \hspace{0.2in}
+%     \subfigure[Bit-Mask Lookup
+%     Table]{\label{fig:perm_lut}\includegraphics[height=1.5in,
+%       keepaspectratio = true]{Figures/perms_lut_opt.eps}}
+%   }
+%   \caption{Memory Map Checker Optimizations (2-domains)}
+% \end{figure} 
+
 %
 % \begin{figure}[htbp]
 %   \centering
@@ -365,113 +442,113 @@ check described in Section~\ref{subsec:stackguard}.
 % \end{figure}
 %
 %-----------------------------------------
-\subsubsection{Bit-Mask Lookup Table}
-\label{sec:bitmasklut}
-%
-Next we discuss a few implementation details in the design of
-memory map.
-%
-The memory map checker described in Figure~\ref{fig:checker} is
-designed for 8 protection domains.
-%
-The checker operation can be further optimized for a system with only 2
-protection domains.
-%
-In a 2 domain system, the \texttt{curr\_dom\_id} is always going to be
-the untrusted domain, because checks are introduced only in the
-untrusted domain.
-%
-Hence a store is valid if and only if the memory block belongs to the untrusted
-domain.
-%
-A memory map record for 2-domain protection requires only 2 bits.
-%
-Therefore, 4 memory map records can be efficiently packed into a byte
-as shown in Figure~\ref{fig:memmaptwodoms}.
-%
-The bit-mask required to retrieve the correct memory map record is
-generated through complex bit shift operations as shown in
-Figure~\ref{fig:perm_lut}.
-%
-The operation takes 32 clock cycles on ATMEGA128L as there is no
-instruction level support for arbitrary bit shifts.
-%
-Therefore, we use a lookup table stored in flash memory to retrieve
-the bit-masks.
-%
-Organization of the lookup table and its operation is described in
-Figure~\ref{fig:perm_lut}.
-%
-The table lookup takes only 8 clock cycles.
-%
-%--------------------------------------------------
-\subsubsection{Memory Heap Metadata}
-%
-%% This subsection describes a practical issue that is faced while using
-%% memory map with heaps used for dynamic memory allocation.
-%
-An implementation detail involves the protection of heap metadata, such as
-the owner and/or size of an allocated segment.
-%
-SOS stores this metadata in the segment itself as shown in
-Figure~\ref{fig:sos_free_list}.
-%
-This complicates the write access check, since heap metadata is
-effectively kernel-domain information and must be protected from wild
-writes.
-%
-%% This is unlike desktop systems where each process has its own heap.
-%
-%% Heap implementations store metadata information in data-structures
-%% that are embedded within allocated memory.
-%
-%For example, SOS kernel implements ownership tracking of memory
-%segments.
-%
-%During module unloading, kernel uses the ownership information to
-%free all memory owned by that module.
-%
-Since the SOS kernel stores this metadata in a segment's first
-memory block, %% as shown in Figure~\ref{fig:sos_free_list}.
-%
-%% This organization enables the heap to efficiently reclaim memory that
-%% is freed.
-%
-%The segment size information is used to implement the dynamic memory
-%allocate and free routines.
-%
-%% However, modules can overwrite the metadata, as it lies within the block
-%% boundary.
-%% %
-%% Recall that permissions are stored only at block granularity.
-%
-the memory map checker protects the metadata in
-the first block of any segment from user writes.
-%
-The memory map table's layout information supports this check by
-identifying the starting block of any segment.
-%
-The metadata checks are also implemented using the lookup table for
-improved efficiency.
-%
-\begin{figure} [h]
-  \centering
-    {\small
-\begin{verbatim}
-typedef struct _Block {
-   uint16_t segmentSize;
-   union {
-      uint8_t userPart[BLOCK_SIZE - sizeof(uint16_t)];
-      struct {
-         struct _Block *prev;
-         struct _Block *next;
-      };
-   };
-} Block;
-\end{verbatim} }
-\caption{SOS block metadata}
-\label{fig:sos_free_list}
-\end{figure}
+% \subsubsection{Bit-Mask Lookup Table}
+% \label{sec:bitmasklut}
+% %
+% Next we discuss a few implementation details in the design of
+% memory map.
+% %
+% The memory map checker described in Figure~\ref{fig:checker} is
+% designed for 8 protection domains.
+% %
+% The checker operation can be further optimized for a system with only 2
+% protection domains.
+% %
+% In a 2 domain system, the \texttt{curr\_dom\_id} is always going to be
+% the untrusted domain, because checks are introduced only in the
+% untrusted domain.
+% %
+% Hence a store is valid if and only if the memory block belongs to the untrusted
+% domain.
+% %
+% A memory map record for 2-domain protection requires only 2 bits.
+% %
+% Therefore, 4 memory map records can be efficiently packed into a byte
+% as shown in Figure~\ref{fig:memmaptwodoms}.
+% %
+% The bit-mask required to retrieve the correct memory map record is
+% generated through complex bit shift operations as shown in
+% Figure~\ref{fig:perm_lut}.
+% %
+% The operation takes 32 clock cycles on ATMEGA128L as there is no
+% instruction level support for arbitrary bit shifts.
+% %
+% Therefore, we use a lookup table stored in flash memory to retrieve
+% the bit-masks.
+% %
+% Organization of the lookup table and its operation is described in
+% Figure~\ref{fig:perm_lut}.
+% %
+% The table lookup takes only 8 clock cycles.
+% %
+% %--------------------------------------------------
+% \subsubsection{Memory Heap Metadata}
+% %
+% %% This subsection describes a practical issue that is faced while using
+% %% memory map with heaps used for dynamic memory allocation.
+% %
+% An implementation detail involves the protection of heap metadata, such as
+% the owner and/or size of an allocated segment.
+% %
+% SOS stores this metadata in the segment itself as shown in
+% Figure~\ref{fig:sos_free_list}.
+% %
+% This complicates the write access check, since heap metadata is
+% effectively kernel-domain information and must be protected from wild
+% writes.
+% %
+% %% This is unlike desktop systems where each process has its own heap.
+% %
+% %% Heap implementations store metadata information in data-structures
+% %% that are embedded within allocated memory.
+% %
+% %For example, SOS kernel implements ownership tracking of memory
+% %segments.
+% %
+% %During module unloading, kernel uses the ownership information to
+% %free all memory owned by that module.
+% %
+% Since the SOS kernel stores this metadata in a segment's first
+% memory block, %% as shown in Figure~\ref{fig:sos_free_list}.
+% %
+% %% This organization enables the heap to efficiently reclaim memory that
+% %% is freed.
+% %
+% %The segment size information is used to implement the dynamic memory
+% %allocate and free routines.
+% %
+% %% However, modules can overwrite the metadata, as it lies within the block
+% %% boundary.
+% %% %
+% %% Recall that permissions are stored only at block granularity.
+% %
+% the memory map checker protects the metadata in
+% the first block of any segment from user writes.
+% %
+% The memory map table's layout information supports this check by
+% identifying the starting block of any segment.
+% %
+% The metadata checks are also implemented using the lookup table for
+% improved efficiency.
+% %
+% \begin{figure} [h]
+%   \centering
+%     {\small
+% \begin{verbatim}
+% typedef struct _Block {
+%    uint16_t segmentSize;
+%    union {
+%       uint8_t userPart[BLOCK_SIZE - sizeof(uint16_t)];
+%       struct {
+%          struct _Block *prev;
+%          struct _Block *next;
+%       };
+%    };
+% } Block;
+% \end{verbatim} }
+% \caption{SOS block metadata}
+% \label{fig:sos_free_list}
+% \end{figure}
 %
 %Checks are introduced by a re-write of binary generated by cross-compiler tool-chain.
 %

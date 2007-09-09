@@ -108,7 +108,7 @@ The cross domain call mechanism tries to optimize the performance of these opera
 
 \begin{figure}[htbp]
    \centering
-   \includegraphics[height=2.0in, keepaspectratio=true]{figures/cross_domain_call_step.eps} 
+   \includegraphics[height=1.5in, keepaspectratio=true]{figures/cross_domain_call_step.eps} 
    \caption[Cross domain call operation]{Cross domain call: (1) All
      cross domain function calls are redirected through the stub. (2)
      The stub stores domain ID, stack bound and return addresses on
@@ -375,7 +375,7 @@ bound (assuming a stack that grows down).
 %% updated by the cross domain call and return stubs.
 \begin{figure}[htbp]
    \centering
-   \includegraphics[height=2.0in, keepaspectratio=true]{figures/stack_bounds.eps} 
+   \includegraphics[height=1.5in, keepaspectratio=true]{figures/stack_bounds.eps} 
    \caption[Run-time stack protection using stack bounds]{Run-time stack protection using stack bounds. All writes
      above the current stack bound are disallowed.}
    \label{fig:stackbound}
@@ -394,7 +394,7 @@ in the SOS system.
 %
 \begin{figure}[htbp]
    \centering
-   \includegraphics[height=2.0in, keepaspectratio=true]{figures/safe_stack.eps} 
+   \includegraphics[height=1.5in, keepaspectratio=true]{figures/safe_stack.eps} 
    \caption[Using safe stack for storing return address]{Safe stack
      usage for return address protection. (1) All function calls are redirected
      into the \texttt{func\_entry\_stub}. (2) The stub copies return
@@ -499,7 +499,7 @@ Stack overflow corruption is prevented by checking push operations.
 %Calls to static addresses are verified at load time.
 %
 %All checks are introduced through a binary rewriter.
-\subsection{Summary}
+%\subsection{Summary}
 %
 Control Flow Manager are a set of components that together ensure that
 the memory access checks are not circumvented.

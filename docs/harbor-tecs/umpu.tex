@@ -31,24 +31,24 @@ We call the result a \emph{micro memory protection unit}, or UMPU.
 %We present Micro Memory Protection Unit (UMPU) that is designed for
 %resource constrained tiny embedded processors.
 %
-Our approach is motivated by the fault isolation principles of Harbor
-and is fundamentally different from memory protection units found in
-some of the higher-end embedded processors (Section~\ref{sec:mpu}).
-%
-We do not partition the address space of the microcontroller.
-%
-%Available memory on microcontrollers is severely limited.
-%
-%For example, ATMEGA128 AVR has only 4 KB of on-chip RAM.
-%
-%In most systems~\cite{hill02micro}, this is the total available memory.
-%
-%Static partitioning would further limit the memory that is available
-%to individual software components.
-%
-Instead we rely on Harbor's Memory Map data structure to efficiently
-record ownership and layout information of the entire address space.
-%
+% Our approach is motivated by the fault isolation principles of Harbor
+% and is fundamentally different from memory protection units found in
+% some of the higher-end embedded processors (Section~\ref{sec:mpu}).
+% %
+% We do not partition the address space of the microcontroller.
+% %
+% %Available memory on microcontrollers is severely limited.
+% %
+% %For example, ATMEGA128 AVR has only 4 KB of on-chip RAM.
+% %
+% %In most systems~\cite{hill02micro}, this is the total available memory.
+% %
+% %Static partitioning would further limit the memory that is available
+% %to individual software components.
+% %
+% Instead we rely on Harbor's Memory Map data structure to efficiently
+% record ownership and layout information of the entire address space.
+% %
 
 The key difference between UMPU and any software-based fault isolation
 system is that UMPU does not rewrite the binary to introduce run-time
@@ -63,7 +63,7 @@ in software and also eliminates the binary rewrite step of SFI.
 
 \begin{figure}[htbp]
    \centering
-   \includegraphics[height = 2.0in,
+   \includegraphics[height = 1.5in,
    keepaspectratio=true]{figures/umpuoverview.eps} 
    \caption{UMPU Overview}
    \label{fig:umpuoverview}
@@ -150,24 +150,26 @@ data memory (Figure~\ref{fig:mmcramcpu}).
 If the write address is valid, then the MMC writes directly into data
 memory.
 %
-\begin{figure}[htbp]
-   \centering
-   \includegraphics[height=1in,
-   keepaspectratio=true]{figures/mmcramcpu.eps} 
-   \caption{Memory Map Controller (MMC)}
-   \label{fig:mmcramcpu}
-\end{figure}
+% \begin{figure}[htbp]
+%    \centering
+%    \includegraphics[height=0.75in,
+%    keepaspectratio=true]{figures/mmcramcpu.eps} 
+%    \caption{Memory Map Controller (MMC)}
+%    \label{fig:mmcramcpu}
+% \end{figure}
 %
 \begin{figure}[htpb]
  \centering
   \mbox{
-    \subfigure[Regular Store]{\label{fig:mmcopst}\includegraphics[width=2.5in,
+    \subfigure[Function Units]{\label{fig:mmcramcpu}\includegraphics[width=1.7in, keepaspectratio = true]{figures/mmcramcpu.eps}}
+    \hspace{0.1in}
+    \subfigure[Regular Store]{\label{fig:mmcopst}\includegraphics[width=1.7in,
       keepaspectratio = true]{figures/mmcop_st.eps}}
-    \hspace{0.2in}
-    \subfigure[Safe Store]{\label{fig:mmcopsafest}\includegraphics[width=2.5in,
+    \hspace{0.1in}
+    \subfigure[Safe Store]{\label{fig:mmcopsafest}\includegraphics[width=1.7in,
       keepaspectratio = true]{figures/mmcop_safe_st.eps}}
   }
-  \caption{MMC Timing Diagram}
+  \caption{Memory Map Controller}
 \end{figure}   
 % %
 % \begin{figure}[htbp]
@@ -212,8 +214,8 @@ This occurs in the second cycle.
 In the same clock cycle it performs an address translation operation
 to determine the address of the permissions in the memory map.
 %
-Address translation is implemented as combinational logic, as shown in
-Figure~\ref{fig:umpuaddrtans}.
+%Address translation is implemented as combinational logic, as shown in
+%Figure~\ref{fig:umpuaddrtans}.
 %
 Memory map permissions are also read in this cycle as the MMC unit has
 control over the address bus.
@@ -221,27 +223,28 @@ control over the address bus.
 Second, the MMC compares the ownership information to the identity of
 the current executing domain.
 %
-The combinational logic of the checker is shown in
-Figure~\ref{fig:umpupermscheck}.
+%The combinational logic of the checker is shown in
+%Figure~\ref{fig:umpupermscheck}.
 %
 Finally, if the check is successful, then the MMC issues a write
 enable signal to the data memory; else an \texttt{MMC\_PANIC} signal is
 asserted.
 %
 %
-\begin{figure}[htpb]
- \centering
-  \mbox{
-    \subfigure[Address
-    Translation]{\label{fig:umpuaddrtans}\includegraphics[width=2.5in,
-      keepaspectratio = true]{figures/umpuaddrtans.eps}}
-    \hspace{0.2in}
-    \subfigure[Permission
-    Checker]{\label{fig:umpupermscheck}\includegraphics[width=2.5in,
-      keepaspectratio = true]{figures/umpupermscheck.eps}}
-  }
-  \caption{MMC Operations (8-domain)}
-\end{figure}   
+% \begin{figure}[htpb]
+%  \centering
+%   \mbox{
+%     \subfigure[Address
+%     Translation]{\label{fig:umpuaddrtans}\includegraphics[width=2.5in,
+%       keepaspectratio = true]{figures/umpuaddrtans.eps}}
+%     \hspace{0.2in}
+%     \subfigure[Permission
+%     Checker]{\label{fig:umpupermscheck}\includegraphics[width=2.5in,
+%       keepaspectratio = true]{figures/umpupermscheck.eps}}
+%   }
+%   \caption{MMC Operations (8-domain)}
+% \end{figure} 
+
 %
 %
 %----------------------------------------------
@@ -415,10 +418,10 @@ The new cross domain return address is updated by the fetch decoder unit.
 \begin{figure}[htpb]
  \centering
   \mbox{
-    \subfigure[Cross Domain Call Init]{\label{fig:cdcinit}\includegraphics[width=2.5in,
+    \subfigure[Cross Domain Call Init]{\label{fig:cdcinit}\includegraphics[width=2.0in,
       keepaspectratio = true]{figures/umpucdcinit.eps}}
-    \hspace{0.2in}
-    \subfigure[Cross Domain Call State Machine]{\label{fig:cdcstmc}\includegraphics[width=2.5in,
+    \hspace{0.5in}
+    \subfigure[Cross Domain Call State Machine]{\label{fig:cdcstmc}\includegraphics[width=2.0in,
       keepaspectratio = true]{figures/cdcstatemc.eps}}
   }
   \caption{Cross Domain Call Unit}
@@ -472,7 +475,7 @@ division operation as a shifter.
 %
  \begin{figure}[htbp]
     \centering
-    \includegraphics[height=1in,
+    \includegraphics[height=0.75in,
     keepaspectratio=true]{figures/domtracker.eps} 
     \caption{Domain Tracker}
     \label{fig:domtracker}
@@ -525,14 +528,14 @@ bounds of the current domain or in the jump table.
 %
 \begin{figure}[htbp]
    \centering
-   \includegraphics[height=1in,
+   \includegraphics[height=0.5in,
    keepaspectratio=true]{figures/progmemlayout.eps} 
    \caption{Program Memory Layout}
    \label{fig:progmemlayout}
 \end{figure}
 \begin{figure}[htbp]
    \centering
-   \includegraphics[height=2.5in,
+   \includegraphics[height=1.5in,
    keepaspectratio=true]{figures/domboundschecker.eps} 
    \caption{Domain Bounds Checker (8 Domains)}
    \label{fig:dombndscheck}
