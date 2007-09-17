@@ -4,20 +4,20 @@
 \section{Memory Map Manager}
 \label{sec:memmap}
 %
-\subsection{SOS Operating System}
-\label{sec:background}
+%\subsection{SOS Operating System}
+%\label{sec:background}
 % 
-The initial motivation of our work was to provide memory protection
-for mote-class sensor nodes running the SOS operating system.
+%The initial motivation of our work was to provide memory protection
+%for mote-class sensor nodes running the SOS operating system.
 % 
 % The design ideas of Harbor are generally applicable however its
 % implementation and evaluation are specific to SOS.
 % 
-We have implemented and evaluated Harbor's protection mechanisms on
-SOS, although the ideas should apply elsewhere.
+%We have implemented and evaluated Harbor's protection mechanisms on
+%SOS, although the ideas should apply elsewhere.
 % 
-This brief introduction to SOS is useful to fully understand the
-implementation of our scheme.
+%This brief introduction to SOS is useful to fully understand the
+%implementation of our scheme.
 % 
 %===================================================
 %\subsection{SOS Operating System}
@@ -38,12 +38,12 @@ implementation of our scheme.
 %% on top of TinyOS provides limited flexibility to re-task a deployed
 %% network using high-level scripts.
 % 
-SOS has a traditional operating system architecture: a kernel is
-installed on all nodes, and
+%SOS has a traditional operating system architecture: a kernel is
+%installed on all nodes, and
 % 
 % The rest of the system and 
-application level functionality is implemented by a set of dynamically
-loadable binary modules~\cite{ram05sos}.
+%application level functionality is implemented by a set of dynamically
+%loadable binary modules~\cite{ram05sos}.
 % 
 % In contrast to TinyOS, SOS maintains modularity at the binary level
 % without any loss in efficiency.
@@ -66,24 +66,24 @@ loadable binary modules~\cite{ram05sos}.
 % 
 % 
 % 
-The kernel is relatively well tested; we assume it is free of
-programming errors.
+%The kernel is relatively well tested; we assume it is free of
+%programming errors.
 % 
-Modules are position independent binaries that implement a specific
-task or function, and are less well tested by comparison.
+%Modules are position independent binaries that implement a specific
+%task or function, and are less well tested by comparison.
 % 
-Modules operate on their own state, which is dynamically allocated at
-run-time.
+%Modules operate on their own state, which is dynamically allocated at
+%run-time.
 % 
-An application in SOS is composed of one or more modules interacting
-via asynchronous messages or function calls.
+%An application in SOS is composed of one or more modules interacting
+%via asynchronous messages or function calls.
 % 
-Examples of modules are routing protocols, sensor drivers, application
-programs, and so forth.
+%Examples of modules are routing protocols, sensor drivers, application
+%programs, and so forth.
 %=================================================================
 \subsection{Protection Domains}
 % 
-User modules' wild writes can easily corrupt operating system state
+In SOS, user modules' wild writes can easily corrupt kernel state
 and trigger severe failure conditions.
 % 
 Harbor aims to prevent this systemwide corruption through \emph{protection domains}.
@@ -133,7 +133,7 @@ checks.
 %================================================================
 \begin{figure}[htbp]
   \centering
-  \includegraphics[height = 0.5in,
+  \includegraphics[height = 0.75in,
   keepaspectratio=true]{figures/domains.eps} 
   \caption{Protection Domains}
   \label{fig:prot_domains}
@@ -261,73 +261,73 @@ Section~\ref{sec:mmapdesignspace}.
 %permissions for any given address.
 %
 %--------------------------------
-\subsubsection{Address Translation}
-\label{sec:memtrans}
-%
-Figure~\ref{fig:addr_memmap_translate} shows how an address is looked up in
-the memory map.
-%
-Assuming a block size of 8 bytes, the last three bits of address are an
-offset into a given block.
-%
-The remaining bits of the address represent a block number in data memory.
-%
-Access permissions are packed into a byte.
-%
-If encoded information is stored in four bits (for 8-domain
-protection), then each byte would contain information for two
-contiguous memory blocks.
-%
-Therefore, the last bit of block number selects a memory map record
-from within an access permissions byte.
-%
-The remaining bits of the block number form an index into the memory map table.
-%
-This design was chosen to minimize memory footprint.
-%
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[height=1.5in,
-  keepaspectratio=true]{figures/memaddrtrans.eps}
-  \caption{Address to memory map translation (8-domain mode)}
-  \label{fig:addr_memmap_translate}
-\end{figure}
+% \subsubsection{Address Translation}
+% \label{sec:memtrans}
+% %
+% Figure~\ref{fig:addr_memmap_translate} shows how an address is looked up in
+% the memory map.
+% %
+% Assuming a block size of 8 bytes, the last three bits of address are an
+% offset into a given block.
+% %
+% The remaining bits of the address represent a block number in data memory.
+% %
+% Access permissions are packed into a byte.
+% %
+% If encoded information is stored in four bits (for 8-domain
+% protection), then each byte would contain information for two
+% contiguous memory blocks.
+% %
+% Therefore, the last bit of block number selects a memory map record
+% from within an access permissions byte.
+% %
+% The remaining bits of the block number form an index into the memory map table.
+% %
+% This design was chosen to minimize memory footprint.
+% %
+% \begin{figure}[htbp]
+%   \centering
+%   \includegraphics[height=1.5in,
+%   keepaspectratio=true]{figures/memaddrtrans.eps}
+%   \caption{Address to memory map translation (8-domain mode)}
+%   \label{fig:addr_memmap_translate}
+% \end{figure}
 %
 %------------------------------
-\subsubsection{Memory Map API}
-%
-The memory map data structure and address translation operations are
-encapsulated in an object accessible through the API described
-in Table~\ref{tab:memmap_api}. 	
-%
-%
-% If we optimize the memory map table to not include certain portions
-% of the address space, then what will happen if we accidentally pass
-% an unmapped address ?
-%
-%
-%
-\begin{table}[htdp]
-   \centering
-   \small{
-   \begin{tabular}{|l|}
-   \hline
-   Prototype and Description \\
-   \hline
-   \texttt{int8\_t memmap\_set(uint8\_t blkID, uint8\_t nBlks, uint8\_t
-   domID)}\\
-   Set owner of segment [BlkID, BlkID + nBlks) to domID \\
-   \hline
-   \texttt{uint8\_t memmap\_get(uint8\_t blkID)}\\
-   Get owner and layout of block number BlkID \\
-   \hline
-   \end{tabular}
-   }
-   \centering
-   \caption{Memory map API}
-   \label{tab:memmap_api}
-\end{table}
-%
+% \subsubsection{Memory Map API}
+% %
+% The memory map data structure and address translation operations are
+% encapsulated in an object accessible through the API described
+% in Table~\ref{tab:memmap_api}. 	
+% %
+% %
+% % If we optimize the memory map table to not include certain portions
+% % of the address space, then what will happen if we accidentally pass
+% % an unmapped address ?
+% %
+% %
+% %
+% \begin{table}[htdp]
+%    \centering
+%    \small{
+%    \begin{tabular}{|l|}
+%    \hline
+%    Prototype and Description \\
+%    \hline
+%    \texttt{int8\_t memmap\_set(uint8\_t blkID, uint8\_t nBlks, uint8\_t
+%    domID)}\\
+%    Set owner of segment [BlkID, BlkID + nBlks) to domID \\
+%    \hline
+%    \texttt{uint8\_t memmap\_get(uint8\_t blkID)}\\
+%    Get owner and layout of block number BlkID \\
+%    \hline
+%    \end{tabular}
+%    }
+%    \centering
+%    \caption{Memory map API}
+%    \label{tab:memmap_api}
+% \end{table}
+% %
 %
 %========================================================================================================================================
 % MEMORY MAP CHECKER
@@ -600,10 +600,10 @@ modules.
 %% owned by other modules.
 %
 To enforce this condition, the system needs to track the currently
-active domain (Section~\ref{chap:cfmgr}).
+active domain (Section~\ref{sec:cfmgr}).
 %
 %
-Third, direct access to the memory map API (described in Table~\ref{tab:memmap_api})
+Third, direct access to the memory map API %(described in Table~\ref{tab:memmap_api})
 should be restricted to trusted domains, such as the kernel.
 %
 %% If modules are allowed direct access to memory map API, then we can no

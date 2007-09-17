@@ -8,22 +8,23 @@ This paper explores the challenges in providing fault isolation
 through memory protection on resource constrained embedded systems
 such as sensor nodes.
 %
-Sensor networks have promise for many industrial, commercial, and
-medical applications.
+%Sensor networks have promise for many industrial, commercial, and
+%medical applications.
 %
-For example, CodeBlue~\cite{welsh04codeblue} is a prototype medical
-sensor network platform for expediting triage during disaster
-response.
+%For example, CodeBlue~\cite{welsh04codeblue} is a prototype medical
+%sensor network platform for expediting triage during disaster
+%response.
 %
-A network of 4000 sensors deployed by Intel in a
-semiconductor fabrication plant performs predictive maintenance of
-machinery in service~\cite{intel05fabapp}.
+%A network of 4000 sensors deployed by Intel in a
+%semiconductor fabrication plant performs predictive maintenance of
+%machinery in service~\cite{intel05fabapp}.
 %
-The Zigbee consortium~\cite{zigbee} seeks to equip lighting and
-HVAC controllers with wireless radios, enabling intelligent building
-automation and security services.
+%The Zigbee consortium~\cite{zigbee} seeks to equip lighting and
+%HVAC controllers with wireless radios, enabling intelligent building
+%automation and security services.
 %
-These current and upcoming sensor network deployments require high
+%These 
+Current and upcoming sensor network deployments require high
 availability infrastructure with the ability to support multiple users.
 %
 %
@@ -74,28 +75,28 @@ Therefore, there is a need for new advancements in software and architecture
 technology to make robust sensor node applications.
 %
 %==================================================================
-\subsection{Memory Protection in Embedded Sensor Systems}
+%\subsection{Memory Protection in Embedded Sensor Systems}
 %
-Software-based approaches for memory protection have emerged to
-compensate for the architectural limitations of embedded
-microcontrollers.
+%Software-based approaches for memory protection have emerged to
+%compensate for the architectural limitations of embedded
+%microcontrollers.
 %
-Domain specific interpreters such as Mat\'e~\cite{asvm05nsdi} provide
-a safe environment to execute high-level application scripts.
+%Domain specific interpreters such as Mat\'e~\cite{asvm05nsdi} provide
+%a safe environment to execute high-level application scripts.
 %
-Type-safe languages such as Virgil~\cite{titzer06virgil} provide
-fine-grained protection of individual memory objects.
+%Type-safe languages such as Virgil~\cite{titzer06virgil} provide
+%fine-grained protection of individual memory objects.
 %
-However, these approaches have their limitations.
+%However, these approaches have their limitations.
 %
-For example, Mat\'e instructions are implemented in non type-safe
-language and could be buggy.
+%For example, Mat\'e instructions are implemented in non type-safe
+%language and could be buggy.
 %
-Type-safe languages require unsafe extensions to interface to the
-low-level hardware, though these extensions could be used sparingly.
+%Type-safe languages require unsafe extensions to interface to the
+%low-level hardware, though these extensions could be used sparingly.
 %
-An ideal system for memory protection might combine two or
-more software-based approaches.
+%An ideal system for memory protection might combine two or
+%more software-based approaches.
 %
 
 
@@ -104,11 +105,11 @@ In this paper, we present \emph{Harbor}, a system for providing
 coarse-grained memory protection in resource-%
 constrained embedded sensor nodes.
 %
-Harbor can be used as a building block with other approaches to create
-more effective protection mechanisms.
+%Harbor can be used as a building block with other approaches to create
+%more effective protection mechanisms.
 %
-For instance, Harbor can be used to implement memory safe Mat\'e
-instructions.
+%For instance, Harbor can be used to implement memory safe Mat\'e
+%instructions.
 %
 Harbor partitions a sensor node's memory into
 multiple \textit{domains}.
@@ -282,16 +283,7 @@ toolchains for the AVR architecture can be used with UMPU.
 %error-prone.
 %
 
-Harbor protection mechanism can be applied in general to a large class
-of resource constrained embedded systems.
-%
-In this paper, we will focus primarily on the application of Harbor
-protection to embedded sensor networks.
-%
-%----------------------------------------------------------------------------
-%
-\subsection{Robust Embedded Software}
-%
+
 During experimentation, Harbor detected memory corruption in a data
 collection application module that had been in use for several months.
 %
@@ -322,11 +314,20 @@ can have a severe impact on the network.
 A system that can guarantee memory protection is indispensable for
 building robust embedded software.
 %
-%============================================================
-%\subsection{Paper Outline}
+
+Harbor protection mechanism can be applied in general to a large class
+of resource constrained embedded systems.
 %
-
-
+In this paper, we will focus primarily on the application of Harbor
+protection to embedded sensor networks.
+%
+%----------------------------------------------------------------------------
+%
+%\subsection{Robust Embedded Software}
+%
+%============================================================
+\subsection{Structure of Paper}
+%
 This paper is structured as follows.
 %
 Section~\ref{sec:related} gives an overview of related work,
